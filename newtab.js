@@ -38,8 +38,13 @@ async function initApp() {
     const toolsFab = document.getElementById('tools-fab');
     toolsFab?.addEventListener('click', async () => {
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
+      const wasActive = toolsFab.classList.contains('active');
       toggleToolsPanel(() => toolsFab.classList.remove('active'));
-      toolsFab.classList.toggle('active');
+      if (wasActive) {
+        toolsFab.classList.remove('active');
+      } else {
+        toolsFab.classList.add('active');
+      }
     });
 
     // Step 6 — Keyboard shortcuts

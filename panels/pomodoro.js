@@ -100,21 +100,21 @@ function startLocalTick() {
 
 function changeMode(modeId) {
   if (state.isRunning) return;
-  try { chrome.runtime.sendMessage({ command: 'resetTimer', mode: modeId }); } catch {}
+  chrome.runtime.sendMessage({ command: 'resetTimer', mode: modeId }).catch(() => {});
   state = { mode: modeId, isRunning: false, timeLeft: MODES[modeId], endTime: 0 };
   render();
 }
 
 function toggleTimer() {
   if (state.isRunning) {
-    try { chrome.runtime.sendMessage({ command: 'pauseTimer', timerState: state }); } catch {}
+    chrome.runtime.sendMessage({ command: 'pauseTimer', timerState: state }).catch(() => {});
     state.isRunning = false;
     clearInterval(tickInterval);
   } else {
     const cmd = state.timeLeft === MODES[state.mode]
       ? { command: 'startTimer', mode: state.mode }
       : { command: 'resumeTimer', timerState: state };
-    try { chrome.runtime.sendMessage(cmd); } catch {}
+    chrome.runtime.sendMessage(cmd).catch(() => {});
     state.isRunning = true;
     state.endTime = Date.now() + state.timeLeft * 1000;
     startLocalTick();
@@ -125,7 +125,7 @@ function toggleTimer() {
 function resetTimer() {
   if (!state.isRunning && state.timeLeft === MODES[state.mode]) return;
   clearInterval(tickInterval);
-  try { chrome.runtime.sendMessage({ command: 'resetTimer', mode: state.mode }); } catch {}
+  chrome.runtime.sendMessage({ command: 'resetTimer', mode: state.mode }).catch(() => {});
   state.isRunning = false;
   state.timeLeft = MODES[state.mode];
   state.endTime = 0;

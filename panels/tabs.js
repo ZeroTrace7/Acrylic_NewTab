@@ -9,12 +9,11 @@ let groupNameInput = '';
 
 const GLOBE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>`;
 
-function loadOpenTabs() {
-  return new Promise(resolve => {
-    try {
-      chrome.runtime.sendMessage({ type: 'GET_TABS' }, tabs => resolve(tabs || []));
-    } catch { toast.error('Could not load tabs'); resolve([]); }
-  });
+async function loadOpenTabs() {
+  try {
+    const tabs = await chrome.runtime.sendMessage({ type: 'GET_TABS' });
+    return tabs || [];
+  } catch { toast.error('Could not load tabs'); return []; }
 }
 
 function ibtn(svg, onclick, extra = '') {
@@ -154,7 +153,11 @@ function saveGroup() {
 
 function restoreGroup(group) {
   try {
-    group.tabs.forEach(t => { if (t.url && !t.url.startsWith('chrome://') && !t.url.startsWith('chrome-extension://')) chrome.tabs.create({ url: t.url }); });
+    group.tabs.forEach(t => {
+      if (t.url && !t.url.startsWith('chrome://') && !t.url.startsWith('chrome-extension://')) {
+        chrome.runtime.sendMessage({ type: 'CREATE_TAB', url: t.url }).catch(() => {});
+      }
+    });
     toast.success('Tabs restored!');
   } catch { toast.error('Failed to restore tabs'); }
 }

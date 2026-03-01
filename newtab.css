@@ -911,6 +911,15 @@ body.has-wallpaper {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+@keyframes fade-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(10px) scale(0.97); }
+}
+
+.animate-fade-out {
+  animation: fade-out var(--dur-mid) var(--ease-glass) both;
+}
+
 /* Stagger System */
 .animate-stagger > * {
   opacity: 0;

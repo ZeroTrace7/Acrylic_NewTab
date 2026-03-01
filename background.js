@@ -20,7 +20,7 @@ async function ensureOffscreen() {
 async function playSound(source) {
   try {
     await ensureOffscreen();
-    chrome.runtime.sendMessage({ type: 'PLAY_SOUND', source });
+    chrome.runtime.sendMessage({ type: 'PLAY_SOUND', source }).catch(() => {});
   } catch (err) { console.warn('playSound failed:', err); }
 }
 
@@ -108,7 +108,8 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
   if (msg.command === 'resumeTimer') { resumeTimer(msg.timerState).then(s => respond({ status: 'ok', state: s })); return true; }
   if (msg.command === 'resetTimer')  { resetTimer(msg.mode).then(s => respond({ status: 'ok', state: s })); return true; }
   if (msg.type === 'GET_TABS') { chrome.tabs.query({ currentWindow: true }, tabs => respond(tabs)); return true; }
-  return true;
+  if (msg.type === 'CREATE_TAB') { chrome.tabs.create({ url: msg.url }); return false; }
+  return false;
 });
 
 // ── Notification button click ───────────────────────────────
