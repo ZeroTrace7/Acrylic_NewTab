@@ -1,0 +1,993 @@
+/* ============================================================
+   ACRYLIC — NEW TAB  ·  newtab.css
+   Complete styling foundation: glass system, layout, clock,
+   search, quicklinks, animations.
+   Pure CSS · No frameworks · No Tailwind
+   ============================================================ */
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 1 — CSS Custom Properties
+   ──────────────────────────────────────────────────────────── */
+:root {
+  /* Glass */
+  --glass-bg:            rgba(255, 255, 255, 0.10);
+  --glass-bg-hover:      rgba(255, 255, 255, 0.15);
+  --glass-bg-active:     rgba(255, 255, 255, 0.20);
+  --glass-subtle:        rgba(255, 255, 255, 0.07);
+  --glass-border:        rgba(255, 255, 255, 0.18);
+  --glass-border-soft:   rgba(255, 255, 255, 0.10);
+  --glass-blur:          16px;
+  --glass-radius:        20px;
+  --glass-radius-sm:     12px;
+  --glass-radius-lg:     28px;
+  --glass-shadow:        0 8px 32px rgba(0, 0, 0, 0.20);
+  --glass-shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.30);
+  --glass-inset:         inset 0 1px 0 rgba(255, 255, 255, 0.15);
+
+  /* Fonts */
+  --font-ui:       'Poppins', sans-serif;
+  --font-greeting: 'Gloria Hallelujah', cursive;
+  --font-mono:     'Silkscreen', monospace;
+
+  /* Text */
+  --text-primary:   rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.70);
+  --text-muted:     rgba(255, 255, 255, 0.45);
+  --text-ghost:     rgba(255, 255, 255, 0.25);
+
+  /* Accents */
+  --accent-blue:  rgba(96, 165, 250, 0.90);
+  --accent-green: rgba(52, 211, 153, 0.90);
+  --accent-red:   rgba(248, 113, 113, 0.90);
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+
+  /* Transitions */
+  --ease-glass:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:    150ms;
+  --dur-mid:     300ms;
+  --dur-slow:    500ms;
+
+  /* Background */
+  --bg-image:         none;
+  --bg-darken:        0.45;
+  --bg-grain-opacity: 0.035;
+  --bg-blur-amount:   0px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 2 — Reset & Base
+   ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: #0a0a14;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.50);
+  outline-offset: 2px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 3 — Background System
+   ──────────────────────────────────────────────────────────── */
+#bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -3;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--bg-blur-amount));
+  transform: scale(1.05);
+  transition:
+    background-image var(--dur-slow) var(--ease-glass),
+    filter var(--dur-mid) var(--ease-glass);
+}
+
+#bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(0, 0, 0, calc(var(--bg-darken) * 0.4)) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(0, 0, 0, calc(var(--bg-darken) * 0.6)) 0%, rgba(0, 0, 0, var(--bg-darken)) 100%);
+}
+
+#bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--bg-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 4 — Theme Presets
+   ──────────────────────────────────────────────────────────── */
+body.theme-midnight {
+  background: linear-gradient(160deg, #0f0f23, #1a1a2e, #16213e);
+}
+
+body.theme-deep-blue {
+  background: linear-gradient(160deg, #021b37, #031541, #0e1421);
+}
+
+body.theme-aurora {
+  background: linear-gradient(160deg, #003840, #005a5b, #007369);
+}
+
+body.theme-rose-noir {
+  background: linear-gradient(160deg, #2d0320, #4a154b, #5d3a5f);
+}
+
+body.theme-jet {
+  background: #000000;
+}
+
+body.theme-espresso {
+  background: linear-gradient(160deg, #1c0f0a, #2a1a12, #3d2015);
+}
+
+body.theme-slate {
+  background: linear-gradient(160deg, #0f172a, #1e293b, #334155);
+}
+
+body.theme-forest {
+  background: linear-gradient(160deg, #0d1f0f, #1a2e1c, #1e3320);
+}
+
+body.has-wallpaper {
+  background: #000;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 5 — Glass System
+   ──────────────────────────────────────────────────────────── */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+.glass-subtle {
+  background: var(--glass-subtle);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border-soft);
+  border-radius: var(--glass-radius-sm);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: var(--glass-shadow-lg), var(--glass-inset);
+}
+
+.glass-digit {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.11));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 6 — Scrollbar
+   ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 7 — Dashboard Layout
+   ──────────────────────────────────────────────────────────── */
+.dashboard {
+  --dashboard-gap: clamp(16px, 2.5vh, 32px);
+
+  position: relative;
+  z-index: 1;
+  width: 100vw;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: var(--dashboard-gap);
+  padding: clamp(20px, 3vh, 40px) clamp(24px, 4vw, 60px);
+  align-items: center;
+  justify-items: center;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 8 — Top Bar
+   ──────────────────────────────────────────────────────────── */
+.top-bar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.greeting-label {
+  font-family: var(--font-greeting);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--text-primary);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.date-text {
+  font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--dur-mid) var(--ease-glass);
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 9 — Flip Clock
+   ──────────────────────────────────────────────────────────── */
+.center-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-lg);
+}
+
+.flip-clock {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 0.8vw, 12px);
+  font-family: var(--font-mono);
+}
+
+.flip-unit {
+  position: relative;
+  width: clamp(52px, 7.5vw, 110px);
+  height: clamp(72px, 10.5vw, 152px);
+  border-radius: clamp(8px, 1vw, 16px);
+  overflow: clip;
+}
+
+.flip-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-size: clamp(2rem, 5.5vw, 7rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.11));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  transform-origin: bottom;
+  backface-visibility: hidden;
+}
+
+.flip-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: clamp(2rem, 5.5vw, 7rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.80);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.11));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10);
+  transform-origin: top;
+  backface-visibility: hidden;
+}
+
+.flip-unit::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 1px);
+  height: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 10;
+}
+
+.flip-divider {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(6px, 1.2vw, 16px);
+}
+
+.flip-divider span {
+  width: clamp(5px, 0.7vw, 10px);
+  height: clamp(5px, 0.7vw, 10px);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+/* Flip Animations */
+@keyframes flip-top-out {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-90deg); }
+}
+
+@keyframes flip-bottom-in {
+  from { transform: rotateX(90deg); }
+  to   { transform: rotateX(0deg); }
+}
+
+.flip-top.flipping {
+  animation: flip-top-out 0.35s var(--ease-glass) forwards;
+}
+
+.flip-bottom.flipping {
+  animation: flip-bottom-in 0.35s var(--ease-glass) forwards;
+  animation-delay: 0.1s;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 10 — Search Bar
+   ──────────────────────────────────────────────────────────── */
+.search-section {
+  width: 100%;
+  max-width: min(640px, 90vw);
+  position: relative;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 6px 8px 6px 6px;
+  transition: all var(--dur-mid) var(--ease-glass);
+}
+
+.search-wrapper:focus-within {
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 255, 255, 0.30);
+  box-shadow:
+    var(--glass-shadow-lg),
+    var(--glass-inset),
+    0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.search-engine-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--glass-radius-sm);
+  cursor: pointer;
+  transition: all var(--dur-mid) var(--ease-glass);
+}
+
+.search-engine-btn:hover {
+  background: var(--glass-bg);
+  transform: scale(1.05);
+}
+
+.search-engine-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: clamp(0.875rem, 1.3vw, 1.05rem);
+  color: var(--text-primary);
+  caret-color: rgba(255, 255, 255, 0.8);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-submit {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: all var(--dur-mid) var(--ease-glass);
+}
+
+.search-submit:hover {
+  color: var(--text-primary);
+  background: var(--glass-bg);
+  transform: scale(1.05);
+}
+
+.search-submit:active {
+  transform: scale(0.95);
+}
+
+.engine-picker {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 220px;
+  padding: var(--space-sm);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.engine-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 12px;
+  border-radius: var(--glass-radius-sm);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-glass);
+}
+
+.engine-option:hover,
+.engine-option.active {
+  background: var(--glass-subtle);
+  color: var(--text-primary);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 11 — Quick Links
+   ──────────────────────────────────────────────────────────── */
+.quicklinks-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.quicklinks-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 1.5vw, 20px);
+}
+
+.quicklink-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: clamp(68px, 7vw, 88px);
+  height: clamp(76px, 8vw, 96px);
+  border-radius: var(--glass-radius);
+  background: var(--glass-subtle);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border-soft);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text-secondary);
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    background var(--dur-mid) var(--ease-glass),
+    box-shadow var(--dur-mid) var(--ease-glass),
+    border-color var(--dur-mid) var(--ease-glass);
+}
+
+.quicklink-tile:hover {
+  background: var(--glass-bg);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: var(--text-primary);
+  transform: scale(1.05) translateY(-3px);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.quicklink-tile:active {
+  transform: scale(0.96);
+}
+
+.quicklink-favicon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.quicklink-favicon-placeholder {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--glass-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.quicklink-label {
+  font-size: clamp(0.6rem, 0.85vw, 0.72rem);
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 12px);
+}
+
+.add-link-btn {
+  width: clamp(68px, 7vw, 88px);
+  height: clamp(34px, 3.5vw, 42px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--dur-mid) var(--ease-glass);
+}
+
+.add-link-btn:hover {
+  background: var(--glass-subtle);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
+
+.add-link-btn:active {
+  transform: scale(0.95);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 12 — FAB
+   ──────────────────────────────────────────────────────────── */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    transform var(--dur-mid) var(--ease-spring),
+    background var(--dur-mid) var(--ease-glass),
+    color var(--dur-mid) var(--ease-glass),
+    box-shadow var(--dur-mid) var(--ease-glass);
+}
+
+.fab:hover {
+  color: var(--text-primary);
+  transform: scale(1.10);
+  box-shadow: var(--glass-shadow-lg);
+}
+
+.fab:active {
+  transform: scale(0.92);
+}
+
+.fab.active {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  transform: rotate(45deg) scale(1.05);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 13 — Toast Notifications
+   ──────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px 16px;
+  border-radius: var(--glass-radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
+  pointer-events: auto;
+  animation: toast-in var(--dur-mid) var(--ease-spring) both;
+}
+
+.toast.success {
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.toast.error {
+  border-color: rgba(248, 113, 113, 0.4);
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px) scale(0.95);
+  }
+}
+
+.toast.dismissing {
+  animation: toast-out var(--dur-mid) var(--ease-glass) both;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 14 — Modal Base
+   ──────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  animation: modal-fade-in var(--dur-mid) var(--ease-glass) both;
+}
+
+.modal-box {
+  width: min(480px, 94vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--glass-radius-lg);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: var(--space-xl);
+  animation: modal-slide-in var(--dur-mid) var(--ease-spring) both;
+}
+
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 15 — Global Animations
+   ──────────────────────────────────────────────────────────── */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+/* Utility Animation Classes */
+.animate-fade-in-up {
+  animation: fade-in-up var(--dur-slow) var(--ease-glass) both;
+}
+
+.animate-fade-in-scale {
+  animation: fade-in-scale var(--dur-slow) var(--ease-glass) both;
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up var(--dur-slow) var(--ease-glass) both;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right var(--dur-slow) var(--ease-glass) both;
+}
+
+.animate-pop-in {
+  animation: pop-in var(--dur-mid) var(--ease-spring) both;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Stagger System */
+.animate-stagger > * {
+  opacity: 0;
+  animation: fade-in-up var(--dur-slow) var(--ease-glass) both;
+}
+
+.animate-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.12s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.20s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.28s; }
+.animate-stagger > *:nth-child(5) { animation-delay: 0.36s; }
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 16 — Responsive
+   ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .flip-unit {
+    width: clamp(40px, 12vw, 52px);
+    height: clamp(56px, 16vw, 72px);
+  }
+
+  .flip-top,
+  .flip-bottom {
+    font-size: clamp(1.5rem, 8vw, 2rem);
+  }
+
+  .flip-clock {
+    gap: 3px;
+  }
+
+  .flip-divider {
+    gap: 4px;
+  }
+
+  .flip-divider span {
+    width: 4px;
+    height: 4px;
+  }
+
+  .quicklinks-grid {
+    gap: 8px;
+  }
+
+  .quicklink-tile {
+    width: 64px;
+    height: 72px;
+  }
+
+  .fab {
+    bottom: 18px;
+    right: 18px;
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (min-width: 2560px) {
+  :root {
+    --glass-blur: 24px;
+  }
+
+  .flip-unit {
+    width: 130px;
+    height: 176px;
+  }
+
+  .flip-top,
+  .flip-bottom {
+    font-size: 8.5rem;
+  }
+
+  .flip-clock {
+    gap: 16px;
+  }
+
+  .flip-divider span {
+    width: 12px;
+    height: 12px;
+  }
+}
