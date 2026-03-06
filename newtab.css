@@ -170,35 +170,52 @@ button:disabled {
    SECTION 4 — Theme Presets
    ──────────────────────────────────────────────────────────── */
 body.theme-midnight {
-  background: linear-gradient(160deg, #0f0f23, #1a1a2e, #16213e);
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(88, 28, 135, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(30, 64, 175, 0.12) 0%, transparent 50%),
+    linear-gradient(160deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
 }
 
 body.theme-deep-blue {
-  background: linear-gradient(160deg, #021b37, #031541, #0e1421);
+  background:
+    radial-gradient(ellipse at 30% 70%, rgba(14, 50, 100, 0.2) 0%, transparent 55%),
+    linear-gradient(160deg, #021b37 0%, #031541 50%, #0e1421 100%);
 }
 
 body.theme-aurora {
-  background: linear-gradient(160deg, #003840, #005a5b, #007369);
+  background:
+    radial-gradient(ellipse at 70% 30%, rgba(0, 150, 136, 0.15) 0%, transparent 55%),
+    linear-gradient(160deg, #003840 0%, #005a5b 50%, #007369 100%);
 }
 
 body.theme-rose-noir {
-  background: linear-gradient(160deg, #2d0320, #4a154b, #5d3a5f);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(120, 30, 80, 0.2) 0%, transparent 55%),
+    linear-gradient(160deg, #2d0320 0%, #4a154b 50%, #5d3a5f 100%);
 }
 
 body.theme-jet {
-  background: #000000;
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(40, 40, 40, 0.3) 0%, transparent 60%),
+    #000000;
 }
 
 body.theme-espresso {
-  background: linear-gradient(160deg, #1c0f0a, #2a1a12, #3d2015);
+  background:
+    radial-gradient(ellipse at 40% 60%, rgba(80, 40, 20, 0.15) 0%, transparent 55%),
+    linear-gradient(160deg, #1c0f0a 0%, #2a1a12 50%, #3d2015 100%);
 }
 
 body.theme-slate {
-  background: linear-gradient(160deg, #0f172a, #1e293b, #334155);
+  background:
+    radial-gradient(ellipse at 60% 40%, rgba(51, 65, 85, 0.2) 0%, transparent 55%),
+    linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #334155 100%);
 }
 
 body.theme-forest {
-  background: linear-gradient(160deg, #0d1f0f, #1a2e1c, #1e3320);
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(34, 80, 34, 0.15) 0%, transparent 55%),
+    linear-gradient(160deg, #0d1f0f 0%, #1a2e1c 50%, #1e3320 100%);
 }
 
 body.has-wallpaper {
@@ -209,12 +226,12 @@ body.has-wallpaper {
    SECTION 5 — Glass System
    ──────────────────────────────────────────────────────────── */
 .glass {
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(255, 255, 255, 0.20);
   border-radius: var(--glass-radius);
-  box-shadow: var(--glass-shadow), var(--glass-inset);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .glass-subtle {
@@ -268,16 +285,17 @@ body.has-wallpaper {
    SECTION 7 — Dashboard Layout
    ──────────────────────────────────────────────────────────── */
 .dashboard {
-  --dashboard-gap: clamp(16px, 2.5vh, 32px);
+  --dashboard-gap: clamp(12px, 2vh, 24px);
 
   position: relative;
   z-index: 1;
   width: 100vw;
   min-height: 100vh;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto auto auto auto;
   gap: var(--dashboard-gap);
   padding: clamp(20px, 3vh, 40px) clamp(24px, 4vw, 60px);
+  align-content: center;
   align-items: center;
   justify-items: center;
 }
@@ -409,10 +427,11 @@ body.has-wallpaper {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(50% - 1px);
-  height: 2px;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 10;
+  top: calc(50% - 1.5px);
+  height: 3px;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 20;
+  pointer-events: none;
 }
 
 .flip-divider {

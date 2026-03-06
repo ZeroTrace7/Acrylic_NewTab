@@ -37,6 +37,7 @@ function animateDigit(index, newVal) {
     topEl.classList.remove('flipping');
     botEl.classList.remove('flipping');
     topEl.textContent = newVal;
+    botEl.textContent = newVal;
   }, 480);
 }
 
@@ -81,6 +82,14 @@ export async function initClock() {
 
   setShowSeconds(showSeconds);
   tick();
+
+  // Sync bottom halves to match top halves on initial render
+  for (let i = 0; i < 6; i++) {
+    const topEl = document.getElementById(ids[i][0]);
+    const botEl = document.getElementById(ids[i][1]);
+    if (topEl && botEl) botEl.textContent = topEl.textContent;
+  }
+
   tickInterval = setInterval(tick, 1000);
 
   Prefs.onChange((changes) => {

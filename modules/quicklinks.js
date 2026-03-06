@@ -5,12 +5,14 @@ import { toast } from './toast.js';
 let links = [];
 let maxLinks = 12;
 
-const DEFAULT_LINKS = [
-  { id: generateId(), title: 'YouTube',  url: 'https://youtube.com',  favicon: getFaviconUrl('https://youtube.com') },
-  { id: generateId(), title: 'GitHub',   url: 'https://github.com',   favicon: getFaviconUrl('https://github.com') },
-  { id: generateId(), title: 'Gmail',    url: 'https://gmail.com',    favicon: getFaviconUrl('https://gmail.com') },
-  { id: generateId(), title: 'Twitter',  url: 'https://twitter.com',  favicon: getFaviconUrl('https://twitter.com') },
-];
+function getDefaultLinks() {
+  return [
+    { id: generateId(), title: 'YouTube',  url: 'https://youtube.com',  favicon: getFaviconUrl('https://youtube.com') },
+    { id: generateId(), title: 'GitHub',   url: 'https://github.com',   favicon: getFaviconUrl('https://github.com') },
+    { id: generateId(), title: 'Gmail',    url: 'https://gmail.com',    favicon: getFaviconUrl('https://gmail.com') },
+    { id: generateId(), title: 'Twitter',  url: 'https://twitter.com',  favicon: getFaviconUrl('https://twitter.com') },
+  ];
+}
 
 function renderLinks() {
   const grid = document.getElementById('quicklinks-grid');
@@ -170,7 +172,7 @@ export async function initQuickLinks() {
   maxLinks = await Prefs.get('quickLinksMax') || 12;
   const stored = await Store.getLinks();
   if (stored.length === 0) {
-    links = DEFAULT_LINKS;
+    links = getDefaultLinks();
     await Store.setLinks(links);
   } else {
     links = stored;

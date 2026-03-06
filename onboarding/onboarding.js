@@ -182,6 +182,7 @@ async function finishOnboarding() {
     searchEngine: selections.searchEngine,
     onboardingDone: true,
   });
+  await new Promise(r => setTimeout(r, 100));
   setTheme(selections.theme);
   if (overlayEl) {
     overlayEl.style.transition = 'opacity 300ms ease';
