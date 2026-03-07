@@ -280,12 +280,9 @@ body.has-wallpaper {
   z-index: 1;
   width: 100vw;
   min-height: 100vh;
-  display: grid;
-  grid-template-rows: 48px 1fr auto auto;
-  gap: clamp(8px, 1.5vh, 20px);
-  padding: clamp(16px, 3vw, 32px);
-  align-items: start;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -333,11 +330,11 @@ body.has-wallpaper {
    SECTION 9 — Simple Clock
    ──────────────────────────────────────────────────────────── */
 .center-stage {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding-top: clamp(1vh, 2vh, 3vh);
 }
 
 .clock-wrapper {
@@ -349,11 +346,6 @@ body.has-wallpaper {
   gap: 4px;
 }
 
-@keyframes floatClock {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-6px); }
-  100% { transform: translateY(0px); }
-}
 
 .clock-date {
   font-family: var(--font-display);
@@ -884,9 +876,7 @@ body.has-wallpaper {
 }
 
 .clock-wrapper {
-  animation:
-    acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both,
-    floatClock 6s ease-in-out 0.65s infinite;
+  animation: acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
 }
 
 #search-section {
