@@ -385,6 +385,7 @@ body.has-wallpaper {
   justify-content: center;
   text-align: center;
   gap: 4px;
+  margin-top: -40px;
 }
 
 
