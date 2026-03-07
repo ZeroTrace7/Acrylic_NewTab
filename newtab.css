@@ -304,17 +304,29 @@ body.has-wallpaper {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--text-secondary);
-  transition: all var(--dur-mid) var(--ease-glass);
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    background var(--dur-mid) var(--ease-glass),
+    border-color var(--dur-mid) var(--ease-glass),
+    box-shadow var(--dur-mid) var(--ease-glass);
 }
 
 .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
   color: var(--text-primary);
-  transform: scale(1.05);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .icon-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -337,6 +349,12 @@ body.has-wallpaper {
   gap: 4px;
 }
 
+@keyframes floatClock {
+  0%   { transform: translateY(0px); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0px); }
+}
+
 .clock-date {
   font-family: var(--font-display);
   font-size: clamp(0.9rem, 2vw, 1.1rem);
@@ -346,7 +364,7 @@ body.has-wallpaper {
 }
 
 .clock-greeting {
-  display: none;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
 }
 
 .simple-clock {
@@ -609,8 +627,9 @@ body.has-wallpaper {
 
 .fab:hover {
   color: var(--text-primary);
-  transform: scale(1.10);
-  box-shadow: var(--glass-shadow-lg);
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.12);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
 .fab:active {
@@ -865,8 +884,9 @@ body.has-wallpaper {
 }
 
 .clock-wrapper {
-  animation: acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: 0.05s;
+  animation:
+    acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both,
+    floatClock 6s ease-in-out 0.65s infinite;
 }
 
 #search-section {
