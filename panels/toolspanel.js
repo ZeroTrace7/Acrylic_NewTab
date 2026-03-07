@@ -14,13 +14,13 @@ const TABS = [
 function buildPanel() {
   const panel = document.createElement('div');
   panel.id = 'tools-panel';
-  panel.className = 'glass animate-slide-in-up';
+  panel.className = 'glass';
   Object.assign(panel.style, {
-    position: 'absolute', left: '110px', top: '50%', transform: 'translateY(-50%)',
-    bottom: 'auto', right: 'auto',
-    width: '26vw', minWidth: '320px',
-    maxWidth: '480px', maxHeight: '70vh', minHeight: '320px', zIndex: '100',
-    display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
   });
 
   // Header
@@ -101,14 +101,23 @@ function openPanel(callback) {
   if (isOpen) return;
   isOpen = true;
   onCloseCallback = callback;
+
+  const mount = document.getElementById('tools-panel-mount');
+  const rightPanel = document.getElementById('right-panel');
+
   panelEl = buildPanel();
-  (document.getElementById('tools-panel-mount') || document.body).appendChild(panelEl);
+  (mount || document.body).appendChild(panelEl);
+
+  // Slide in the right panel container
+  if (rightPanel) rightPanel.classList.add('open');
+
   switchTab(activeTab);
   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
   setTimeout(() => {
     document.addEventListener('mousedown', (e) => {
       const fab = document.getElementById('tools-fab');
-      if (panelEl && !panelEl.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
+      const rp = document.getElementById('right-panel');
+      if (panelEl && rp && !rp.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
     }, { once: true });
   }, 10);
 }
@@ -116,9 +125,13 @@ function openPanel(callback) {
 function closePanel() {
   if (!isOpen) return;
   isOpen = false;
+
+  const rightPanel = document.getElementById('right-panel');
+  if (rightPanel) rightPanel.classList.remove('open');
+
   if (panelEl) {
-    panelEl.classList.add('animate-fade-out');
-    setTimeout(() => { panelEl?.remove(); panelEl = null; }, 200);
+    // Wait for slide-out transition before removing DOM
+    setTimeout(() => { panelEl?.remove(); panelEl = null; }, 310);
   }
   onCloseCallback?.();
   onCloseCallback = null;
