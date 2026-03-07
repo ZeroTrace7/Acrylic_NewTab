@@ -1,55 +1,26 @@
 import { Prefs } from './storage.js';
 import { getGreeting, formatDate } from './utils.js';
 
-let prevDigits = ['', '', '', '', '', ''];
-let use24 = false;
-let showSeconds = true;
-let userName = '';
 let tickInterval = null;
+let use24 = false;
+let userName = '';
 
-const ids = [
-  ['fh1-top', 'fh1-bot'],
-  ['fh2-top', 'fh2-bot'],
-  ['fm1-top', 'fm1-bot'],
-  ['fm2-top', 'fm2-bot'],
-  ['fs1-top', 'fs1-bot'],
-  ['fs2-top', 'fs2-bot'],
-];
+function updateClock() {
+  const el = document.getElementById('simple-clock');
+  if (!el) return;
 
-function getDigits(date) {
-  let h = use24 ? date.getHours() : (date.getHours() % 12 || 12);
-  const hh = h.toString().padStart(2, '0');
-  const mm = date.getMinutes().toString().padStart(2, '0');
-  const ss = date.getSeconds().toString().padStart(2, '0');
-  return [hh[0], hh[1], mm[0], mm[1], ss[0], ss[1]];
-}
-
-function animateDigit(index, newVal) {
-  const topEl = document.getElementById(ids[index][0]);
-  const botEl = document.getElementById(ids[index][1]);
-  if (!topEl || !botEl) return;
-
-  botEl.textContent = newVal;
-  topEl.classList.add('flipping');
-  botEl.classList.add('flipping');
-
-  setTimeout(() => {
-    topEl.classList.remove('flipping');
-    botEl.classList.remove('flipping');
-    topEl.textContent = newVal;
-    botEl.textContent = newVal;
-  }, 480);
-}
-
-function tick() {
   const now = new Date();
-  const digits = getDigits(now);
-  for (let i = 0; i < 6; i++) {
-    if (digits[i] !== prevDigits[i]) animateDigit(i, digits[i]);
+  let h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+
+  if (use24) {
+    el.textContent = `${String(h).padStart(2, '0')}:${m}:${s}`;
+  } else {
+    const period = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    el.innerHTML = `${h}:${m} <span class="clock-period">${period}</span>`;
   }
-  prevDigits = digits;
-  updateGreeting(now);
-  updateDate(now);
 }
 
 function updateGreeting(date) {
@@ -62,43 +33,24 @@ function updateDate(date) {
   if (el) el.textContent = formatDate(date);
 }
 
-function setShowSeconds(show) {
-  const s1 = document.getElementById('flip-s1');
-  const s2 = document.getElementById('flip-s2');
-  const dividers = document.querySelectorAll('.flip-divider');
-
-  const display = show ? '' : 'none';
-  if (s1) s1.style.display = display;
-  if (s2) s2.style.display = display;
-  if (dividers[1]) dividers[1].style.display = display;
+function tick() {
+  const now = new Date();
+  updateClock();
+  updateGreeting(now);
+  updateDate(now);
 }
 
-/** Initializes the flip clock, greeting, and date — returns a cleanup function. */
 export async function initClock() {
   const prefs = await Prefs.getAll();
   use24 = prefs.clockFormat === '24';
-  showSeconds = prefs.showSeconds;
-  userName = prefs.userName;
+  userName = prefs.userName || '';
 
-  setShowSeconds(showSeconds);
   tick();
-
-  // Sync bottom halves to match top halves on initial render
-  for (let i = 0; i < 6; i++) {
-    const topEl = document.getElementById(ids[i][0]);
-    const botEl = document.getElementById(ids[i][1]);
-    if (topEl && botEl) botEl.textContent = topEl.textContent;
-  }
-
   tickInterval = setInterval(tick, 1000);
 
   Prefs.onChange((changes) => {
-    if ('clockFormat' in changes) use24 = changes.clockFormat === '24';
-    if ('userName' in changes) userName = changes.userName;
-    if ('showSeconds' in changes) {
-      showSeconds = changes.showSeconds;
-      setShowSeconds(showSeconds);
-    }
+    if (changes.clockFormat !== undefined) use24 = changes.clockFormat === '24';
+    if (changes.userName !== undefined) userName = changes.userName;
   });
 
   return () => clearInterval(tickInterval);

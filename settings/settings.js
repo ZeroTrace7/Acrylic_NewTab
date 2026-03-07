@@ -163,10 +163,6 @@ function buildModal() {
       prefs.clockFormat = prefs.clockFormat === '24' ? '12' : '24';
       Prefs.set('clockFormat', prefs.clockFormat); renderClock();
     }));
-    sec4.appendChild(toggleRow('Show seconds', prefs.showSeconds, () => {
-      prefs.showSeconds = !prefs.showSeconds;
-      Prefs.set('showSeconds', prefs.showSeconds); renderClock();
-    }));
   };
   renderClock();
 

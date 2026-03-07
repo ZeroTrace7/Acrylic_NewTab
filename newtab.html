@@ -26,10 +26,7 @@
 
     <!-- Top Bar -->
     <header id="top-bar" class="top-bar">
-      <div class="greeting-block">
-        <p id="greeting-text" class="greeting-label font-gloria"></p>
-        <p id="date-text" class="date-text"></p>
-      </div>
+      <div></div>
       <div class="top-bar-actions">
         <button id="settings-btn" class="icon-btn glass-subtle" aria-label="Settings">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -40,55 +37,12 @@
       </div>
     </header>
 
-    <!-- Center Stage — Flip Clock -->
+    <!-- Center Stage — Simple Clock -->
     <section id="center-stage" class="center-stage">
       <div class="clock-wrapper">
-        <div id="flip-clock" class="flip-clock" role="timer">
-
-          <div class="flip-unit" id="flip-h1">
-            <div class="flip-card">
-              <span class="flip-top" id="fh1-top">0</span>
-              <span class="flip-bottom" id="fh1-bot">0</span>
-            </div>
-          </div>
-          <div class="flip-unit" id="flip-h2">
-            <div class="flip-card">
-              <span class="flip-top" id="fh2-top">0</span>
-              <span class="flip-bottom" id="fh2-bot">0</span>
-            </div>
-          </div>
-
-          <div class="flip-divider"><span></span><span></span></div>
-
-          <div class="flip-unit" id="flip-m1">
-            <div class="flip-card">
-              <span class="flip-top" id="fm1-top">0</span>
-              <span class="flip-bottom" id="fm1-bot">0</span>
-            </div>
-          </div>
-          <div class="flip-unit" id="flip-m2">
-            <div class="flip-card">
-              <span class="flip-top" id="fm2-top">0</span>
-              <span class="flip-bottom" id="fm2-bot">0</span>
-            </div>
-          </div>
-
-          <div class="flip-divider"><span></span><span></span></div>
-
-          <div class="flip-unit" id="flip-s1">
-            <div class="flip-card">
-              <span class="flip-top" id="fs1-top">0</span>
-              <span class="flip-bottom" id="fs1-bot">0</span>
-            </div>
-          </div>
-          <div class="flip-unit" id="flip-s2">
-            <div class="flip-card">
-              <span class="flip-top" id="fs2-top">0</span>
-              <span class="flip-bottom" id="fs2-bot">0</span>
-            </div>
-          </div>
-
-        </div>
+        <div id="simple-clock" class="simple-clock" role="timer" aria-label="Current time"></div>
+        <div id="date-text" class="clock-date"></div>
+        <div id="greeting-text" class="clock-greeting"></div>
       </div>
     </section>
 

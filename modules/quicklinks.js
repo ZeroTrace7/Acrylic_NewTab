@@ -24,6 +24,9 @@ function renderLinks() {
 }
 
 function createTile(link) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'quicklink-item';
+
   const a = document.createElement('a');
   a.className = 'quicklink-tile';
   a.href = link.url;
@@ -59,8 +62,9 @@ function createTile(link) {
   const label = document.createElement('span');
   label.className = 'quicklink-label';
   label.textContent = truncate(link.title, 12);
-  a.appendChild(label);
-  return a;
+  wrapper.appendChild(a);
+  wrapper.appendChild(label);
+  return wrapper;
 }
 
 function openContextMenu(e, link) {
