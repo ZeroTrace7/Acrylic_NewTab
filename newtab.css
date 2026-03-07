@@ -300,11 +300,10 @@ body.has-wallpaper {
   z-index: 30;
 }
 
-/* Center stage — fills full area, flex centers content */
+/* Center stage — absolutely fills layout-root, flex centers content */
 .center-stage {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
