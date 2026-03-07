@@ -305,11 +305,10 @@ body.has-wallpaper {
   position: absolute;
   inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
   gap: 28px;
-  padding: 24px;
 }
 
 /* Right panel — off-canvas, slides in from right */
