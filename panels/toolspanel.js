@@ -16,7 +16,9 @@ function buildPanel() {
   panel.id = 'tools-panel';
   panel.className = 'glass animate-slide-in-up';
   Object.assign(panel.style, {
-    position: 'fixed', bottom: '88px', right: '28px', width: '26vw', minWidth: '320px',
+    position: 'absolute', left: '110px', top: '50%', transform: 'translateY(-50%)',
+    bottom: 'auto', right: 'auto',
+    width: '26vw', minWidth: '320px',
     maxWidth: '480px', maxHeight: '70vh', minHeight: '320px', zIndex: '100',
     display: 'flex', flexDirection: 'column', overflow: 'hidden',
   });

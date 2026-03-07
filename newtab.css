@@ -617,6 +617,20 @@ body.has-wallpaper {
     box-shadow var(--dur-mid) var(--ease-glass);
 }
 
+/* Left vertical center dock — matches Glassy layout logic */
+#tools-fab {
+  position: absolute;
+  left: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  bottom: auto;
+  right: auto;
+  z-index: 30;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
 .fab:hover {
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.12);
@@ -624,14 +638,27 @@ body.has-wallpaper {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
 }
 
+/* Preserve vertical centering transform on dock hover/active */
+#tools-fab:hover {
+  transform: translateY(-50%) scale(1.12);
+}
+
 .fab:active {
   transform: scale(0.92);
+}
+
+#tools-fab:active {
+  transform: translateY(-50%) scale(0.92);
 }
 
 .fab.active {
   background: rgba(255, 255, 255, 0.18);
   color: var(--text-primary);
   transform: rotate(45deg) scale(1.05);
+}
+
+#tools-fab.active {
+  transform: translateY(-50%) rotate(45deg) scale(1.05);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -903,10 +930,18 @@ body.has-wallpaper {
     gap: 8px;
   }
 
-
   .fab {
     bottom: 18px;
     right: 18px;
+    width: 46px;
+    height: 46px;
+  }
+
+  /* Dock stays left-center on all viewport heights */
+  #tools-fab {
+    left: 16px;
+    bottom: auto;
+    right: auto;
     width: 46px;
     height: 46px;
   }
