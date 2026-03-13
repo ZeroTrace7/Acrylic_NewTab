@@ -1,5 +1,5 @@
 import { Prefs } from './storage.js';
-import { getGreeting, formatDate } from './utils.js';
+import { getGreeting } from './utils.js';
 
 let tickInterval = null;
 let use24 = false;
@@ -19,7 +19,7 @@ function updateClock() {
   } else {
     const period = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    el.innerHTML = `${h}:${m} <span class="clock-period">${period}</span>`;
+    el.innerHTML = `${h}:${m}<span class="clock-period" style="font-family:'Gloria Hallelujah',cursive;font-weight:700;font-size:0.45em;margin-left:0.2em;vertical-align:baseline;">${period}</span>`;
   }
 }
 
@@ -30,7 +30,13 @@ function updateGreeting(date) {
 
 function updateDate(date) {
   const el = document.getElementById('date-text');
-  if (el) el.textContent = formatDate(date);
+  if (!el) return;
+
+  el.textContent = date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
 }
 
 function tick() {

@@ -23,13 +23,12 @@ export function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-/** Formats a Date object into a human-readable string like "Monday, January 6, 2025". */
+/** Formats a Date object into a human-readable string like "Monday, January 6". */
 export function formatDate(date) {
   return date.toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
-    day: 'numeric',
-    year: 'numeric'
+    day: 'numeric'
   });
 }
 

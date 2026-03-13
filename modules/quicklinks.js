@@ -15,12 +15,50 @@ function getDefaultLinks() {
 }
 
 function renderLinks() {
+  const container = document.getElementById('quicklinks-section');
   const grid = document.getElementById('quicklinks-grid');
   if (!grid) return;
   grid.innerHTML = '';
+  grid.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:8px;`;
   links.forEach(link => grid.appendChild(createTile(link)));
   const addBtn = document.getElementById('add-link-btn');
-  if (addBtn) addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+  if (addBtn) {
+    addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+    addBtn.style.cssText = `width:36px;
+height:36px;
+border-radius:50%;
+background:transparent;
+border:1px dashed rgba(255,255,255,0.15);
+color:rgba(255,255,255,0.25);
+font-size:1rem;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+margin-top:4px;
+transition:all 150ms ease;`;
+  }
+
+  // Build glass pill wrapper once
+  let pill = container?.querySelector('.ql-pill');
+  if (container && !pill) {
+    pill = document.createElement('div');
+    pill.className = 'ql-pill';
+    pill.style.cssText = `background:rgba(255,255,255,0.06);
+border:1px solid rgba(255,255,255,0.10);
+border-radius:20px;
+padding:12px 8px;
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:6px;
+backdrop-filter:blur(12px);
+-webkit-backdrop-filter:blur(12px);`;
+    container.innerHTML = '';
+    pill.appendChild(grid);
+    if (addBtn) pill.appendChild(addBtn);
+    container.appendChild(pill);
+  }
 }
 
 function createTile(link) {
@@ -33,6 +71,14 @@ function createTile(link) {
   a.title = link.title;
   a.dataset.id = link.id;
   a.setAttribute('role', 'listitem');
+  a.style.cssText = `display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 56px;`;
 
   a.addEventListener('click', (e) => {
     if (e.button === 1 || e.ctrlKey || e.metaKey) return;
@@ -40,6 +86,17 @@ function createTile(link) {
     window.location.href = link.url;
   });
   a.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, link); });
+
+  const iconEl = document.createElement('div');
+  iconEl.style.cssText = `width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.10);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease;`;
 
   if (link.favicon) {
     const img = document.createElement('img');
@@ -49,19 +106,28 @@ function createTile(link) {
       const ph = document.createElement('div');
       ph.className = 'quicklink-favicon-placeholder';
       ph.textContent = (link.title[0] || '?').toUpperCase();
-      img.replaceWith(ph);
+      iconEl.replaceChildren(ph);
     };
-    a.appendChild(img);
+    iconEl.appendChild(img);
   } else {
     const ph = document.createElement('div');
     ph.className = 'quicklink-favicon-placeholder';
     ph.textContent = (link.title[0] || '?').toUpperCase();
-    a.appendChild(ph);
+    iconEl.appendChild(ph);
   }
 
   const label = document.createElement('span');
   label.className = 'quicklink-label';
+  label.style.cssText = `font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 56px;`;
   label.textContent = truncate(link.title, 12);
+
+  a.appendChild(iconEl);
   wrapper.appendChild(a);
   wrapper.appendChild(label);
   return wrapper;
@@ -187,4 +253,3 @@ export async function initQuickLinks() {
     if ('quickLinksMax' in changes) { maxLinks = changes.quickLinksMax; renderLinks(); }
   });
 }
-
