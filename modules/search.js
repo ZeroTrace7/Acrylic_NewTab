@@ -13,7 +13,6 @@ const ENGINES = [
 ];
 
 let currentEngine = ENGINES[0];
-let pickerOpen = false;
 
 function getEngine(id) {
   return ENGINES.find((e) => e.id === id) || ENGINES[0];
@@ -29,33 +28,29 @@ function setEngine(engine) {
   });
 }
 
-function openPicker() {
-  pickerOpen = true;
-  const picker = DOM.enginePicker;
-  if (picker) picker.removeAttribute('hidden');
-  setTimeout(() => {
-    document.addEventListener('mousedown', handleOutsideClick, { once: true });
-  }, 10);
+function isPickerOpen() {
+  return DOM.enginePicker?.classList.contains('is-open') === true;
 }
 
-function handleOutsideClick(e) {
+function openPicker() {
   const picker = DOM.enginePicker;
-  const btn = DOM.engineBtn;
-  if (picker && !picker.contains(e.target) && btn && !btn.contains(e.target)) {
-    closePicker();
-  } else if (pickerOpen) {
-    document.addEventListener('mousedown', handleOutsideClick, { once: true });
-  }
+  if (!picker) return;
+  picker.classList.add('is-open');
+  DOM.engineBtn?.classList.add('is-open');
+  DOM.engineBtn?.setAttribute('aria-expanded', 'true');
 }
 
 function closePicker() {
-  pickerOpen = false;
   const picker = DOM.enginePicker;
-  if (picker) picker.setAttribute('hidden', '');
+  if (!picker) return;
+  picker.classList.remove('is-open');
+  DOM.engineBtn?.classList.remove('is-open');
+  DOM.engineBtn?.setAttribute('aria-expanded', 'false');
 }
 
 function togglePicker() {
-  pickerOpen ? closePicker() : openPicker();
+  if (isPickerOpen()) closePicker();
+  else openPicker();
 }
 
 function buildPicker() {
@@ -92,6 +87,7 @@ export async function initSearch() {
   const input = DOM.searchInput;
   const submit = DOM.searchSubmit;
   const engineBtn = DOM.engineBtn;
+  const searchWrapper = engineBtn?.closest('#search-wrapper');
 
   if (engineBtn) {
     engineBtn.addEventListener('click', togglePicker);
@@ -113,6 +109,11 @@ export async function initSearch() {
   if (submit) {
     submit.addEventListener('click', () => performSearch(input?.value || ''));
   }
+
+  document.addEventListener('click', (e) => {
+    if (!searchWrapper || searchWrapper.contains(e.target)) return;
+    closePicker();
+  });
 
   Prefs.onChange((changes) => {
     if ('searchEngine' in changes) setEngine(getEngine(changes.searchEngine));

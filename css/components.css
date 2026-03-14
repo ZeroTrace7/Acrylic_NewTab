@@ -54,22 +54,11 @@
   transform: scale(0.92);
 }
 
-#settings-btn {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  padding: 8px 12px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  cursor: pointer;
+.top-bar-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.7);
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 #search-section,
@@ -86,6 +75,7 @@
 }
 
 .search-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
@@ -103,11 +93,13 @@
 }
 
 .search-engine-btn {
-  width: 34px;
+  min-width: 34px;
   height: 34px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
   border-radius: var(--glass-radius-sm);
   cursor: pointer;
   transition: all var(--dur-mid) var(--ease-glass);
@@ -122,6 +114,17 @@
   width: 20px;
   height: 20px;
   object-fit: contain;
+}
+
+.engine-chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted);
+  transition: transform var(--dur-fast) var(--ease-glass);
+}
+
+.search-engine-btn.is-open .engine-chevron {
+  transform: rotate(180deg);
 }
 
 .search-input {
@@ -163,17 +166,35 @@
   top: calc(100% + 8px);
   left: 0;
   min-width: 220px;
-  padding: var(--space-sm);
+  padding: 8px;
   z-index: 100;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.engine-picker.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
 }
 
 .engine-option {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 8px;
   padding: 8px 12px;
   border-radius: var(--glass-radius-sm);
   font-size: 0.875rem;
@@ -184,7 +205,7 @@
 
 .engine-option:hover,
 .engine-option.active {
-  background: var(--glass-subtle);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text-primary);
 }
 
