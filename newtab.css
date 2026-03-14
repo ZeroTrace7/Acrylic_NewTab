@@ -711,6 +711,16 @@ body.has-wallpaper {
   transform: rotate(45deg) scale(1.05);
 }
 
+#tools-fab,
+.dock-grid-btn {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  top: auto;
+  transform: none;
+  z-index: 40;
+}
+
 
 /* ────────────────────────────────────────────────────────────
    SECTION 13 — Toast Notifications

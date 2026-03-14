@@ -14,7 +14,7 @@ export const Prefs = {
     grainOpacity:    0.035,
     userName:        '',
     searchEngine:    'google',
-    clockFormat:     '24',
+    clockFormat:     '12',
     showSeconds:     true,
     quickLinksMax:   12,
     onboardingDone:  false,

@@ -158,9 +158,10 @@ function buildModal() {
   const sec4 = document.createElement('div');
   sec4.appendChild(sectionLabel('Clock'));
   const renderClock = () => {
+    const is24 = prefs.clockFormat === '24' || prefs.clockFormat === '24h';
     while (sec4.childNodes.length > 1) sec4.removeChild(sec4.lastChild);
-    sec4.appendChild(toggleRow('24-hour format', prefs.clockFormat === '24', () => {
-      prefs.clockFormat = prefs.clockFormat === '24' ? '12' : '24';
+    sec4.appendChild(toggleRow('24-hour format', is24, () => {
+      prefs.clockFormat = is24 ? '12' : '24';
       Prefs.set('clockFormat', prefs.clockFormat); renderClock();
     }));
   };
