@@ -303,24 +303,25 @@ body.has-wallpaper {
 }
 
 /* Center stage — search & quicklinks stay centered */
-.dashboard,
-.center-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  padding-top: clamp(10px, 2vh, 24px);
+
+.dashboard {
   position: relative;
+  min-height: 100vh;
 }
 
 #center-stage {
-  flex: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 18px;
   width: 100%;
-  padding-bottom: 5vh;
+  max-width: 720px;
+  pointer-events: auto;
 }
 
 /* Right panel — off-canvas, slides in from right */
@@ -397,7 +398,8 @@ body.has-wallpaper {
   justify-content: center;
   text-align: center;
   gap: 4px;
-  margin-top: -40px;
+  padding-top: clamp(8px, 1.5vh, 16px);
+  margin-top: 0;
 }
 
 .clock-date {
@@ -411,16 +413,16 @@ body.has-wallpaper {
 .clock-greeting {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
-  margin-top: clamp(24px, 5vh, 48px);
+  margin: 0;
 }
 
 .simple-clock {
   font-family: var(--font-display);
-  font-size: clamp(3.75rem, 7vw, 4.5rem);
+  font-size: clamp(4.5rem, 9vw, 7rem);
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
@@ -446,11 +448,12 @@ body.has-wallpaper {
   width: 100%;
   max-width: min(640px, 90vw);
   position: relative;
-  margin-top: clamp(24px, 5vh, 48px);
+  margin-top: clamp(12px, 2.5vh, 24px);
 }
 
 #search-wrapper {
   width: min(520px, 80vw);
+  margin: 0 auto;
 }
 
 .search-wrapper {
@@ -562,7 +565,7 @@ body.has-wallpaper {
 #quicklinks-section,
 .quicklinks-section {
   position: fixed;
-  left: 20px;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
   display: flex;

@@ -47,11 +47,11 @@ transition:all 150ms ease;`;
     pill.style.cssText = `background:rgba(255,255,255,0.06);
 border:1px solid rgba(255,255,255,0.10);
 border-radius:20px;
-padding:12px 8px;
+padding:10px 8px;
 display:flex;
 flex-direction:column;
 align-items:center;
-gap:6px;
+gap:4px;
 backdrop-filter:blur(12px);
 -webkit-backdrop-filter:blur(12px);`;
     container.innerHTML = '';
@@ -71,14 +71,17 @@ function createTile(link) {
   a.title = link.title;
   a.dataset.id = link.id;
   a.setAttribute('role', 'listitem');
-  a.style.cssText = `display: flex;
-  flex-direction: column;
+  a.style.cssText = `
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: none;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   cursor: pointer;
-  width: 56px;`;
+  text-decoration: none;
+  transition: transform 150ms ease;
+`;
 
   a.addEventListener('click', (e) => {
     if (e.button === 1 || e.ctrlKey || e.metaKey) return;
@@ -88,15 +91,18 @@ function createTile(link) {
   a.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, link); });
 
   const iconEl = document.createElement('div');
-  iconEl.style.cssText = `width: 40px;
+  iconEl.style.cssText = `
+  width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 12px;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.10);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 150ms ease;`;
+  overflow: hidden;
+  transition: background 150ms ease;
+`;
 
   if (link.favicon) {
     const img = document.createElement('img');
@@ -116,20 +122,8 @@ function createTile(link) {
     iconEl.appendChild(ph);
   }
 
-  const label = document.createElement('span');
-  label.className = 'quicklink-label';
-  label.style.cssText = `font-size: 0.72rem;
-  color: var(--text-secondary);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 56px;`;
-  label.textContent = truncate(link.title, 12);
-
   a.appendChild(iconEl);
   wrapper.appendChild(a);
-  wrapper.appendChild(label);
   return wrapper;
 }
 
