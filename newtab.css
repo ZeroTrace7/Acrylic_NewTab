@@ -290,7 +290,7 @@ body.has-wallpaper {
 /* Left dock — vertically centered, absolute */
 .left-dock {
   position: absolute;
-  left: 28px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
   width: 66px;
@@ -302,14 +302,18 @@ body.has-wallpaper {
   z-index: 30;
 }
 
-/* Center stage — search & quicklinks stay centered */
-
-.dashboard {
-  position: relative;
-  min-height: 100vh;
+/* Independent layout zones */
+#clock-zone {
+  position: absolute;
+  top: 6vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#center-stage {
+#middle-zone {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -322,6 +326,13 @@ body.has-wallpaper {
   width: 100%;
   max-width: 720px;
   pointer-events: auto;
+}
+
+#quicklinks-zone {
+  position: absolute;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 /* Right panel — off-canvas, slides in from right */
@@ -448,7 +459,7 @@ body.has-wallpaper {
   width: 100%;
   max-width: min(640px, 90vw);
   position: relative;
-  margin-top: clamp(12px, 2.5vh, 24px);
+  margin-top: 0;
 }
 
 #search-wrapper {
@@ -564,15 +575,10 @@ body.has-wallpaper {
    ──────────────────────────────────────────────────────────── */
 #quicklinks-section,
 .quicklinks-section {
-  position: fixed;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  z-index: 30;
 }
 
 .quicklinks-grid {
@@ -949,8 +955,16 @@ body.has-wallpaper {
   animation: acrylic-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both;
 }
 
-#center-stage {
+#clock-zone {
   animation: acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+#middle-zone {
+  animation: acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+#quicklinks-zone {
+  animation: acrylic-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
 }
 
 /* ────────────────────────────────────────────────────────────

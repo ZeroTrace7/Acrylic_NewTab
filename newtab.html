@@ -68,17 +68,18 @@
       </button>
     </aside>
 
-    <!-- Center Stage — clock, search, quicklinks -->
-    <main id="center-stage" class="center-stage">
-
-      <!-- Clock -->
+    <!-- Clock Zone -->
+    <section id="clock-zone">
       <div class="clock-wrapper">
         <div id="simple-clock" class="simple-clock" role="timer" aria-label="Current time"></div>
         <div id="date-text" class="clock-date"></div>
-        <div id="greeting-text" class="clock-greeting"></div>
       </div>
+    </section>
 
-      <!-- Search -->
+    <!-- Middle Zone — greeting + search -->
+    <section id="middle-zone">
+      <div id="greeting-text" class="clock-greeting"></div>
+
       <section id="search-section" class="search-section">
         <div id="search-wrapper" class="search-wrapper glass">
           <div id="engine-btn" class="search-engine-btn glass-subtle" tabindex="0">
@@ -101,8 +102,10 @@
         </div>
         <div id="engine-picker" class="engine-picker glass" hidden></div>
       </section>
+    </section>
 
-      <!-- Quick Links -->
+    <!-- Quick Links Zone -->
+    <section id="quicklinks-zone">
       <section id="quicklinks-section" class="quicklinks-section">
         <div id="quicklinks-grid" class="quicklinks-grid"></div>
         <button id="add-link-btn" class="add-link-btn glass-subtle" aria-label="Add quick link">
@@ -112,8 +115,7 @@
           </svg>
         </button>
       </section>
-
-    </main>
+    </section>
 
     <!-- Right Panel — off-canvas, slides in -->
     <aside id="right-panel" class="right-panel">
