@@ -1,0 +1,410 @@
+diff --git a/css/components.css b/css/components.css
+index 1fee787..fa2b81b 100644
+--- a/css/components.css
++++ b/css/components.css
+@@ -54,6 +54,24 @@
+   transform: scale(0.92);
+ }
+ 
++#settings-btn {
++  position: fixed;
++  top: 16px;
++  right: 16px;
++  z-index: 100;
++  background: rgba(255, 255, 255, 0.08);
++  border: 1px solid rgba(255, 255, 255, 0.12);
++  border-radius: 12px;
++  padding: 8px 12px;
++  backdrop-filter: blur(12px);
++  -webkit-backdrop-filter: blur(12px);
++  cursor: pointer;
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  color: rgba(255, 255, 255, 0.7);
++}
++
+ #search-section,
+ .search-section {
+   width: 100%;
+diff --git a/css/panels.css b/css/panels.css
+index 56a2f4e..7378255 100644
+--- a/css/panels.css
++++ b/css/panels.css
+@@ -7,6 +7,14 @@
+   overflow: hidden;
+ }
+ 
++.tools-drawer {
++  width: 100%;
++  height: 100%;
++  display: flex;
++  flex-direction: column;
++  overflow: hidden;
++}
++
+ .panel-header {
+   display: flex;
+   justify-content: space-between;
+@@ -15,6 +23,31 @@
+   flex-shrink: 0;
+ }
+ 
++.panel-title {
++  font-size: 1.1rem;
++  font-weight: 700;
++  color: var(--text-primary);
++}
++
++.panel-close-btn {
++  width: 30px;
++  height: 30px;
++  display: flex;
++  align-items: center;
++  justify-content: center;
++  border-radius: 50%;
++  background: var(--glass-subtle);
++  border: 1px solid var(--glass-border-soft);
++  color: var(--text-secondary);
++  cursor: pointer;
++  transition: all 150ms ease;
++}
++
++.panel-close-btn:hover {
++  color: var(--text-primary);
++  background: var(--glass-bg);
++}
++
+ .panel-tabs {
+   display: flex;
+   gap: 4px;
+@@ -38,6 +71,12 @@
+   border: 1px solid transparent;
+ }
+ 
++.panel-tab-btn.is-active {
++  background: var(--glass-bg);
++  color: var(--text-primary);
++  border-color: var(--glass-border-soft);
++}
++
+ #panel-content {
+   flex: 1;
+   overflow-y: auto;
+@@ -45,3 +84,17 @@
+   min-height: 0;
+ }
+ 
++.panel-content {
++  flex: 1;
++  overflow-y: auto;
++  padding: 16px;
++  min-height: 0;
++}
++
++.panel-loading {
++  text-align: center;
++  color: var(--text-muted);
++  padding: 32px 0;
++  font-size: 0.875rem;
++}
++
+diff --git a/modules/clock.js b/modules/clock.js
+index e90fa83..614fbc7 100644
+--- a/modules/clock.js
++++ b/modules/clock.js
+@@ -1,5 +1,6 @@
+ import { Prefs } from './storage.js';
+ import { getGreeting } from './utils.js';
++import { DOM } from './dom.js';
+ 
+ let tickInterval = null;
+ let tickTimeout = null;
+@@ -7,11 +8,11 @@ let use24 = false;
+ let userName = '';
+ 
+ function is24HourFormat(format) {
+-  return format === '24' || format === '24h';
++  return format === '24h';
+ }
+ 
+ function updateClock() {
+-  const el = document.getElementById('simple-clock');
++  const el = DOM.clock;
+   if (!el) return;
+ 
+   const now = new Date();
+@@ -28,12 +29,12 @@ function updateClock() {
+ }
+ 
+ function updateGreeting(date) {
+-  const el = document.getElementById('greeting-text');
++  const el = DOM.greeting;
+   if (el) el.textContent = getGreeting(date, userName);
+ }
+ 
+ function updateDate(date) {
+-  const el = document.getElementById('date-text');
++  const el = DOM.date;
+   if (!el) return;
+ 
+   el.textContent = date.toLocaleDateString('en-US', {
+@@ -60,9 +61,16 @@ function startClockTimer() {
+ }
+ 
+ export async function initClock() {
+-  const prefs = await Prefs.getAll();
+-  use24 = is24HourFormat(prefs.clockFormat);
+-  userName = prefs.userName || '';
++  let currentFormat = await Prefs.get('clockFormat');
++
++  /* silent migration for legacy users */
++  if (currentFormat === '24') {
++    currentFormat = '24h';
++    await Prefs.set('clockFormat', '24h');
++  }
++
++  use24 = is24HourFormat(currentFormat);
++  userName = (await Prefs.get('userName')) || '';
+ 
+   tick();
+   startClockTimer();
+diff --git a/modules/dom.js b/modules/dom.js
+index 1138076..6faf36a 100644
+--- a/modules/dom.js
++++ b/modules/dom.js
+@@ -15,7 +15,12 @@ export const DOM = {
+   settingsBtn: document.getElementById('settings-btn'),
+   toolsFab: document.getElementById('tools-fab'),
+ 
+-  rightPanel: document.getElementById('right-panel'),
+-  toolsPanelMount: document.getElementById('tools-panel-mount')
++  get rightPanel() {
++    return document.getElementById('right-panel');
++  },
++
++  get toolsPanelMount() {
++    return document.getElementById('tools-panel-mount');
++  }
+ };
+ 
+diff --git a/modules/storage.js b/modules/storage.js
+index 99f4c17..2bcdb2f 100644
+--- a/modules/storage.js
++++ b/modules/storage.js
+@@ -14,7 +14,7 @@ export const Prefs = {
+     grainOpacity:    0.035,
+     userName:        '',
+     searchEngine:    'google',
+-    clockFormat:     '12',
++    clockFormat:     '12h',
+     showSeconds:     true,
+     quickLinksMax:   12,
+     onboardingDone:  false,
+@@ -29,17 +29,25 @@ export const Prefs = {
+   /** Gets all preferences, merging stored values over defaults. */
+   async getAll() {
+     const result = await chrome.storage.sync.get(null);
+-    return { ...this.defaults, ...result };
++    const merged = { ...this.defaults, ...result };
++    merged.clockFormat = normalizeClockFormat(merged.clockFormat);
++    return merged;
+   },
+ 
+   /** Sets a single preference by key. */
+   async set(key, value) {
++    if (key === 'clockFormat') {
++      await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
++      return;
++    }
+     await chrome.storage.sync.set({ [key]: value });
+   },
+ 
+   /** Sets multiple preferences at once. */
+   async setMany(obj) {
+-    await chrome.storage.sync.set(obj);
++    const next = { ...obj };
++    if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
++    await chrome.storage.sync.set(next);
+   },
+ 
+   /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
+@@ -54,6 +62,10 @@ export const Prefs = {
+   },
+ };
+ 
++function normalizeClockFormat(value) {
++  return value === '24h' ? '24h' : '12h';
++}
++
+ // ─── PART 2 — Store (chrome.storage.local) ──────────────────
+ 
+ export const Store = {
+diff --git a/newtab.html b/newtab.html
+index 751b5cd..ce52094 100644
+--- a/newtab.html
++++ b/newtab.html
+@@ -13,6 +13,10 @@
+   >
+ 
+   <link rel="stylesheet" href="newtab.css">
++  <link rel="stylesheet" href="css/layout.css">
++  <link rel="stylesheet" href="css/components.css">
++  <link rel="stylesheet" href="css/panels.css">
++  <link rel="stylesheet" href="css/animations.css">
+ </head>
+ <body id="app-body" class="theme-midnight">
+ 
+@@ -28,22 +32,7 @@
+     <header id="top-bar" class="top-bar">
+       <div></div>
+       <div class="top-bar-actions">
+-        <button id="settings-btn" aria-label="Settings" style="
+-          position: fixed;
+-          top: 16px;
+-          right: 16px;
+-          background: rgba(255,255,255,0.08);
+-          border: 1px solid rgba(255,255,255,0.12);
+-          border-radius: 12px;
+-          padding: 8px 12px;
+-          backdrop-filter: blur(12px);
+-          -webkit-backdrop-filter: blur(12px);
+-          cursor: pointer;
+-          display: flex;
+-          align-items: center;
+-          gap: 6px;
+-          color: rgba(255,255,255,0.7);
+-        ">
++        <button id="settings-btn" aria-label="Settings">
+           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <line x1="8" y1="6" x2="21" y2="6"/>
+             <line x1="8" y1="12" x2="21" y2="12"/>
+diff --git a/panels/toolspanel.js b/panels/toolspanel.js
+index 93ff1af..f89e63d 100644
+--- a/panels/toolspanel.js
++++ b/panels/toolspanel.js
+@@ -1,4 +1,5 @@
+ import { toast } from '../modules/toast.js';
++import { DOM } from '../modules/dom.js';
+ 
+ let panelEl = null;
+ let isOpen = false;
+@@ -14,49 +15,29 @@ const TABS = [
+ function buildPanel() {
+   const panel = document.createElement('div');
+   panel.id = 'tools-panel';
+-  panel.className = 'glass';
+-  Object.assign(panel.style, {
+-    width: '100%',
+-    height: '100%',
+-    display: 'flex',
+-    flexDirection: 'column',
+-    overflow: 'hidden',
+-  });
++  panel.className = 'glass tools-drawer';
+ 
+   // Header
+   const header = document.createElement('div');
+   header.className = 'panel-header';
+-  Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 16px 0 16px', flexShrink: '0' });
+   const h2 = document.createElement('h2');
++  h2.className = 'panel-title';
+   h2.textContent = 'Quick Tools';
+-  Object.assign(h2.style, { fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' });
+   const closeBtn = document.createElement('button');
+   closeBtn.id = 'panel-close-btn';
++  closeBtn.className = 'panel-close-btn';
+   closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+-  Object.assign(closeBtn.style, {
+-    width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+-    borderRadius: '50%', background: 'var(--glass-subtle)', border: '1px solid var(--glass-border-soft)',
+-    color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease',
+-  });
+-  closeBtn.onmouseenter = () => { closeBtn.style.color = 'var(--text-primary)'; closeBtn.style.background = 'var(--glass-bg)'; };
+-  closeBtn.onmouseleave = () => { closeBtn.style.color = 'var(--text-secondary)'; closeBtn.style.background = 'var(--glass-subtle)'; };
+   header.append(h2, closeBtn);
+ 
+   // Tab bar
+   const tabBar = document.createElement('div');
+   tabBar.className = 'panel-tabs';
+-  Object.assign(tabBar.style, { display: 'flex', gap: '4px', padding: '12px 16px 0 16px', flexShrink: '0' });
+   TABS.forEach(tab => {
+     const btn = document.createElement('button');
+     btn.className = 'panel-tab-btn';
+     btn.dataset.tabId = tab.id;
+     btn.innerHTML = `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`;
+-    Object.assign(btn.style, {
+-      flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+-      padding: '8px 4px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500',
+-      color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease', border: '1px solid transparent',
+-    });
+-    if (tab.id === activeTab) applyActiveStyle(btn);
++    if (tab.id === activeTab) btn.classList.add('is-active');
+     btn.onclick = () => switchTab(tab.id);
+     tabBar.appendChild(btn);
+   });
+@@ -64,18 +45,18 @@ function buildPanel() {
+   // Content
+   const content = document.createElement('div');
+   content.id = 'panel-content';
+-  Object.assign(content.style, { flex: '1', overflowY: 'auto', padding: '16px', minHeight: '0' });
++  content.className = 'panel-content';
+ 
+   panel.append(header, tabBar, content);
+   return panel;
+ }
+ 
+ function applyActiveStyle(btn) {
+-  Object.assign(btn.style, { background: 'var(--glass-bg)', color: 'var(--text-primary)', borderColor: 'var(--glass-border-soft)' });
++  btn.classList.add('is-active');
+ }
+ 
+ function resetTabStyle(btn) {
+-  Object.assign(btn.style, { background: 'transparent', color: 'var(--text-secondary)', borderColor: 'transparent' });
++  btn.classList.remove('is-active');
+ }
+ 
+ function switchTab(tabId) {
+@@ -83,9 +64,9 @@ function switchTab(tabId) {
+   panelEl?.querySelectorAll('.panel-tab-btn').forEach(btn => {
+     btn.dataset.tabId === tabId ? applyActiveStyle(btn) : resetTabStyle(btn);
+   });
+-  const contentEl = document.getElementById('panel-content');
++  const contentEl = panelEl?.querySelector('#panel-content');
+   if (!contentEl) return;
+-  contentEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px 0;font-size:0.875rem;">Loading...</div>`;
++  contentEl.innerHTML = '<div class="panel-loading">Loading...</div>';
+ 
+   const loaders = {
+     productivity: () => import('../panels/pomodoro.js').then(m => m.initPomodoro),
+@@ -102,8 +83,8 @@ function openPanel(callback) {
+   isOpen = true;
+   onCloseCallback = callback;
+ 
+-  const mount = document.getElementById('tools-panel-mount');
+-  const rightPanel = document.getElementById('right-panel');
++  const mount = DOM.toolsPanelMount;
++  const rightPanel = DOM.rightPanel;
+ 
+   panelEl = buildPanel();
+   (mount || document.body).appendChild(panelEl);
+@@ -115,8 +96,8 @@ function openPanel(callback) {
+   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
+   setTimeout(() => {
+     document.addEventListener('mousedown', (e) => {
+-      const fab = document.getElementById('tools-fab');
+-      const rp = document.getElementById('right-panel');
++      const fab = DOM.toolsFab;
++      const rp = DOM.rightPanel;
+       if (panelEl && rp && !rp.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
+     }, { once: true });
+   }, 10);
+@@ -126,7 +107,7 @@ function closePanel() {
+   if (!isOpen) return;
+   isOpen = false;
+ 
+-  const rightPanel = document.getElementById('right-panel');
++  const rightPanel = DOM.rightPanel;
+   if (rightPanel) rightPanel.classList.remove('open');
+ 
+   if (panelEl) {

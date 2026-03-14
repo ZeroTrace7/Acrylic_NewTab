@@ -1,0 +1,625 @@
+diff --git a/modules/background.js b/modules/background.js
+index d897b2b..eb05e6c 100644
+--- a/modules/background.js
++++ b/modules/background.js
+@@ -1,5 +1,6 @@
+ import { Prefs } from './storage.js';
+ import { toast } from './toast.js';
++import { bus } from './event-bus.js';
+ 
+ const THEMES = [
+   { id: 'midnight',  label: 'Midnight'  },
+@@ -25,6 +26,7 @@ function applyTheme(themeId) {
+   THEMES.forEach(t => body.classList.remove(`theme-${t.id}`));
+   body.classList.add(`theme-${themeId}`);
+   if (!currentWallpaperUrl) body.classList.remove('has-wallpaper');
++  bus.dispatchEvent(new CustomEvent('themeChanged'));
+ }
+ 
+ function applyWallpaper(url, blur = 0, darken = 0.45) {
+diff --git a/modules/clock.js b/modules/clock.js
+index e90fa83..7f68677 100644
+--- a/modules/clock.js
++++ b/modules/clock.js
+@@ -1,5 +1,6 @@
+ import { Prefs } from './storage.js';
+ import { getGreeting } from './utils.js';
++import { DOM } from './dom.js';
+ 
+ let tickInterval = null;
+ let tickTimeout = null;
+@@ -7,11 +8,11 @@ let use24 = false;
+ let userName = '';
+ 
+ function is24HourFormat(format) {
+-  return format === '24' || format === '24h';
++  return format === '24h';
+ }
+ 
+ function updateClock() {
+-  const el = document.getElementById('simple-clock');
++  const el = DOM.clock;
+   if (!el) return;
+ 
+   const now = new Date();
+@@ -28,12 +29,12 @@ function updateClock() {
+ }
+ 
+ function updateGreeting(date) {
+-  const el = document.getElementById('greeting-text');
++  const el = DOM.greeting;
+   if (el) el.textContent = getGreeting(date, userName);
+ }
+ 
+ function updateDate(date) {
+-  const el = document.getElementById('date-text');
++  const el = DOM.date;
+   if (!el) return;
+ 
+   el.textContent = date.toLocaleDateString('en-US', {
+diff --git a/modules/dom.js b/modules/dom.js
+new file mode 100644
+index 0000000..1138076
+--- /dev/null
++++ b/modules/dom.js
+@@ -0,0 +1,21 @@
++export const DOM = {
++  clock: document.getElementById('simple-clock'),
++  date: document.getElementById('date-text'),
++  greeting: document.getElementById('greeting-text'),
++
++  searchInput: document.getElementById('search-input'),
++  searchSubmit: document.getElementById('search-submit'),
++  engineBtn: document.getElementById('engine-btn'),
++  enginePicker: document.getElementById('engine-picker'),
++
++  quicklinksSection: document.getElementById('quicklinks-section'),
++  quicklinksGrid: document.getElementById('quicklinks-grid'),
++  addLinkBtn: document.getElementById('add-link-btn'),
++
++  settingsBtn: document.getElementById('settings-btn'),
++  toolsFab: document.getElementById('tools-fab'),
++
++  rightPanel: document.getElementById('right-panel'),
++  toolsPanelMount: document.getElementById('tools-panel-mount')
++};
++
+diff --git a/modules/event-bus.js b/modules/event-bus.js
+new file mode 100644
+index 0000000..9af9a2b
+--- /dev/null
++++ b/modules/event-bus.js
+@@ -0,0 +1,2 @@
++export const bus = new EventTarget();
++
+diff --git a/modules/quicklinks.js b/modules/quicklinks.js
+index 214734c..e512af0 100644
+--- a/modules/quicklinks.js
++++ b/modules/quicklinks.js
+@@ -1,9 +1,12 @@
+ import { Store, Prefs } from './storage.js';
+-import { generateId, getFaviconUrl, sanitizeUrl, truncate, getDomain } from './utils.js';
++import { generateId, getFaviconUrl, sanitizeUrl, getDomain } from './utils.js';
+ import { toast } from './toast.js';
++import { DOM } from './dom.js';
++import { bus } from './event-bus.js';
+ 
+ let links = [];
+ let maxLinks = 12;
++const tileNodes = new Map();
+ 
+ function getDefaultLinks() {
+   return [
+@@ -14,16 +17,14 @@ function getDefaultLinks() {
+   ];
+ }
+ 
+-function renderLinks() {
+-  const container = document.getElementById('quicklinks-section');
+-  const grid = document.getElementById('quicklinks-grid');
+-  if (!grid) return;
+-  grid.innerHTML = '';
+-  grid.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:8px;`;
+-  links.forEach(link => grid.appendChild(createTile(link)));
+-  const addBtn = document.getElementById('add-link-btn');
++function ensureQuicklinksStructure() {
++  const container = DOM.quicklinksSection;
++  const grid = DOM.quicklinksGrid;
++  const addBtn = DOM.addLinkBtn;
++  if (!grid) return false;
++
++  grid.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px;';
+   if (addBtn) {
+-    addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+     addBtn.style.cssText = `width:36px;
+ height:36px;
+ border-radius:50%;
+@@ -39,9 +40,10 @@ margin-top:4px;
+ transition:all 150ms ease;`;
+   }
+ 
+-  // Build glass pill wrapper once
+-  let pill = container?.querySelector('.ql-pill');
+-  if (container && !pill) {
++  if (!container) return true;
++
++  let pill = container.querySelector('.ql-pill');
++  if (!pill) {
+     pill = document.createElement('div');
+     pill.className = 'ql-pill';
+     pill.style.cssText = `background:rgba(255,255,255,0.06);
+@@ -54,11 +56,76 @@ align-items:center;
+ gap:4px;
+ backdrop-filter:blur(12px);
+ -webkit-backdrop-filter:blur(12px);`;
+-    container.innerHTML = '';
+-    pill.appendChild(grid);
+-    if (addBtn) pill.appendChild(addBtn);
+     container.appendChild(pill);
+   }
++
++  if (grid.parentElement !== pill) pill.appendChild(grid);
++  if (addBtn && addBtn.parentElement !== pill) pill.appendChild(addBtn);
++  return true;
++}
++
++function getLinkById(id) {
++  return links.find((link) => link.id === id) || null;
++}
++
++function setTileIcon(iconWrap, link) {
++  if (!iconWrap) return;
++
++  if (link.favicon) {
++    const img = document.createElement('img');
++    img.className = 'quicklink-favicon';
++    img.src = link.favicon;
++    img.onerror = () => {
++      const ph = document.createElement('div');
++      ph.className = 'quicklink-favicon-placeholder';
++      ph.textContent = (link.title[0] || '?').toUpperCase();
++      iconWrap.replaceChildren(ph);
++    };
++    iconWrap.replaceChildren(img);
++    return;
++  }
++
++  const ph = document.createElement('div');
++  ph.className = 'quicklink-favicon-placeholder';
++  ph.textContent = (link.title[0] || '?').toUpperCase();
++  iconWrap.replaceChildren(ph);
++}
++
++function updateTileNode(wrapper, link) {
++  const a = wrapper.querySelector('.quicklink-tile');
++  if (!a) return;
++  a.href = link.url;
++  a.title = link.title;
++  a.dataset.id = link.id;
++  const iconWrap = a.querySelector('.ql-icon-wrap');
++  setTileIcon(iconWrap, link);
++}
++
++function renderLinks() {
++  if (!ensureQuicklinksStructure()) return;
++  const grid = DOM.quicklinksGrid;
++  if (!grid) return;
++
++  const nextIds = new Set(links.map((link) => link.id));
++  for (const [id, node] of tileNodes.entries()) {
++    if (!nextIds.has(id)) {
++      node.remove();
++      tileNodes.delete(id);
++    }
++  }
++
++  links.forEach((link) => {
++    let node = tileNodes.get(link.id);
++    if (!node) {
++      node = createTile(link);
++      tileNodes.set(link.id, node);
++    }
++    updateTileNode(node, link);
++    grid.appendChild(node);
++  });
++
++  const addBtn = DOM.addLinkBtn;
++  if (addBtn) addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+ }
+ 
+ function createTile(link) {
+@@ -84,13 +151,19 @@ function createTile(link) {
+ `;
+ 
+   a.addEventListener('click', (e) => {
++    const currentLink = getLinkById(a.dataset.id) || link;
+     if (e.button === 1 || e.ctrlKey || e.metaKey) return;
+     e.preventDefault();
+-    window.location.href = link.url;
++    window.location.href = currentLink.url;
++  });
++  a.addEventListener('contextmenu', (e) => {
++    const currentLink = getLinkById(a.dataset.id) || link;
++    e.preventDefault();
++    openContextMenu(e, currentLink);
+   });
+-  a.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, link); });
+ 
+   const iconEl = document.createElement('div');
++  iconEl.className = 'ql-icon-wrap';
+   iconEl.style.cssText = `
+   width: 40px;
+   height: 40px;
+@@ -104,23 +177,7 @@ function createTile(link) {
+   transition: background 150ms ease;
+ `;
+ 
+-  if (link.favicon) {
+-    const img = document.createElement('img');
+-    img.className = 'quicklink-favicon';
+-    img.src = link.favicon;
+-    img.onerror = () => {
+-      const ph = document.createElement('div');
+-      ph.className = 'quicklink-favicon-placeholder';
+-      ph.textContent = (link.title[0] || '?').toUpperCase();
+-      iconEl.replaceChildren(ph);
+-    };
+-    iconEl.appendChild(img);
+-  } else {
+-    const ph = document.createElement('div');
+-    ph.className = 'quicklink-favicon-placeholder';
+-    ph.textContent = (link.title[0] || '?').toUpperCase();
+-    iconEl.appendChild(ph);
+-  }
++  setTileIcon(iconEl, link);
+ 
+   a.appendChild(iconEl);
+   wrapper.appendChild(a);
+@@ -146,7 +203,7 @@ function openContextMenu(e, link) {
+   const delBtn = document.createElement('button');
+   delBtn.className = 'engine-option';
+   delBtn.textContent = 'Delete';
+-  delBtn.onclick = () => { removeContextMenu(); deleteLink(link.id); };
++  delBtn.onclick = () => { removeContextMenu(); removeLink(link.id); };
+ 
+   menu.append(editBtn, delBtn);
+   document.body.appendChild(menu);
+@@ -158,7 +215,7 @@ function openContextMenu(e, link) {
+ }
+ 
+ function removeContextMenu() {
+-  document.getElementById('ql-context-menu')?.remove();
++  document.querySelector('#ql-context-menu')?.remove();
+ }
+ 
+ function openLinkModal(existingLink = null) {
+@@ -195,7 +252,7 @@ function openLinkModal(existingLink = null) {
+     const url = sanitizeUrl(rawUrl);
+     const title = titleInput.value.trim() || getDomain(url) || 'Link';
+     if (existingLink) updateLink(existingLink.id, title, url);
+-    else saveLink(title, url);
++    else addLink(title, url);
+     close();
+   };
+ 
+@@ -207,9 +264,18 @@ function openLinkModal(existingLink = null) {
+   setTimeout(() => titleInput.focus(), 50);
+ }
+ 
+-function saveLink(title, url) {
+-  links.push({ id: generateId(), title, url: sanitizeUrl(url), favicon: getFaviconUrl(url) });
++function emitLinksUpdated() {
++  bus.dispatchEvent(new CustomEvent('linksUpdated', { detail: { links: [...links], source: 'quicklinks' } }));
++}
++
++function persistLinks() {
+   Store.setLinks(links);
++  emitLinksUpdated();
++}
++
++function addLink(title, url) {
++  links.push({ id: generateId(), title, url: sanitizeUrl(url), favicon: getFaviconUrl(url) });
++  persistLinks();
+   renderLinks();
+   toast.success('Link added!');
+ }
+@@ -220,14 +286,14 @@ function updateLink(id, title, url) {
+   link.title = title;
+   link.url = sanitizeUrl(url);
+   link.favicon = getFaviconUrl(url);
+-  Store.setLinks(links);
++  persistLinks();
+   renderLinks();
+   toast.success('Link updated!');
+ }
+ 
+-function deleteLink(id) {
++function removeLink(id) {
+   links = links.filter(l => l.id !== id);
+-  Store.setLinks(links);
++  persistLinks();
+   renderLinks();
+   toast.info('Link removed');
+ }
+@@ -242,7 +308,13 @@ export async function initQuickLinks() {
+     links = stored;
+   }
+   renderLinks();
+-  document.getElementById('add-link-btn')?.addEventListener('click', () => openLinkModal());
++  DOM.addLinkBtn?.addEventListener('click', () => openLinkModal());
++  bus.addEventListener('linksUpdated', (event) => {
++    const incoming = event.detail?.links;
++    if (!Array.isArray(incoming) || event.detail?.source === 'quicklinks') return;
++    links = incoming;
++    renderLinks();
++  });
+   Prefs.onChange((changes) => {
+     if ('quickLinksMax' in changes) { maxLinks = changes.quickLinksMax; renderLinks(); }
+   });
+diff --git a/modules/search.js b/modules/search.js
+index 988f802..bbaf759 100644
+--- a/modules/search.js
++++ b/modules/search.js
+@@ -1,6 +1,8 @@
+ import { Prefs } from './storage.js';
+ import { sanitizeUrl, isValidUrl } from './utils.js';
+ import { toast } from './toast.js';
++import { DOM } from './dom.js';
++import { bus } from './event-bus.js';
+ 
+ const ENGINES = [
+   { id: 'google',     name: 'Google',     url: 'https://www.google.com/search?q=',     icon: 'https://www.google.com/favicon.ico' },
+@@ -19,7 +21,7 @@ function getEngine(id) {
+ 
+ function setEngine(engine) {
+   currentEngine = engine;
+-  const icon = document.getElementById('engine-icon');
++  const icon = DOM.engineBtn?.querySelector('img') || document.querySelector('#engine-icon');
+   if (icon) { icon.src = engine.icon; icon.alt = engine.name; }
+   Prefs.set('searchEngine', engine.id);
+   document.querySelectorAll('.engine-option').forEach((el) => {
+@@ -29,7 +31,7 @@ function setEngine(engine) {
+ 
+ function openPicker() {
+   pickerOpen = true;
+-  const picker = document.getElementById('engine-picker');
++  const picker = DOM.enginePicker;
+   if (picker) picker.removeAttribute('hidden');
+   setTimeout(() => {
+     document.addEventListener('mousedown', handleOutsideClick, { once: true });
+@@ -37,8 +39,8 @@ function openPicker() {
+ }
+ 
+ function handleOutsideClick(e) {
+-  const picker = document.getElementById('engine-picker');
+-  const btn = document.getElementById('engine-btn');
++  const picker = DOM.enginePicker;
++  const btn = DOM.engineBtn;
+   if (picker && !picker.contains(e.target) && btn && !btn.contains(e.target)) {
+     closePicker();
+   } else if (pickerOpen) {
+@@ -48,7 +50,7 @@ function handleOutsideClick(e) {
+ 
+ function closePicker() {
+   pickerOpen = false;
+-  const picker = document.getElementById('engine-picker');
++  const picker = DOM.enginePicker;
+   if (picker) picker.setAttribute('hidden', '');
+ }
+ 
+@@ -57,7 +59,7 @@ function togglePicker() {
+ }
+ 
+ function buildPicker() {
+-  const picker = document.getElementById('engine-picker');
++  const picker = DOM.enginePicker;
+   if (!picker) return;
+   picker.innerHTML = '';
+   ENGINES.forEach((engine) => {
+@@ -87,9 +89,9 @@ export async function initSearch() {
+   setEngine(getEngine(savedId));
+   buildPicker();
+ 
+-  const input = document.getElementById('search-input');
+-  const submit = document.getElementById('search-submit');
+-  const engineBtn = document.getElementById('engine-btn');
++  const input = DOM.searchInput;
++  const submit = DOM.searchSubmit;
++  const engineBtn = DOM.engineBtn;
+ 
+   if (engineBtn) {
+     engineBtn.addEventListener('click', togglePicker);
+@@ -115,4 +117,6 @@ export async function initSearch() {
+   Prefs.onChange((changes) => {
+     if ('searchEngine' in changes) setEngine(getEngine(changes.searchEngine));
+   });
++
++  bus.addEventListener('themeChanged', closePicker);
+ }
+diff --git a/modules/storage.js b/modules/storage.js
+index 99f4c17..0f428bb 100644
+--- a/modules/storage.js
++++ b/modules/storage.js
+@@ -14,7 +14,7 @@ export const Prefs = {
+     grainOpacity:    0.035,
+     userName:        '',
+     searchEngine:    'google',
+-    clockFormat:     '12',
++    clockFormat:     '12h',
+     showSeconds:     true,
+     quickLinksMax:   12,
+     onboardingDone:  false,
+@@ -23,23 +23,33 @@ export const Prefs = {
+   /** Gets a single preference by key, falling back to its default value. */
+   async get(key) {
+     const result = await chrome.storage.sync.get(key);
+-    return result[key] ?? this.defaults[key];
++    const value = result[key] ?? this.defaults[key];
++    if (key === 'clockFormat') return normalizeClockFormat(value);
++    return value;
+   },
+ 
+   /** Gets all preferences, merging stored values over defaults. */
+   async getAll() {
+     const result = await chrome.storage.sync.get(null);
+-    return { ...this.defaults, ...result };
++    const merged = { ...this.defaults, ...result };
++    merged.clockFormat = normalizeClockFormat(merged.clockFormat);
++    return merged;
+   },
+ 
+   /** Sets a single preference by key. */
+   async set(key, value) {
++    if (key === 'clockFormat') {
++      await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
++      return;
++    }
+     await chrome.storage.sync.set({ [key]: value });
+   },
+ 
+   /** Sets multiple preferences at once. */
+   async setMany(obj) {
+-    await chrome.storage.sync.set(obj);
++    const next = { ...obj };
++    if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
++    await chrome.storage.sync.set(next);
+   },
+ 
+   /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
+@@ -54,6 +64,10 @@ export const Prefs = {
+   },
+ };
+ 
++function normalizeClockFormat(value) {
++  return value === '24h' ? '24h' : '12h';
++}
++
+ // ─── PART 2 — Store (chrome.storage.local) ──────────────────
+ 
+ export const Store = {
+diff --git a/newtab.js b/newtab.js
+index aadabb1..e1167ff 100644
+--- a/newtab.js
++++ b/newtab.js
+@@ -4,11 +4,19 @@ import { initSearch }     from './modules/search.js';
+ import { initQuickLinks } from './modules/quicklinks.js';
+ import { Prefs }          from './modules/storage.js';
+ import { toast }          from './modules/toast.js';
++import { DOM }            from './modules/dom.js';
++import { bus }            from './modules/event-bus.js';
++import { UI_CONFIG }      from './modules/ui-config.js';
+ 
+ let settingsOpen = false;
+ 
+ async function initApp() {
+   try {
++    document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
++    document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
++    document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
++    document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
++
+     // Step 1 — Background first (theme/wallpaper before UI paints)
+     await initBackground();
+ 
+@@ -29,7 +37,7 @@ async function initApp() {
+     ]);
+ 
+     // Step 4 — Settings button (lazy-loaded)
+-    document.getElementById('settings-btn')?.addEventListener('click', async () => {
++    DOM.settingsBtn?.addEventListener('click', async () => {
+       if (settingsOpen) return;
+       settingsOpen = true;
+       const { initSettings } = await import('./settings/settings.js');
+@@ -37,7 +45,7 @@ async function initApp() {
+     });
+ 
+     // Step 5 — Tools FAB (lazy-loaded)
+-    const toolsFab = document.getElementById('tools-fab');
++    const toolsFab = DOM.toolsFab;
+     toolsFab?.addEventListener('click', async () => {
+       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
+       const wasActive = toolsFab.classList.contains('active');
+@@ -54,11 +62,15 @@ async function initApp() {
+       const tag = document.activeElement?.tagName;
+       if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+         e.preventDefault();
+-        document.getElementById('search-input')?.focus();
++        DOM.searchInput?.focus();
+       }
+       if (e.key === 'Escape') document.activeElement?.blur();
+     });
+ 
++    bus.addEventListener('themeChanged', () => {
++      if (document.activeElement === DOM.searchInput) DOM.searchInput?.focus();
++    });
++
+   } catch (err) {
+     // Step 7 — Graceful error handling
+     console.error('Acrylic init error:', err);
+diff --git a/settings/settings.js b/settings/settings.js
+index 11dce4a..adbd1b2 100644
+--- a/settings/settings.js
++++ b/settings/settings.js
+@@ -2,11 +2,14 @@ import { Prefs } from '../modules/storage.js';
+ import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes } from '../modules/background.js';
+ import { toast } from '../modules/toast.js';
+ import { isValidUrl } from '../modules/utils.js';
++import { bus } from '../modules/event-bus.js';
++import { UI_CONFIG } from '../modules/ui-config.js';
+ 
+ let modalEl = null;
+ let prefs = {};
+ let onCloseCallback = null;
+ let escHandler = null;
++let themeChangedHandler = null;
+ 
+ const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
+ 
+@@ -158,10 +161,10 @@ function buildModal() {
+   const sec4 = document.createElement('div');
+   sec4.appendChild(sectionLabel('Clock'));
+   const renderClock = () => {
+-    const is24 = prefs.clockFormat === '24' || prefs.clockFormat === '24h';
++    const is24 = prefs.clockFormat === '24h';
+     while (sec4.childNodes.length > 1) sec4.removeChild(sec4.lastChild);
+     sec4.appendChild(toggleRow('24-hour format', is24, () => {
+-      prefs.clockFormat = is24 ? '12' : '24';
++      prefs.clockFormat = is24 ? '12h' : '24h';
+       Prefs.set('clockFormat', prefs.clockFormat); renderClock();
+     }));
+   };
+@@ -195,15 +198,33 @@ function buildModal() {
+ async function openSettings(callback) {
+   onCloseCallback = callback;
+   prefs = await Prefs.getAll();
++  document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
++  document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
++  document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
++  document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
+   modalEl = buildModal();
+-  (document.getElementById('settings-modal-mount') || document.body).appendChild(modalEl);
++  (document.querySelector('#settings-modal-mount') || document.body).appendChild(modalEl);
+   escHandler = (e) => { if (e.key === 'Escape') closeSettings(); };
+   document.addEventListener('keydown', escHandler);
++  themeChangedHandler = async () => {
++    prefs.theme = await Prefs.get('theme');
++    modalEl?.querySelectorAll('button').forEach((btn) => {
++      if (!btn.textContent) return;
++      const theme = getAvailableThemes().find((t) => t.label === btn.textContent.trim());
++      if (!theme) return;
++      const active = prefs.theme === theme.id;
++      btn.style.borderColor = active ? 'var(--glass-border)' : 'transparent';
++      btn.style.background = active ? 'var(--glass-subtle)' : 'transparent';
++      btn.style.color = active ? 'var(--text-primary)' : 'var(--text-secondary)';
++    });
++  };
++  bus.addEventListener('themeChanged', themeChangedHandler);
+ }
+ 
+ function closeSettings() {
+   if (modalEl) { modalEl.remove(); modalEl = null; }
+   if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
++  if (themeChangedHandler) { bus.removeEventListener('themeChanged', themeChangedHandler); themeChangedHandler = null; }
+   onCloseCallback?.();
+   onCloseCallback = null;
+ }

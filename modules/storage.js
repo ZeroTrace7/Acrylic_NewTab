@@ -14,8 +14,7 @@ export const Prefs = {
     grainOpacity:    0.035,
     userName:        '',
     searchEngine:    'google',
-    clockFormat:     '12',
-    showSeconds:     true,
+    clockFormat:     '12h',
     quickLinksMax:   12,
     onboardingDone:  false,
   },
@@ -29,17 +28,25 @@ export const Prefs = {
   /** Gets all preferences, merging stored values over defaults. */
   async getAll() {
     const result = await chrome.storage.sync.get(null);
-    return { ...this.defaults, ...result };
+    const merged = { ...this.defaults, ...result };
+    merged.clockFormat = normalizeClockFormat(merged.clockFormat);
+    return merged;
   },
 
   /** Sets a single preference by key. */
   async set(key, value) {
+    if (key === 'clockFormat') {
+      await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
+      return;
+    }
     await chrome.storage.sync.set({ [key]: value });
   },
 
   /** Sets multiple preferences at once. */
   async setMany(obj) {
-    await chrome.storage.sync.set(obj);
+    const next = { ...obj };
+    if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
+    await chrome.storage.sync.set(next);
   },
 
   /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
@@ -53,6 +60,10 @@ export const Prefs = {
     });
   },
 };
+
+function normalizeClockFormat(value) {
+  return value === '24h' ? '24h' : '12h';
+}
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────
 

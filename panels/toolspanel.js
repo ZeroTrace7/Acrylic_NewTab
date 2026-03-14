@@ -1,4 +1,5 @@
 import { toast } from '../modules/toast.js';
+import { DOM } from '../modules/dom.js';
 
 let panelEl = null;
 let isOpen = false;
@@ -14,49 +15,29 @@ const TABS = [
 function buildPanel() {
   const panel = document.createElement('div');
   panel.id = 'tools-panel';
-  panel.className = 'glass';
-  Object.assign(panel.style, {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-  });
+  panel.className = 'glass tools-drawer';
 
   // Header
   const header = document.createElement('div');
   header.className = 'panel-header';
-  Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 16px 0 16px', flexShrink: '0' });
   const h2 = document.createElement('h2');
+  h2.className = 'panel-title';
   h2.textContent = 'Quick Tools';
-  Object.assign(h2.style, { fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' });
   const closeBtn = document.createElement('button');
   closeBtn.id = 'panel-close-btn';
+  closeBtn.className = 'panel-close-btn';
   closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-  Object.assign(closeBtn.style, {
-    width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    borderRadius: '50%', background: 'var(--glass-subtle)', border: '1px solid var(--glass-border-soft)',
-    color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease',
-  });
-  closeBtn.onmouseenter = () => { closeBtn.style.color = 'var(--text-primary)'; closeBtn.style.background = 'var(--glass-bg)'; };
-  closeBtn.onmouseleave = () => { closeBtn.style.color = 'var(--text-secondary)'; closeBtn.style.background = 'var(--glass-subtle)'; };
   header.append(h2, closeBtn);
 
   // Tab bar
   const tabBar = document.createElement('div');
   tabBar.className = 'panel-tabs';
-  Object.assign(tabBar.style, { display: 'flex', gap: '4px', padding: '12px 16px 0 16px', flexShrink: '0' });
   TABS.forEach(tab => {
     const btn = document.createElement('button');
     btn.className = 'panel-tab-btn';
     btn.dataset.tabId = tab.id;
     btn.innerHTML = `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`;
-    Object.assign(btn.style, {
-      flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-      padding: '8px 4px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500',
-      color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease', border: '1px solid transparent',
-    });
-    if (tab.id === activeTab) applyActiveStyle(btn);
+    if (tab.id === activeTab) btn.classList.add('is-active');
     btn.onclick = () => switchTab(tab.id);
     tabBar.appendChild(btn);
   });
@@ -64,28 +45,24 @@ function buildPanel() {
   // Content
   const content = document.createElement('div');
   content.id = 'panel-content';
-  Object.assign(content.style, { flex: '1', overflowY: 'auto', padding: '16px', minHeight: '0' });
+  content.className = 'panel-content';
 
   panel.append(header, tabBar, content);
   return panel;
 }
 
-function applyActiveStyle(btn) {
-  Object.assign(btn.style, { background: 'var(--glass-bg)', color: 'var(--text-primary)', borderColor: 'var(--glass-border-soft)' });
-}
-
 function resetTabStyle(btn) {
-  Object.assign(btn.style, { background: 'transparent', color: 'var(--text-secondary)', borderColor: 'transparent' });
+  btn.classList.remove('is-active');
 }
 
 function switchTab(tabId) {
   activeTab = tabId;
   panelEl?.querySelectorAll('.panel-tab-btn').forEach(btn => {
-    btn.dataset.tabId === tabId ? applyActiveStyle(btn) : resetTabStyle(btn);
+    btn.dataset.tabId === tabId ? btn.classList.add('is-active') : resetTabStyle(btn);
   });
-  const contentEl = document.getElementById('panel-content');
+  const contentEl = panelEl?.querySelector('#panel-content');
   if (!contentEl) return;
-  contentEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px 0;font-size:0.875rem;">Loading...</div>`;
+  contentEl.innerHTML = '<div class="panel-loading">Loading...</div>';
 
   const loaders = {
     productivity: () => import('../panels/pomodoro.js').then(m => m.initPomodoro),
@@ -102,8 +79,8 @@ function openPanel(callback) {
   isOpen = true;
   onCloseCallback = callback;
 
-  const mount = document.getElementById('tools-panel-mount');
-  const rightPanel = document.getElementById('right-panel');
+  const mount = DOM.toolsPanelMount;
+  const rightPanel = DOM.rightPanel;
 
   panelEl = buildPanel();
   (mount || document.body).appendChild(panelEl);
@@ -115,8 +92,8 @@ function openPanel(callback) {
   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
   setTimeout(() => {
     document.addEventListener('mousedown', (e) => {
-      const fab = document.getElementById('tools-fab');
-      const rp = document.getElementById('right-panel');
+      const fab = DOM.toolsFab;
+      const rp = DOM.rightPanel;
       if (panelEl && rp && !rp.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
     }, { once: true });
   }, 10);
@@ -126,7 +103,7 @@ function closePanel() {
   if (!isOpen) return;
   isOpen = false;
 
-  const rightPanel = document.getElementById('right-panel');
+  const rightPanel = DOM.rightPanel;
   if (rightPanel) rightPanel.classList.remove('open');
 
   if (panelEl) {

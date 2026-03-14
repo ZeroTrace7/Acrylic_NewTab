@@ -4,11 +4,19 @@ import { initSearch }     from './modules/search.js';
 import { initQuickLinks } from './modules/quicklinks.js';
 import { Prefs }          from './modules/storage.js';
 import { toast }          from './modules/toast.js';
+import { DOM }            from './modules/dom.js';
+import { bus }            from './modules/event-bus.js';
+import { UI_CONFIG }      from './modules/ui-config.js';
 
 let settingsOpen = false;
 
 async function initApp() {
   try {
+    document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
+    document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
+    document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
+    document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
+
     // Step 1 — Background first (theme/wallpaper before UI paints)
     await initBackground();
 
@@ -29,7 +37,7 @@ async function initApp() {
     ]);
 
     // Step 4 — Settings button (lazy-loaded)
-    document.getElementById('settings-btn')?.addEventListener('click', async () => {
+    DOM.settingsBtn?.addEventListener('click', async () => {
       if (settingsOpen) return;
       settingsOpen = true;
       const { initSettings } = await import('./settings/settings.js');
@@ -37,7 +45,7 @@ async function initApp() {
     });
 
     // Step 5 — Tools FAB (lazy-loaded)
-    const toolsFab = document.getElementById('tools-fab');
+    const toolsFab = DOM.toolsFab;
     toolsFab?.addEventListener('click', async () => {
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
       const wasActive = toolsFab.classList.contains('active');
@@ -54,9 +62,13 @@ async function initApp() {
       const tag = document.activeElement?.tagName;
       if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
         e.preventDefault();
-        document.getElementById('search-input')?.focus();
+        DOM.searchInput?.focus();
       }
       if (e.key === 'Escape') document.activeElement?.blur();
+    });
+
+    bus.addEventListener('themeChanged', () => {
+      if (document.activeElement === DOM.searchInput) DOM.searchInput?.focus();
     });
 
   } catch (err) {

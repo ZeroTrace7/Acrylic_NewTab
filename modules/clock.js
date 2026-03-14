@@ -1,5 +1,6 @@
 import { Prefs } from './storage.js';
 import { getGreeting } from './utils.js';
+import { DOM } from './dom.js';
 
 let tickInterval = null;
 let tickTimeout = null;
@@ -7,11 +8,11 @@ let use24 = false;
 let userName = '';
 
 function is24HourFormat(format) {
-  return format === '24' || format === '24h';
+  return format === '24h';
 }
 
 function updateClock() {
-  const el = document.getElementById('simple-clock');
+  const el = DOM.clock;
   if (!el) return;
 
   const now = new Date();
@@ -28,12 +29,12 @@ function updateClock() {
 }
 
 function updateGreeting(date) {
-  const el = document.getElementById('greeting-text');
+  const el = DOM.greeting;
   if (el) el.textContent = getGreeting(date, userName);
 }
 
 function updateDate(date) {
-  const el = document.getElementById('date-text');
+  const el = DOM.date;
   if (!el) return;
 
   el.textContent = date.toLocaleDateString('en-US', {
@@ -60,9 +61,16 @@ function startClockTimer() {
 }
 
 export async function initClock() {
-  const prefs = await Prefs.getAll();
-  use24 = is24HourFormat(prefs.clockFormat);
-  userName = prefs.userName || '';
+  let currentFormat = await Prefs.get('clockFormat');
+
+  /* silent migration for legacy users */
+  if (currentFormat === '24') {
+    currentFormat = '24h';
+    await Prefs.set('clockFormat', '24h');
+  }
+
+  use24 = is24HourFormat(currentFormat);
+  userName = (await Prefs.get('userName')) || '';
 
   tick();
   startClockTimer();

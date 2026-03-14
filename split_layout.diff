@@ -1,0 +1,629 @@
+diff --git a/css/components.css b/css/components.css
+index 1fee787..c1951d4 100644
+--- a/css/components.css
++++ b/css/components.css
+@@ -54,6 +54,24 @@
+   transform: scale(0.92);
+ }
+ 
++#settings-btn {
++  position: fixed;
++  top: 16px;
++  right: 16px;
++  z-index: 100;
++  background: rgba(255, 255, 255, 0.08);
++  border: 1px solid rgba(255, 255, 255, 0.12);
++  border-radius: 12px;
++  padding: 8px 12px;
++  backdrop-filter: blur(12px);
++  -webkit-backdrop-filter: blur(12px);
++  cursor: pointer;
++  display: flex;
++  align-items: center;
++  gap: 6px;
++  color: rgba(255, 255, 255, 0.7);
++}
++
+ #search-section,
+ .search-section {
+   width: 100%;
+@@ -178,6 +196,40 @@
+   gap: 6px;
+ }
+ 
++.quicklinks-zone {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 8px;
++}
++
++.ql-pill {
++  background: rgba(255, 255, 255, 0.06);
++  border: 1px solid rgba(255, 255, 255, 0.10);
++  border-radius: 20px;
++  padding: 10px 8px;
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 4px;
++  backdrop-filter: blur(12px);
++  -webkit-backdrop-filter: blur(12px);
++}
++
++.sidebar-grid {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  gap: 8px;
++}
++
++.bottom-grid {
++  display: flex;
++  flex-wrap: wrap;
++  justify-content: center;
++  gap: 12px;
++}
++
+ .quicklinks-grid {
+   display: flex;
+   flex-wrap: wrap;
+@@ -251,6 +303,10 @@
+   color: rgba(255, 255, 255, 0.8);
+ }
+ 
++.quicklink-label-hidden {
++  display: none;
++}
++
+ .add-link-btn {
+   width: clamp(68px, 7vw, 88px);
+   height: clamp(34px, 3.5vw, 42px);
+diff --git a/modules/dom.js b/modules/dom.js
+index 1138076..6bbfce7 100644
+--- a/modules/dom.js
++++ b/modules/dom.js
+@@ -12,10 +12,23 @@ export const DOM = {
+   quicklinksGrid: document.getElementById('quicklinks-grid'),
+   addLinkBtn: document.getElementById('add-link-btn'),
+ 
++  get sidebarGrid() {
++    return document.getElementById('sidebar-apps-grid');
++  },
++
++  get bottomGrid() {
++    return document.getElementById('bottom-links-grid');
++  },
++
+   settingsBtn: document.getElementById('settings-btn'),
+   toolsFab: document.getElementById('tools-fab'),
+ 
+-  rightPanel: document.getElementById('right-panel'),
+-  toolsPanelMount: document.getElementById('tools-panel-mount')
++  get rightPanel() {
++    return document.getElementById('right-panel');
++  },
++
++  get toolsPanelMount() {
++    return document.getElementById('tools-panel-mount');
++  }
+ };
+ 
+diff --git a/modules/quicklinks.js b/modules/quicklinks.js
+index 214734c..d837d8e 100644
+--- a/modules/quicklinks.js
++++ b/modules/quicklinks.js
+@@ -1,6 +1,8 @@
+ import { Store, Prefs } from './storage.js';
+-import { generateId, getFaviconUrl, sanitizeUrl, truncate, getDomain } from './utils.js';
++import { generateId, getFaviconUrl, sanitizeUrl, getDomain } from './utils.js';
+ import { toast } from './toast.js';
++import { DOM } from './dom.js';
++import { bus } from './event-bus.js';
+ 
+ let links = [];
+ let maxLinks = 12;
+@@ -14,51 +16,63 @@ function getDefaultLinks() {
+   ];
+ }
+ 
+-function renderLinks() {
+-  const container = document.getElementById('quicklinks-section');
+-  const grid = document.getElementById('quicklinks-grid');
+-  if (!grid) return;
+-  grid.innerHTML = '';
+-  grid.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:8px;`;
+-  links.forEach(link => grid.appendChild(createTile(link)));
+-  const addBtn = document.getElementById('add-link-btn');
+-  if (addBtn) {
+-    addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+-    addBtn.style.cssText = `width:36px;
+-height:36px;
+-border-radius:50%;
+-background:transparent;
+-border:1px dashed rgba(255,255,255,0.15);
+-color:rgba(255,255,255,0.25);
+-font-size:1rem;
+-cursor:pointer;
+-display:flex;
+-align-items:center;
+-justify-content:center;
+-margin-top:4px;
+-transition:all 150ms ease;`;
++function ensureQuicklinksStructure() {
++  return Boolean(DOM.sidebarGrid && DOM.bottomGrid);
++}
++
++function getLinkById(id) {
++  return links.find((link) => link.id === id) || null;
++}
++
++function setTileIcon(iconWrap, link) {
++  if (!iconWrap) return;
++
++  if (link.favicon) {
++    const img = document.createElement('img');
++    img.className = 'quicklink-favicon';
++    img.src = link.favicon;
++    img.onerror = () => {
++      const ph = document.createElement('div');
++      ph.className = 'quicklink-favicon-placeholder';
++      ph.textContent = (link.title[0] || '?').toUpperCase();
++      iconWrap.replaceChildren(ph);
++    };
++    iconWrap.replaceChildren(img);
++    return;
+   }
+ 
+-  // Build glass pill wrapper once
+-  let pill = container?.querySelector('.ql-pill');
+-  if (container && !pill) {
+-    pill = document.createElement('div');
+-    pill.className = 'ql-pill';
+-    pill.style.cssText = `background:rgba(255,255,255,0.06);
+-border:1px solid rgba(255,255,255,0.10);
+-border-radius:20px;
+-padding:10px 8px;
+-display:flex;
+-flex-direction:column;
+-align-items:center;
+-gap:4px;
+-backdrop-filter:blur(12px);
+--webkit-backdrop-filter:blur(12px);`;
+-    container.innerHTML = '';
+-    pill.appendChild(grid);
+-    if (addBtn) pill.appendChild(addBtn);
+-    container.appendChild(pill);
++  const ph = document.createElement('div');
++  ph.className = 'quicklink-favicon-placeholder';
++  ph.textContent = (link.title[0] || '?').toUpperCase();
++  iconWrap.replaceChildren(ph);
++}
++
++function renderLinks() {
++  if (!ensureQuicklinksStructure()) return;
++  const sidebarGrid = DOM.sidebarGrid;
++  const bottomGrid = DOM.bottomGrid;
++  if (!sidebarGrid || !bottomGrid) return;
++
++  sidebarGrid.innerHTML = '';
++  bottomGrid.innerHTML = '';
++
++  links.forEach((linkData) => {
++    const tile = createTile(linkData);
++    if (linkData.isApp) {
++      sidebarGrid.appendChild(tile);
++      const label = tile.querySelector('.quicklink-label');
++      if (label) label.classList.add('quicklink-label-hidden');
++      return;
++    }
++    bottomGrid.appendChild(tile);
++  });
++
++  if (DOM.addLinkBtn && DOM.bottomGrid?.parentElement) {
++    DOM.bottomGrid.parentElement.appendChild(DOM.addLinkBtn);
+   }
++
++  const addBtn = DOM.addLinkBtn;
++  if (addBtn) addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+ }
+ 
+ function createTile(link) {
+@@ -84,13 +98,19 @@ function createTile(link) {
+ `;
+ 
+   a.addEventListener('click', (e) => {
++    const currentLink = getLinkById(a.dataset.id) || link;
+     if (e.button === 1 || e.ctrlKey || e.metaKey) return;
+     e.preventDefault();
+-    window.location.href = link.url;
++    window.location.href = currentLink.url;
++  });
++  a.addEventListener('contextmenu', (e) => {
++    const currentLink = getLinkById(a.dataset.id) || link;
++    e.preventDefault();
++    openContextMenu(e, currentLink);
+   });
+-  a.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, link); });
+ 
+   const iconEl = document.createElement('div');
++  iconEl.className = 'ql-icon-wrap';
+   iconEl.style.cssText = `
+   width: 40px;
+   height: 40px;
+@@ -104,23 +124,7 @@ function createTile(link) {
+   transition: background 150ms ease;
+ `;
+ 
+-  if (link.favicon) {
+-    const img = document.createElement('img');
+-    img.className = 'quicklink-favicon';
+-    img.src = link.favicon;
+-    img.onerror = () => {
+-      const ph = document.createElement('div');
+-      ph.className = 'quicklink-favicon-placeholder';
+-      ph.textContent = (link.title[0] || '?').toUpperCase();
+-      iconEl.replaceChildren(ph);
+-    };
+-    iconEl.appendChild(img);
+-  } else {
+-    const ph = document.createElement('div');
+-    ph.className = 'quicklink-favicon-placeholder';
+-    ph.textContent = (link.title[0] || '?').toUpperCase();
+-    iconEl.appendChild(ph);
+-  }
++  setTileIcon(iconEl, link);
+ 
+   a.appendChild(iconEl);
+   wrapper.appendChild(a);
+@@ -146,7 +150,7 @@ function openContextMenu(e, link) {
+   const delBtn = document.createElement('button');
+   delBtn.className = 'engine-option';
+   delBtn.textContent = 'Delete';
+-  delBtn.onclick = () => { removeContextMenu(); deleteLink(link.id); };
++  delBtn.onclick = () => { removeContextMenu(); removeLink(link.id); };
+ 
+   menu.append(editBtn, delBtn);
+   document.body.appendChild(menu);
+@@ -158,7 +162,7 @@ function openContextMenu(e, link) {
+ }
+ 
+ function removeContextMenu() {
+-  document.getElementById('ql-context-menu')?.remove();
++  document.querySelector('#ql-context-menu')?.remove();
+ }
+ 
+ function openLinkModal(existingLink = null) {
+@@ -195,7 +199,7 @@ function openLinkModal(existingLink = null) {
+     const url = sanitizeUrl(rawUrl);
+     const title = titleInput.value.trim() || getDomain(url) || 'Link';
+     if (existingLink) updateLink(existingLink.id, title, url);
+-    else saveLink(title, url);
++    else addLink(title, url);
+     close();
+   };
+ 
+@@ -207,9 +211,18 @@ function openLinkModal(existingLink = null) {
+   setTimeout(() => titleInput.focus(), 50);
+ }
+ 
+-function saveLink(title, url) {
+-  links.push({ id: generateId(), title, url: sanitizeUrl(url), favicon: getFaviconUrl(url) });
++function emitLinksUpdated() {
++  bus.dispatchEvent(new CustomEvent('linksUpdated', { detail: { links: [...links], source: 'quicklinks' } }));
++}
++
++function persistLinks() {
+   Store.setLinks(links);
++  emitLinksUpdated();
++}
++
++function addLink(title, url) {
++  links.push({ id: generateId(), title, url: sanitizeUrl(url), favicon: getFaviconUrl(url) });
++  persistLinks();
+   renderLinks();
+   toast.success('Link added!');
+ }
+@@ -220,14 +233,14 @@ function updateLink(id, title, url) {
+   link.title = title;
+   link.url = sanitizeUrl(url);
+   link.favicon = getFaviconUrl(url);
+-  Store.setLinks(links);
++  persistLinks();
+   renderLinks();
+   toast.success('Link updated!');
+ }
+ 
+-function deleteLink(id) {
++function removeLink(id) {
+   links = links.filter(l => l.id !== id);
+-  Store.setLinks(links);
++  persistLinks();
+   renderLinks();
+   toast.info('Link removed');
+ }
+@@ -242,7 +255,13 @@ export async function initQuickLinks() {
+     links = stored;
+   }
+   renderLinks();
+-  document.getElementById('add-link-btn')?.addEventListener('click', () => openLinkModal());
++  DOM.addLinkBtn?.addEventListener('click', () => openLinkModal());
++  bus.addEventListener('linksUpdated', (event) => {
++    const incoming = event.detail?.links;
++    if (!Array.isArray(incoming) || event.detail?.source === 'quicklinks') return;
++    links = incoming;
++    renderLinks();
++  });
+   Prefs.onChange((changes) => {
+     if ('quickLinksMax' in changes) { maxLinks = changes.quickLinksMax; renderLinks(); }
+   });
+diff --git a/modules/storage.js b/modules/storage.js
+index 99f4c17..60a01c2 100644
+--- a/modules/storage.js
++++ b/modules/storage.js
+@@ -14,8 +14,7 @@ export const Prefs = {
+     grainOpacity:    0.035,
+     userName:        '',
+     searchEngine:    'google',
+-    clockFormat:     '12',
+-    showSeconds:     true,
++    clockFormat:     '12h',
+     quickLinksMax:   12,
+     onboardingDone:  false,
+   },
+@@ -29,17 +28,25 @@ export const Prefs = {
+   /** Gets all preferences, merging stored values over defaults. */
+   async getAll() {
+     const result = await chrome.storage.sync.get(null);
+-    return { ...this.defaults, ...result };
++    const merged = { ...this.defaults, ...result };
++    merged.clockFormat = normalizeClockFormat(merged.clockFormat);
++    return merged;
+   },
+ 
+   /** Sets a single preference by key. */
+   async set(key, value) {
++    if (key === 'clockFormat') {
++      await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
++      return;
++    }
+     await chrome.storage.sync.set({ [key]: value });
+   },
+ 
+   /** Sets multiple preferences at once. */
+   async setMany(obj) {
+-    await chrome.storage.sync.set(obj);
++    const next = { ...obj };
++    if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
++    await chrome.storage.sync.set(next);
+   },
+ 
+   /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
+@@ -54,6 +61,10 @@ export const Prefs = {
+   },
+ };
+ 
++function normalizeClockFormat(value) {
++  return value === '24h' ? '24h' : '12h';
++}
++
+ // ─── PART 2 — Store (chrome.storage.local) ──────────────────
+ 
+ export const Store = {
+diff --git a/newtab.html b/newtab.html
+index 751b5cd..ff8a2b8 100644
+--- a/newtab.html
++++ b/newtab.html
+@@ -13,6 +13,10 @@
+   >
+ 
+   <link rel="stylesheet" href="newtab.css">
++  <link rel="stylesheet" href="css/layout.css">
++  <link rel="stylesheet" href="css/components.css">
++  <link rel="stylesheet" href="css/panels.css">
++  <link rel="stylesheet" href="css/animations.css">
+ </head>
+ <body id="app-body" class="theme-midnight">
+ 
+@@ -28,22 +32,7 @@
+     <header id="top-bar" class="top-bar">
+       <div></div>
+       <div class="top-bar-actions">
+-        <button id="settings-btn" aria-label="Settings" style="
+-          position: fixed;
+-          top: 16px;
+-          right: 16px;
+-          background: rgba(255,255,255,0.08);
+-          border: 1px solid rgba(255,255,255,0.12);
+-          border-radius: 12px;
+-          padding: 8px 12px;
+-          backdrop-filter: blur(12px);
+-          -webkit-backdrop-filter: blur(12px);
+-          cursor: pointer;
+-          display: flex;
+-          align-items: center;
+-          gap: 6px;
+-          color: rgba(255,255,255,0.7);
+-        ">
++        <button id="settings-btn" aria-label="Settings">
+           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <line x1="8" y1="6" x2="21" y2="6"/>
+             <line x1="8" y1="12" x2="21" y2="12"/>
+@@ -58,14 +47,9 @@
+ 
+     <!-- Left Dock — vertically centered, absolute -->
+     <aside id="left-dock" class="left-dock">
+-      <button id="tools-fab" class="fab glass" aria-label="Open Quick Tools">
+-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+-          <rect x="3" y="3" width="7" height="7"></rect>
+-          <rect x="14" y="3" width="7" height="7"></rect>
+-          <rect x="3" y="14" width="7" height="7"></rect>
+-          <rect x="14" y="14" width="7" height="7"></rect>
+-        </svg>
+-      </button>
++      <div class="ql-pill">
++        <div id="sidebar-apps-grid" class="sidebar-grid"></div>
++      </div>
+     </aside>
+ 
+     <!-- Clock Zone -->
+@@ -105,17 +89,19 @@
+     </section>
+ 
+     <!-- Quick Links Zone -->
+-    <section id="quicklinks-zone">
+-      <section id="quicklinks-section" class="quicklinks-section">
+-        <div id="quicklinks-grid" class="quicklinks-grid"></div>
+-        <button id="add-link-btn" class="add-link-btn glass-subtle" aria-label="Add quick link">
+-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+-            <line x1="12" y1="5" x2="12" y2="19"></line>
+-            <line x1="5" y1="12" x2="19" y2="12"></line>
+-          </svg>
+-        </button>
+-      </section>
+-    </section>
++    <div id="quicklinks-zone" class="quicklinks-zone">
++      <div id="bottom-links-grid" class="bottom-grid"></div>
++      <button id="add-link-btn" class="add-link-btn" aria-label="Add quick link">+</button>
++    </div>
++
++    <button id="tools-fab" class="fab glass" aria-label="Open Quick Tools">
++      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
++        <rect x="3" y="3" width="7" height="7"></rect>
++        <rect x="14" y="3" width="7" height="7"></rect>
++        <rect x="3" y="14" width="7" height="7"></rect>
++        <rect x="14" y="14" width="7" height="7"></rect>
++      </svg>
++    </button>
+ 
+     <!-- Right Panel — off-canvas, slides in -->
+     <aside id="right-panel" class="right-panel">
+diff --git a/panels/toolspanel.js b/panels/toolspanel.js
+index 93ff1af..9844b3e 100644
+--- a/panels/toolspanel.js
++++ b/panels/toolspanel.js
+@@ -1,4 +1,5 @@
+ import { toast } from '../modules/toast.js';
++import { DOM } from '../modules/dom.js';
+ 
+ let panelEl = null;
+ let isOpen = false;
+@@ -14,49 +15,29 @@ const TABS = [
+ function buildPanel() {
+   const panel = document.createElement('div');
+   panel.id = 'tools-panel';
+-  panel.className = 'glass';
+-  Object.assign(panel.style, {
+-    width: '100%',
+-    height: '100%',
+-    display: 'flex',
+-    flexDirection: 'column',
+-    overflow: 'hidden',
+-  });
++  panel.className = 'glass tools-drawer';
+ 
+   // Header
+   const header = document.createElement('div');
+   header.className = 'panel-header';
+-  Object.assign(header.style, { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 16px 0 16px', flexShrink: '0' });
+   const h2 = document.createElement('h2');
++  h2.className = 'panel-title';
+   h2.textContent = 'Quick Tools';
+-  Object.assign(h2.style, { fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' });
+   const closeBtn = document.createElement('button');
+   closeBtn.id = 'panel-close-btn';
++  closeBtn.className = 'panel-close-btn';
+   closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+-  Object.assign(closeBtn.style, {
+-    width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+-    borderRadius: '50%', background: 'var(--glass-subtle)', border: '1px solid var(--glass-border-soft)',
+-    color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease',
+-  });
+-  closeBtn.onmouseenter = () => { closeBtn.style.color = 'var(--text-primary)'; closeBtn.style.background = 'var(--glass-bg)'; };
+-  closeBtn.onmouseleave = () => { closeBtn.style.color = 'var(--text-secondary)'; closeBtn.style.background = 'var(--glass-subtle)'; };
+   header.append(h2, closeBtn);
+ 
+   // Tab bar
+   const tabBar = document.createElement('div');
+   tabBar.className = 'panel-tabs';
+-  Object.assign(tabBar.style, { display: 'flex', gap: '4px', padding: '12px 16px 0 16px', flexShrink: '0' });
+   TABS.forEach(tab => {
+     const btn = document.createElement('button');
+     btn.className = 'panel-tab-btn';
+     btn.dataset.tabId = tab.id;
+     btn.innerHTML = `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`;
+-    Object.assign(btn.style, {
+-      flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+-      padding: '8px 4px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '500',
+-      color: 'var(--text-secondary)', cursor: 'pointer', transition: 'all 150ms ease', border: '1px solid transparent',
+-    });
+-    if (tab.id === activeTab) applyActiveStyle(btn);
++    if (tab.id === activeTab) btn.classList.add('is-active');
+     btn.onclick = () => switchTab(tab.id);
+     tabBar.appendChild(btn);
+   });
+@@ -64,28 +45,24 @@ function buildPanel() {
+   // Content
+   const content = document.createElement('div');
+   content.id = 'panel-content';
+-  Object.assign(content.style, { flex: '1', overflowY: 'auto', padding: '16px', minHeight: '0' });
++  content.className = 'panel-content';
+ 
+   panel.append(header, tabBar, content);
+   return panel;
+ }
+ 
+-function applyActiveStyle(btn) {
+-  Object.assign(btn.style, { background: 'var(--glass-bg)', color: 'var(--text-primary)', borderColor: 'var(--glass-border-soft)' });
+-}
+-
+ function resetTabStyle(btn) {
+-  Object.assign(btn.style, { background: 'transparent', color: 'var(--text-secondary)', borderColor: 'transparent' });
++  btn.classList.remove('is-active');
+ }
+ 
+ function switchTab(tabId) {
+   activeTab = tabId;
+   panelEl?.querySelectorAll('.panel-tab-btn').forEach(btn => {
+-    btn.dataset.tabId === tabId ? applyActiveStyle(btn) : resetTabStyle(btn);
++    btn.dataset.tabId === tabId ? btn.classList.add('is-active') : resetTabStyle(btn);
+   });
+-  const contentEl = document.getElementById('panel-content');
++  const contentEl = panelEl?.querySelector('#panel-content');
+   if (!contentEl) return;
+-  contentEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:32px 0;font-size:0.875rem;">Loading...</div>`;
++  contentEl.innerHTML = '<div class="panel-loading">Loading...</div>';
+ 
+   const loaders = {
+     productivity: () => import('../panels/pomodoro.js').then(m => m.initPomodoro),
+@@ -102,8 +79,8 @@ function openPanel(callback) {
+   isOpen = true;
+   onCloseCallback = callback;
+ 
+-  const mount = document.getElementById('tools-panel-mount');
+-  const rightPanel = document.getElementById('right-panel');
++  const mount = DOM.toolsPanelMount;
++  const rightPanel = DOM.rightPanel;
+ 
+   panelEl = buildPanel();
+   (mount || document.body).appendChild(panelEl);
+@@ -115,8 +92,8 @@ function openPanel(callback) {
+   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
+   setTimeout(() => {
+     document.addEventListener('mousedown', (e) => {
+-      const fab = document.getElementById('tools-fab');
+-      const rp = document.getElementById('right-panel');
++      const fab = DOM.toolsFab;
++      const rp = DOM.rightPanel;
+       if (panelEl && rp && !rp.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
+     }, { once: true });
+   }, 10);
+@@ -126,7 +103,7 @@ function closePanel() {
+   if (!isOpen) return;
+   isOpen = false;
+ 
+-  const rightPanel = document.getElementById('right-panel');
++  const rightPanel = DOM.rightPanel;
+   if (rightPanel) rightPanel.classList.remove('open');
+ 
+   if (panelEl) {

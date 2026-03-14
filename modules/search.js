@@ -1,6 +1,8 @@
 import { Prefs } from './storage.js';
 import { sanitizeUrl, isValidUrl } from './utils.js';
 import { toast } from './toast.js';
+import { DOM } from './dom.js';
+import { bus } from './event-bus.js';
 
 const ENGINES = [
   { id: 'google',     name: 'Google',     url: 'https://www.google.com/search?q=',     icon: 'https://www.google.com/favicon.ico' },
@@ -19,7 +21,7 @@ function getEngine(id) {
 
 function setEngine(engine) {
   currentEngine = engine;
-  const icon = document.getElementById('engine-icon');
+  const icon = DOM.engineBtn?.querySelector('img') || document.querySelector('#engine-icon');
   if (icon) { icon.src = engine.icon; icon.alt = engine.name; }
   Prefs.set('searchEngine', engine.id);
   document.querySelectorAll('.engine-option').forEach((el) => {
@@ -29,7 +31,7 @@ function setEngine(engine) {
 
 function openPicker() {
   pickerOpen = true;
-  const picker = document.getElementById('engine-picker');
+  const picker = DOM.enginePicker;
   if (picker) picker.removeAttribute('hidden');
   setTimeout(() => {
     document.addEventListener('mousedown', handleOutsideClick, { once: true });
@@ -37,8 +39,8 @@ function openPicker() {
 }
 
 function handleOutsideClick(e) {
-  const picker = document.getElementById('engine-picker');
-  const btn = document.getElementById('engine-btn');
+  const picker = DOM.enginePicker;
+  const btn = DOM.engineBtn;
   if (picker && !picker.contains(e.target) && btn && !btn.contains(e.target)) {
     closePicker();
   } else if (pickerOpen) {
@@ -48,7 +50,7 @@ function handleOutsideClick(e) {
 
 function closePicker() {
   pickerOpen = false;
-  const picker = document.getElementById('engine-picker');
+  const picker = DOM.enginePicker;
   if (picker) picker.setAttribute('hidden', '');
 }
 
@@ -57,7 +59,7 @@ function togglePicker() {
 }
 
 function buildPicker() {
-  const picker = document.getElementById('engine-picker');
+  const picker = DOM.enginePicker;
   if (!picker) return;
   picker.innerHTML = '';
   ENGINES.forEach((engine) => {
@@ -87,9 +89,9 @@ export async function initSearch() {
   setEngine(getEngine(savedId));
   buildPicker();
 
-  const input = document.getElementById('search-input');
-  const submit = document.getElementById('search-submit');
-  const engineBtn = document.getElementById('engine-btn');
+  const input = DOM.searchInput;
+  const submit = DOM.searchSubmit;
+  const engineBtn = DOM.engineBtn;
 
   if (engineBtn) {
     engineBtn.addEventListener('click', togglePicker);
@@ -115,4 +117,6 @@ export async function initSearch() {
   Prefs.onChange((changes) => {
     if ('searchEngine' in changes) setEngine(getEngine(changes.searchEngine));
   });
+
+  bus.addEventListener('themeChanged', closePicker);
 }

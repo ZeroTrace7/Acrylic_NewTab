@@ -2,11 +2,14 @@ import { Prefs } from '../modules/storage.js';
 import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
 import { isValidUrl } from '../modules/utils.js';
+import { bus } from '../modules/event-bus.js';
+import { UI_CONFIG } from '../modules/ui-config.js';
 
 let modalEl = null;
 let prefs = {};
 let onCloseCallback = null;
 let escHandler = null;
+let themeChangedHandler = null;
 
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
 
@@ -158,10 +161,10 @@ function buildModal() {
   const sec4 = document.createElement('div');
   sec4.appendChild(sectionLabel('Clock'));
   const renderClock = () => {
-    const is24 = prefs.clockFormat === '24' || prefs.clockFormat === '24h';
+    const is24 = prefs.clockFormat === '24h';
     while (sec4.childNodes.length > 1) sec4.removeChild(sec4.lastChild);
     sec4.appendChild(toggleRow('24-hour format', is24, () => {
-      prefs.clockFormat = is24 ? '12' : '24';
+      prefs.clockFormat = is24 ? '12h' : '24h';
       Prefs.set('clockFormat', prefs.clockFormat); renderClock();
     }));
   };
@@ -195,15 +198,33 @@ function buildModal() {
 async function openSettings(callback) {
   onCloseCallback = callback;
   prefs = await Prefs.getAll();
+  document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
+  document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
+  document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
+  document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
   modalEl = buildModal();
-  (document.getElementById('settings-modal-mount') || document.body).appendChild(modalEl);
+  (document.querySelector('#settings-modal-mount') || document.body).appendChild(modalEl);
   escHandler = (e) => { if (e.key === 'Escape') closeSettings(); };
   document.addEventListener('keydown', escHandler);
+  themeChangedHandler = async () => {
+    prefs.theme = await Prefs.get('theme');
+    modalEl?.querySelectorAll('button').forEach((btn) => {
+      if (!btn.textContent) return;
+      const theme = getAvailableThemes().find((t) => t.label === btn.textContent.trim());
+      if (!theme) return;
+      const active = prefs.theme === theme.id;
+      btn.style.borderColor = active ? 'var(--glass-border)' : 'transparent';
+      btn.style.background = active ? 'var(--glass-subtle)' : 'transparent';
+      btn.style.color = active ? 'var(--text-primary)' : 'var(--text-secondary)';
+    });
+  };
+  bus.addEventListener('themeChanged', themeChangedHandler);
 }
 
 function closeSettings() {
   if (modalEl) { modalEl.remove(); modalEl = null; }
   if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
+  if (themeChangedHandler) { bus.removeEventListener('themeChanged', themeChangedHandler); themeChangedHandler = null; }
   onCloseCallback?.();
   onCloseCallback = null;
 }

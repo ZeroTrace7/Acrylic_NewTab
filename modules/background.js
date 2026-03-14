@@ -1,5 +1,6 @@
 import { Prefs } from './storage.js';
 import { toast } from './toast.js';
+import { bus } from './event-bus.js';
 
 const THEMES = [
   { id: 'midnight',  label: 'Midnight'  },
@@ -25,6 +26,7 @@ function applyTheme(themeId) {
   THEMES.forEach(t => body.classList.remove(`theme-${t.id}`));
   body.classList.add(`theme-${themeId}`);
   if (!currentWallpaperUrl) body.classList.remove('has-wallpaper');
+  bus.dispatchEvent(new CustomEvent('themeChanged'));
 }
 
 function applyWallpaper(url, blur = 0, darken = 0.45) {
