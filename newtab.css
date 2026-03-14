@@ -58,7 +58,7 @@
 
   /* Background */
   --bg-image:         none;
-  --bg-darken:        0.45;
+  --bg-darken:        0.40;
   --bg-grain-opacity: 0.035;
   --bg-blur-amount:   0px;
 }
@@ -315,7 +315,7 @@ body.has-wallpaper {
 
 #middle-zone {
   position: absolute;
-  top: 50%;
+  top: 53%;
   left: 50%;
   transform: translate(-50%, -50%);
   display: flex;
@@ -424,8 +424,8 @@ body.has-wallpaper {
 .clock-greeting {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
-  font-weight: 700;
+  font-size: clamp(1.55rem, 3.6vw, 2.3rem);
+  font-weight: 600;
   color: var(--text-primary);
   text-align: center;
   margin: 0;
@@ -463,7 +463,7 @@ body.has-wallpaper {
 }
 
 #search-wrapper {
-  width: min(520px, 80vw);
+  width: min(620px, 85vw);
   margin: 0 auto;
 }
 
