@@ -191,14 +191,17 @@ function buildModal() {
   const qlRow = document.createElement('div');
   qlRow.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
   const qlLbl = document.createElement('span');
-  qlLbl.textContent = 'Max links';
+  qlLbl.textContent = 'Top links';
   qlLbl.setAttribute('style', 'font-size:0.85rem;color:var(--text-primary);');
-  const qlIn = document.createElement('input');
-  qlIn.type = 'number'; qlIn.min = 4; qlIn.max = 20; qlIn.step = 4; qlIn.value = prefs.quickLinksMax || 12;
-  qlIn.setAttribute('style', 'width:70px;padding:6px 10px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:8px;color:var(--text-primary);font-size:0.9rem;text-align:center;outline:none;');
-  qlIn.onchange = () => Prefs.set('quickLinksMax', parseInt(qlIn.value));
-  qlRow.append(qlLbl, qlIn);
+  const qlValue = document.createElement('span');
+  qlValue.textContent = '6';
+  qlValue.setAttribute('style', 'min-width:70px;padding:6px 10px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:8px;color:var(--text-primary);font-size:0.9rem;text-align:center;');
+  qlRow.append(qlLbl, qlValue);
   sec5.appendChild(qlRow);
+  const qlHint = document.createElement('div');
+  qlHint.textContent = 'Shows your top 6 browser sites automatically.';
+  qlHint.setAttribute('style', 'margin-top:8px;font-size:0.75rem;color:var(--text-secondary);');
+  sec5.appendChild(qlHint);
 
   // Footer
   const footer = document.createElement('div');

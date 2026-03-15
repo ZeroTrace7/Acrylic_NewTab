@@ -1,13 +1,12 @@
-import { Store, Prefs } from './storage.js';
+import { Store } from './storage.js';
 import { generateId, getFaviconUrl, sanitizeUrl, getDomain } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
 
 let links = [];
-let maxLinks = 12;
-const VISIBLE_BOTTOM_LINKS = 6;
-let showAllBottomLinks = false;
+let topSiteLinks = [];
+const TOP_SITE_LIMIT = 6;
 
 function getDefaultLinks() {
   return [
@@ -31,20 +30,6 @@ function getDefaultLinks() {
       url: 'https://chat.openai.com',
       favicon: getFaviconUrl('https://chat.openai.com'),
       isApp: true
-    },
-    {
-      id: generateId(),
-      title: 'GitHub',
-      url: 'https://github.com',
-      favicon: getFaviconUrl('https://github.com'),
-      isApp: false
-    },
-    {
-      id: generateId(),
-      title: 'Twitter',
-      url: 'https://twitter.com',
-      favicon: getFaviconUrl('https://twitter.com'),
-      isApp: false
     }
   ];
 }
@@ -54,7 +39,52 @@ function ensureQuicklinksStructure() {
 }
 
 function getLinkById(id) {
-  return links.find((link) => link.id === id) || null;
+  return links.find((link) => link.id === id)
+    || topSiteLinks.find((link) => link.id === id)
+    || null;
+}
+
+function isRenderableTopSite(site) {
+  if (!site?.url) return false;
+  try {
+    const parsed = new URL(site.url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function mapTopSite(site) {
+  const url = site.url;
+  return {
+    id: `topsite:${encodeURIComponent(url)}`,
+    title: site.title?.trim() || getDomain(url) || 'Top Site',
+    url,
+    favicon: getFaviconUrl(url),
+    isApp: false,
+    isTopSite: true,
+  };
+}
+
+async function loadTopSiteLinks() {
+  const items = await new Promise((resolve) => {
+    chrome.topSites.get((sites) => resolve(Array.isArray(sites) ? sites : []));
+  });
+
+  const seen = new Set();
+  return items
+    .filter(isRenderableTopSite)
+    .filter((site) => {
+      if (seen.has(site.url)) return false;
+      seen.add(site.url);
+      return true;
+    })
+    .map(mapTopSite);
+}
+
+function migrateStoredLinks(stored) {
+  if (!Array.isArray(stored) || stored.length === 0) return getDefaultLinks();
+  return stored.filter((link) => link?.isApp === true);
 }
 
 function setTileIcon(iconWrap, link) {
@@ -85,46 +115,13 @@ function renderLinks() {
   const sidebarGrid = DOM.sidebarGrid;
   const bottomGrid = DOM.bottomGrid;
   if (!sidebarGrid || !bottomGrid) return;
+  document.getElementById('ql-more-btn')?.remove();
 
   const appLinks = links.filter((linkData) => linkData.isApp);
-  const bottomLinks = links.filter((linkData) => !linkData.isApp);
-  const visibleBottomLinks = showAllBottomLinks
-    ? bottomLinks
-    : bottomLinks.slice(0, VISIBLE_BOTTOM_LINKS);
+  const bottomLinks = topSiteLinks.slice(0, TOP_SITE_LIMIT);
 
   syncGrid(sidebarGrid, appLinks, true);
-  syncGrid(bottomGrid, visibleBottomLinks, false);
-
-  const hiddenBottomCount = Math.max(0, bottomLinks.length - VISIBLE_BOTTOM_LINKS);
-  upsertMoreToggle(hiddenBottomCount);
-}
-
-function upsertMoreToggle(hiddenBottomCount) {
-  const zone = DOM.bottomGrid?.parentElement;
-  if (!zone) return;
-
-  let moreBtn = document.getElementById('ql-more-btn');
-  if (hiddenBottomCount === 0) {
-    moreBtn?.remove();
-    showAllBottomLinks = false;
-    return;
-  }
-
-  if (!moreBtn) {
-    moreBtn = document.createElement('button');
-    moreBtn.id = 'ql-more-btn';
-    moreBtn.type = 'button';
-    moreBtn.className = 'add-link-btn glass-subtle more-links-btn';
-    moreBtn.ariaLabel = 'Toggle quick links visibility';
-    moreBtn.addEventListener('click', () => {
-      showAllBottomLinks = !showAllBottomLinks;
-      renderLinks();
-    });
-  }
-
-  moreBtn.textContent = showAllBottomLinks ? 'Show less' : `+${hiddenBottomCount} more`;
-
-  zone.appendChild(moreBtn);
+  syncGrid(bottomGrid, bottomLinks, false);
 }
 
 function syncGrid(grid, targetLinks, hideLabel = false) {
@@ -199,11 +196,13 @@ function createTile(link, hideLabel = false) {
     e.preventDefault();
     window.location.href = currentLink.url;
   });
-  a.addEventListener('contextmenu', (e) => {
-    const currentLink = getLinkById(a.dataset.id) || link;
-    e.preventDefault();
-    openContextMenu(e, currentLink);
-  });
+  if (!link.isTopSite) {
+    a.addEventListener('contextmenu', (e) => {
+      const currentLink = getLinkById(a.dataset.id) || link;
+      e.preventDefault();
+      openContextMenu(e, currentLink);
+    });
+  }
 
   const iconEl = document.createElement('div');
   iconEl.className = 'ql-icon-wrap';
@@ -299,7 +298,7 @@ function openLinkModal(existingLink = null) {
     if (!rawUrl) { toast.error('URL cannot be empty'); return; }
     const url = sanitizeUrl(rawUrl);
     const title = titleInput.value.trim() || getDomain(url) || 'Link';
-    const isApp = document.getElementById('ql-pin-sidebar')?.checked || false;
+    const isApp = sidebarToggle.checked;
     if (existingLink) updateLink(existingLink.id, title, url, isApp);
     else addLink(title, url, isApp);
     close();
@@ -349,22 +348,31 @@ function removeLink(id) {
 }
 
 export async function initQuickLinks() {
-  maxLinks = await Prefs.get('quickLinksMax') || 12;
   const stored = await Store.getLinks();
-  if (stored.length === 0) {
-    links = getDefaultLinks();
+  links = migrateStoredLinks(stored);
+  if (!Array.isArray(stored) || stored.length !== links.length) {
     await Store.setLinks(links);
-  } else {
-    links = stored;
   }
+  topSiteLinks = await loadTopSiteLinks();
   renderLinks();
+
+  const refreshTopSites = async () => {
+    topSiteLinks = await loadTopSiteLinks();
+    renderLinks();
+  };
+
+  window.addEventListener('focus', () => {
+    refreshTopSites();
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshTopSites();
+  });
+
   bus.addEventListener('linksUpdated', (event) => {
     const incoming = event.detail?.links;
     if (!Array.isArray(incoming) || event.detail?.source === 'quicklinks') return;
-    links = incoming;
+    links = incoming.filter((link) => link?.isApp === true);
     renderLinks();
-  });
-  Prefs.onChange((changes) => {
-    if ('quickLinksMax' in changes) { maxLinks = changes.quickLinksMax; renderLinks(); }
   });
 }

@@ -15,7 +15,7 @@ export const Prefs = {
     userName:        '',
     searchEngine:    'browser',
     clockFormat:     '12h',
-    quickLinksMax:   12,
+    quickLinksMax:   6,
     onboardingDone:  false,
   },
 
