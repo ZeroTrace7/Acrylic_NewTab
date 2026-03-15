@@ -13,4 +13,26 @@ Thumbs.db
 
 # Node
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Build / test output
+dist/
+build/
+coverage/
+.cache/
+.eslintcache
+
+# Local research / temp
+.tmp_research/
+tmp/
+temp/
 

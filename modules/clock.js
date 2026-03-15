@@ -24,7 +24,7 @@ function updateClock() {
   } else {
     const period = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    el.innerHTML = `${h}:${m}<span class="clock-period" style="font-family:'Gloria Hallelujah',cursive;font-weight:700;font-size:0.45em;margin-left:0.2em;vertical-align:baseline;">${period}</span>`;
+    el.innerHTML = `${h}:${m}<span class="clock-period">${period}</span>`;
   }
 }
 

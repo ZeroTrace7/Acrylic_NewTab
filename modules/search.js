@@ -13,6 +13,7 @@ const ENGINES = [
 ];
 
 let currentEngine = ENGINES[0];
+let highlightedIndex = 0;
 
 function getEngine(id) {
   return ENGINES.find((e) => e.id === id) || ENGINES[0];
@@ -23,21 +24,47 @@ function setEngine(engine) {
   const icon = DOM.engineBtn?.querySelector('img') || document.querySelector('#engine-icon');
   if (icon) { icon.src = engine.icon; icon.alt = engine.name; }
   Prefs.set('searchEngine', engine.id);
-  document.querySelectorAll('.engine-option').forEach((el) => {
-    el.classList.toggle('active', el.dataset.engineId === engine.id);
+  updatePickerSelection();
+}
+
+function getEngineOptions() {
+  return Array.from(DOM.enginePicker?.querySelectorAll('.engine-option') || []);
+}
+
+function updatePickerSelection() {
+  getEngineOptions().forEach((el, index) => {
+    const isActive = el.dataset.engineId === currentEngine.id;
+    el.classList.toggle('active', isActive);
+    el.setAttribute('aria-selected', String(isActive));
+    if (isActive) highlightedIndex = index;
   });
+}
+
+function focusOption(index) {
+  const options = getEngineOptions();
+  if (!options.length) return;
+  highlightedIndex = (index + options.length) % options.length;
+  options.forEach((el, i) => {
+    el.classList.toggle('is-focused', i === highlightedIndex);
+  });
+  options[highlightedIndex].focus();
 }
 
 function isPickerOpen() {
   return DOM.enginePicker?.classList.contains('is-open') === true;
 }
 
-function openPicker() {
+function openPicker(focusList = false) {
   const picker = DOM.enginePicker;
   if (!picker) return;
   picker.classList.add('is-open');
   DOM.engineBtn?.classList.add('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'true');
+  const activeIdx = ENGINES.findIndex((engine) => engine.id === currentEngine.id);
+  highlightedIndex = activeIdx >= 0 ? activeIdx : 0;
+  if (focusList) {
+    requestAnimationFrame(() => focusOption(highlightedIndex));
+  }
 }
 
 function closePicker() {
@@ -46,6 +73,7 @@ function closePicker() {
   picker.classList.remove('is-open');
   DOM.engineBtn?.classList.remove('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'false');
+  getEngineOptions().forEach((el) => el.classList.remove('is-focused'));
 }
 
 function togglePicker() {
@@ -57,15 +85,81 @@ function buildPicker() {
   const picker = DOM.enginePicker;
   if (!picker) return;
   picker.innerHTML = '';
-  ENGINES.forEach((engine) => {
-    const opt = document.createElement('div');
+  picker.setAttribute('role', 'listbox');
+  picker.setAttribute('aria-label', 'Search engine');
+  ENGINES.forEach((engine, index) => {
+    const opt = document.createElement('button');
+    opt.type = 'button';
     opt.className = 'engine-option';
     if (engine.id === currentEngine.id) opt.classList.add('active');
     opt.dataset.engineId = engine.id;
+    opt.setAttribute('role', 'option');
+    opt.setAttribute('aria-selected', String(engine.id === currentEngine.id));
+    opt.tabIndex = -1;
     opt.innerHTML = `<img src="${engine.icon}" alt="${engine.name}" width="16" height="16"><span>${engine.name}</span>`;
-    opt.addEventListener('click', () => { setEngine(engine); closePicker(); });
+    opt.addEventListener('mouseenter', () => {
+      highlightedIndex = index;
+      getEngineOptions().forEach((el, i) => el.classList.toggle('is-focused', i === highlightedIndex));
+    });
+    opt.addEventListener('focus', () => {
+      highlightedIndex = index;
+      getEngineOptions().forEach((el, i) => el.classList.toggle('is-focused', i === highlightedIndex));
+    });
+    opt.addEventListener('click', () => {
+      setEngine(engine);
+      closePicker();
+      DOM.engineBtn?.focus();
+    });
     picker.appendChild(opt);
   });
+  updatePickerSelection();
+}
+
+function handlePickerKeydown(e) {
+  if (!isPickerOpen()) return;
+  const options = getEngineOptions();
+  if (!options.length) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    focusOption(highlightedIndex + 1);
+    return;
+  }
+
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    focusOption(highlightedIndex - 1);
+    return;
+  }
+
+  if (e.key === 'Home') {
+    e.preventDefault();
+    focusOption(0);
+    return;
+  }
+
+  if (e.key === 'End') {
+    e.preventDefault();
+    focusOption(options.length - 1);
+    return;
+  }
+
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    options[highlightedIndex]?.click();
+    return;
+  }
+
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closePicker();
+    DOM.engineBtn?.focus();
+    return;
+  }
+
+  if (e.key === 'Tab') {
+    closePicker();
+  }
 }
 
 function performSearch(query) {
@@ -92,9 +186,25 @@ export async function initSearch() {
   if (engineBtn) {
     engineBtn.addEventListener('click', togglePicker);
     engineBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePicker(); }
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (isPickerOpen()) closePicker();
+        else openPicker(true);
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!isPickerOpen()) openPicker(true);
+        else focusOption(highlightedIndex + 1);
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!isPickerOpen()) openPicker(true);
+        else focusOption(highlightedIndex - 1);
+      }
     });
   }
+
+  DOM.enginePicker?.addEventListener('keydown', handlePickerKeydown);
 
   if (input) {
     input.addEventListener('keydown', (e) => {

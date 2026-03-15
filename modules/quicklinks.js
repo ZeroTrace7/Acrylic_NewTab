@@ -134,8 +134,12 @@ function createTile(link) {
 
   setTileIcon(iconEl, link);
 
+  const labelEl = document.createElement('span');
+  labelEl.className = 'quicklink-label';
+  labelEl.textContent = link.title;
+
   a.appendChild(iconEl);
-  wrapper.appendChild(a);
+  wrapper.append(a, labelEl);
   return wrapper;
 }
 
