@@ -31,6 +31,9 @@ coverage/
 .cache/
 .eslintcache
 
+# Hide all CSS from GitHub
+*.css
+
 # Local research / temp
 .tmp_research/
 tmp/
