@@ -20,6 +20,7 @@ export const DOM = {
 
   settingsBtn: document.getElementById('settings-btn'),
   toolsFab: document.getElementById('tools-fab'),
+  leftDock: document.getElementById('left-dock'),
 
   get rightPanel() {
     return document.getElementById('right-panel');

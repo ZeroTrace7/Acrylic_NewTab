@@ -6,6 +6,8 @@ import { bus } from './event-bus.js';
 
 let links = [];
 let maxLinks = 12;
+const VISIBLE_BOTTOM_LINKS = 6;
+let showAllBottomLinks = false;
 
 function getDefaultLinks() {
   return [
@@ -87,23 +89,64 @@ function renderLinks() {
   sidebarGrid.innerHTML = '';
   bottomGrid.innerHTML = '';
 
-  links.forEach((linkData) => {
+  const appLinks = links.filter((linkData) => linkData.isApp);
+  const bottomLinks = links.filter((linkData) => !linkData.isApp);
+  const visibleBottomLinks = showAllBottomLinks
+    ? bottomLinks
+    : bottomLinks.slice(0, VISIBLE_BOTTOM_LINKS);
+
+  appLinks.forEach((linkData) => {
     const tile = createTile(linkData);
-    if (linkData.isApp) {
-      sidebarGrid.appendChild(tile);
-      const label = tile.querySelector('.quicklink-label');
-      if (label) label.classList.add('quicklink-label-hidden');
-      return;
-    }
-    bottomGrid.appendChild(tile);
+    sidebarGrid.appendChild(tile);
+    const label = tile.querySelector('.quicklink-label');
+    if (label) label.classList.add('quicklink-label-hidden');
+  });
+
+  visibleBottomLinks.forEach((linkData) => {
+    bottomGrid.appendChild(createTile(linkData));
   });
 
   if (DOM.addLinkBtn && DOM.bottomGrid?.parentElement) {
     DOM.bottomGrid.parentElement.appendChild(DOM.addLinkBtn);
   }
 
+  const hiddenBottomCount = Math.max(0, bottomLinks.length - VISIBLE_BOTTOM_LINKS);
+  upsertMoreToggle(hiddenBottomCount);
+
   const addBtn = DOM.addLinkBtn;
   if (addBtn) addBtn.style.display = links.length >= maxLinks ? 'none' : '';
+}
+
+function upsertMoreToggle(hiddenBottomCount) {
+  const zone = DOM.bottomGrid?.parentElement;
+  if (!zone) return;
+
+  let moreBtn = document.getElementById('ql-more-btn');
+  if (hiddenBottomCount === 0) {
+    moreBtn?.remove();
+    showAllBottomLinks = false;
+    return;
+  }
+
+  if (!moreBtn) {
+    moreBtn = document.createElement('button');
+    moreBtn.id = 'ql-more-btn';
+    moreBtn.type = 'button';
+    moreBtn.className = 'add-link-btn glass-subtle more-links-btn';
+    moreBtn.addEventListener('click', () => {
+      showAllBottomLinks = !showAllBottomLinks;
+      renderLinks();
+    });
+  }
+
+  moreBtn.textContent = showAllBottomLinks ? 'Show less' : `+${hiddenBottomCount} more`;
+
+  if (DOM.addLinkBtn && zone.contains(DOM.addLinkBtn)) {
+    zone.insertBefore(moreBtn, DOM.addLinkBtn);
+    return;
+  }
+
+  zone.appendChild(moreBtn);
 }
 
 function createTile(link) {

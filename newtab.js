@@ -47,6 +47,7 @@ async function initApp() {
     // Step 5 — Tools FAB (lazy-loaded)
     const toolsFab = DOM.toolsFab;
     toolsFab?.addEventListener('click', async () => {
+      DOM.leftDock?.classList.toggle('dock-open');
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
       const wasActive = toolsFab.classList.contains('active');
       toggleToolsPanel(() => toolsFab.classList.remove('active'));
@@ -57,6 +58,12 @@ async function initApp() {
       }
     });
 
+    document.addEventListener('mousedown', (e) => {
+      if (!DOM.leftDock?.classList.contains('dock-open')) return;
+      if (DOM.leftDock.contains(e.target)) return;
+      DOM.leftDock.classList.remove('dock-open');
+    });
+
     // Step 6 — Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       const tag = document.activeElement?.tagName;
@@ -64,7 +71,10 @@ async function initApp() {
         e.preventDefault();
         DOM.searchInput?.focus();
       }
-      if (e.key === 'Escape') document.activeElement?.blur();
+      if (e.key === 'Escape') {
+        document.activeElement?.blur();
+        DOM.leftDock?.classList.remove('dock-open');
+      }
     });
 
     bus.addEventListener('themeChanged', () => {
