@@ -48,6 +48,8 @@ async function initApp() {
     const toolsFab = DOM.toolsFab;
     toolsFab?.addEventListener('click', async () => {
       DOM.leftDock?.classList.toggle('dock-open');
+      const dockOpen = DOM.leftDock?.classList.contains('dock-open') === true;
+      toolsFab.setAttribute('aria-expanded', String(dockOpen));
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
       const wasActive = toolsFab.classList.contains('active');
       toggleToolsPanel(() => toolsFab.classList.remove('active'));
@@ -62,6 +64,7 @@ async function initApp() {
       if (!DOM.leftDock?.classList.contains('dock-open')) return;
       if (DOM.leftDock.contains(e.target)) return;
       DOM.leftDock.classList.remove('dock-open');
+      DOM.toolsFab?.setAttribute('aria-expanded', 'false');
     });
 
     // Step 6 — Keyboard shortcuts
@@ -74,6 +77,7 @@ async function initApp() {
       if (e.key === 'Escape') {
         document.activeElement?.blur();
         DOM.leftDock?.classList.remove('dock-open');
+        DOM.toolsFab?.setAttribute('aria-expanded', 'false');
       }
     });
 
