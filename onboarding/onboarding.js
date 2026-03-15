@@ -1,6 +1,7 @@
 import { Prefs } from '../modules/storage.js';
 import { setTheme, getAvailableThemes } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
+import { DOM } from '../modules/dom.js';
 
 let overlayEl = null;
 let currentStep = 0;
@@ -200,6 +201,6 @@ export async function initOnboarding() {
   selections = { name: '', theme: 'midnight', searchEngine: 'browser' };
   overlayEl = buildOverlay();
   renderStep();
-  (document.getElementById('onboarding-mount') || document.body).appendChild(overlayEl);
+  (DOM.onboardingMount || document.body).appendChild(overlayEl);
 }
 

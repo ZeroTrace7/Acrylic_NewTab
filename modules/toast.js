@@ -1,6 +1,8 @@
+import { DOM } from './dom.js';
+
 /** Shows a toast notification in #toast-container with optional type and duration. */
 export function showToast(message, type = 'default', duration = 2500) {
-  const container = document.getElementById('toast-container');
+  const container = DOM.toastContainer;
   if (!container) return null;
 
   const el = document.createElement('div');

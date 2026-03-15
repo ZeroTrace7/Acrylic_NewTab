@@ -1,6 +1,7 @@
 import { Prefs } from './storage.js';
 import { toast } from './toast.js';
 import { bus } from './event-bus.js';
+import { DOM } from './dom.js';
 
 const THEMES = [
   { id: 'midnight',  label: 'Midnight'  },
@@ -17,7 +18,7 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 
-function getBodyEl() { return document.getElementById('app-body'); }
+function getBodyEl() { return DOM.appBody; }
 
 function applyTheme(themeId) {
   currentTheme = themeId;

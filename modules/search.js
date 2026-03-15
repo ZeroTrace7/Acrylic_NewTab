@@ -23,14 +23,16 @@ function getEngine(id) {
 
 function setEngine(engine) {
   currentEngine = engine;
-  const icon = DOM.engineBtn?.querySelector('img') || document.querySelector('#engine-icon');
+  const icon = DOM.engineIcon;
   if (icon) { icon.src = engine.icon; icon.alt = engine.name; }
   Prefs.set('searchEngine', engine.id);
   updatePickerSelection();
 }
 
 function getEngineOptions() {
-  return Array.from(DOM.enginePicker?.querySelectorAll('.engine-option') || []);
+  const picker = DOM.enginePicker;
+  if (!picker) return [];
+  return Array.from(picker.children).filter((el) => el.classList?.contains('engine-option'));
 }
 
 function updatePickerSelection() {
@@ -207,7 +209,7 @@ export async function initSearch() {
   const input = DOM.searchInput;
   const submit = DOM.searchSubmit;
   const engineBtn = DOM.engineBtn;
-  const searchWrapper = engineBtn?.closest('#search-wrapper');
+  const searchWrapper = DOM.searchWrapper;
 
   if (engineBtn) {
     engineBtn.addEventListener('click', togglePicker);

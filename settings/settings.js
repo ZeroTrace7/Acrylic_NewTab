@@ -4,6 +4,7 @@ import { toast } from '../modules/toast.js';
 import { isValidUrl } from '../modules/utils.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
+import { DOM } from '../modules/dom.js';
 
 let modalEl = null;
 let prefs = {};
@@ -22,13 +23,23 @@ function sectionLabel(text) {
   return el;
 }
 
-function toggle(on, onclick) {
+function toggle(on, onclick, label = 'Toggle setting') {
   const wrap = document.createElement('div');
   wrap.setAttribute('style', `width:42px;height:24px;border-radius:12px;cursor:pointer;position:relative;transition:background 200ms ease;background:${on ? 'rgba(52,211,153,0.7)' : 'var(--glass-subtle)'};border:1px solid var(--glass-border-soft);`);
+  wrap.setAttribute('role', 'button');
+  wrap.setAttribute('tabindex', '0');
+  wrap.setAttribute('aria-pressed', String(on));
+  wrap.setAttribute('aria-label', label);
   const knob = document.createElement('div');
   knob.setAttribute('style', `position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:white;transition:transform 200ms ease;transform:translateX(${on ? '21px' : '3px'});`);
   wrap.appendChild(knob);
   wrap.onclick = onclick;
+  wrap.onkeydown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onclick();
+    }
+  };
   return wrap;
 }
 
@@ -38,7 +49,7 @@ function toggleRow(label, on, onclick) {
   const lbl = document.createElement('span');
   lbl.textContent = label;
   lbl.setAttribute('style', 'font-size:0.85rem;color:var(--text-primary);');
-  row.append(lbl, toggle(on, onclick));
+  row.append(lbl, toggle(on, onclick, label));
   return row;
 }
 
@@ -80,6 +91,7 @@ function buildModal() {
   h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  closeBtn.ariaLabel = 'Close settings';
   closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
   closeBtn.onclick = closeSettings;
   header.append(h2, closeBtn);
@@ -109,6 +121,7 @@ function buildModal() {
     getAvailableThemes().forEach(t => {
       const btn = document.createElement('button');
       const active = prefs.theme === t.id;
+      btn.ariaLabel = `Apply ${t.label} theme`;
       btn.setAttribute('style', `padding:8px 4px;border-radius:12px;font-size:0.72rem;font-weight:500;cursor:pointer;transition:all 150ms ease;border:1px solid ${active ? 'var(--glass-border)' : 'transparent'};background:${active ? 'var(--glass-subtle)' : 'transparent'};color:${active ? 'var(--text-primary)' : 'var(--text-secondary)'};text-align:center;`);
       const swatch = document.createElement('div');
       swatch.setAttribute('style', `height:24px;border-radius:8px;margin-bottom:4px;background:${THEME_COLORS[t.id] || '#111'};`);
@@ -130,6 +143,7 @@ function buildModal() {
   wpIn.setAttribute('style', 'flex:1;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;');
   const applyBtn = document.createElement('button');
   applyBtn.textContent = 'Apply';
+  applyBtn.ariaLabel = 'Apply wallpaper URL';
   applyBtn.setAttribute('style', 'padding:10px 16px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--accent-blue);color:var(--accent-blue);font-size:0.85rem;font-weight:500;cursor:pointer;');
   applyBtn.onclick = () => {
     const url = wpIn.value.trim();
@@ -147,6 +161,7 @@ function buildModal() {
     if (!prefs.wallpaperUrl) return;
     const clrBtn = document.createElement('button');
     clrBtn.textContent = 'Clear wallpaper';
+    clrBtn.ariaLabel = 'Clear wallpaper';
     clrBtn.setAttribute('style', 'font-size:0.75rem;color:var(--accent-red);background:none;border:none;cursor:pointer;margin:8px 0;');
     clrBtn.onclick = () => { clearWallpaper(); prefs.wallpaperUrl = ''; wpIn.value = ''; rebuildWpControls(); };
     wpControls.appendChild(clrBtn);
@@ -203,12 +218,12 @@ async function openSettings(callback) {
   document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
   document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
   modalEl = buildModal();
-  (document.querySelector('#settings-modal-mount') || document.body).appendChild(modalEl);
+  (DOM.settingsModalMount || document.body).appendChild(modalEl);
   escHandler = (e) => { if (e.key === 'Escape') closeSettings(); };
   document.addEventListener('keydown', escHandler);
   themeChangedHandler = async () => {
     prefs.theme = await Prefs.get('theme');
-    modalEl?.querySelectorAll('button').forEach((btn) => {
+    Array.from(modalEl?.getElementsByTagName('button') || []).forEach((btn) => {
       if (!btn.textContent) return;
       const theme = getAvailableThemes().find((t) => t.label === btn.textContent.trim());
       if (!theme) return;

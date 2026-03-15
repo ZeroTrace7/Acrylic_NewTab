@@ -26,6 +26,7 @@ function buildPanel() {
   const closeBtn = document.createElement('button');
   closeBtn.id = 'panel-close-btn';
   closeBtn.className = 'panel-close-btn';
+  closeBtn.ariaLabel = 'Close tools panel';
   closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
   header.append(h2, closeBtn);
 
@@ -35,6 +36,7 @@ function buildPanel() {
   TABS.forEach(tab => {
     const btn = document.createElement('button');
     btn.className = 'panel-tab-btn';
+    btn.ariaLabel = `Open ${tab.label} tab`;
     btn.dataset.tabId = tab.id;
     btn.innerHTML = `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`;
     if (tab.id === activeTab) btn.classList.add('is-active');

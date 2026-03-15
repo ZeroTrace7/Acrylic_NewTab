@@ -86,25 +86,14 @@ function renderLinks() {
   const bottomGrid = DOM.bottomGrid;
   if (!sidebarGrid || !bottomGrid) return;
 
-  sidebarGrid.innerHTML = '';
-  bottomGrid.innerHTML = '';
-
   const appLinks = links.filter((linkData) => linkData.isApp);
   const bottomLinks = links.filter((linkData) => !linkData.isApp);
   const visibleBottomLinks = showAllBottomLinks
     ? bottomLinks
     : bottomLinks.slice(0, VISIBLE_BOTTOM_LINKS);
 
-  appLinks.forEach((linkData) => {
-    const tile = createTile(linkData);
-    sidebarGrid.appendChild(tile);
-    const label = tile.querySelector('.quicklink-label');
-    if (label) label.classList.add('quicklink-label-hidden');
-  });
-
-  visibleBottomLinks.forEach((linkData) => {
-    bottomGrid.appendChild(createTile(linkData));
-  });
+  syncGrid(sidebarGrid, appLinks, true);
+  syncGrid(bottomGrid, visibleBottomLinks, false);
 
   if (DOM.addLinkBtn && DOM.bottomGrid?.parentElement) {
     DOM.bottomGrid.parentElement.appendChild(DOM.addLinkBtn);
@@ -133,6 +122,7 @@ function upsertMoreToggle(hiddenBottomCount) {
     moreBtn.id = 'ql-more-btn';
     moreBtn.type = 'button';
     moreBtn.className = 'add-link-btn glass-subtle more-links-btn';
+    moreBtn.ariaLabel = 'Toggle quick links visibility';
     moreBtn.addEventListener('click', () => {
       showAllBottomLinks = !showAllBottomLinks;
       renderLinks();
@@ -149,9 +139,64 @@ function upsertMoreToggle(hiddenBottomCount) {
   zone.appendChild(moreBtn);
 }
 
-function createTile(link) {
+function syncGrid(grid, targetLinks, hideLabel = false) {
+  const existingById = new Map();
+  const allChildren = Array.from(grid.children);
+
+  allChildren.forEach((child) => {
+    if (!(child instanceof HTMLElement)) return;
+    const id = child.dataset.linkId;
+    if (id) existingById.set(id, child);
+  });
+
+  targetLinks.forEach((linkData, index) => {
+    let node = existingById.get(linkData.id);
+    if (node) {
+      existingById.delete(linkData.id);
+      node = updateTile(node, linkData, hideLabel);
+    } else {
+      node = createTile(linkData, hideLabel);
+    }
+
+    const currentAtIndex = grid.children[index] || null;
+    if (node !== currentAtIndex) {
+      grid.insertBefore(node, currentAtIndex);
+    }
+  });
+
+  existingById.forEach((node) => node.remove());
+}
+
+function updateTile(wrapper, link, hideLabel = false) {
+  if (!(wrapper instanceof HTMLElement)) return createTile(link, hideLabel);
+  wrapper.dataset.linkId = link.id;
+  wrapper.dataset.id = link.id;
+
+  const tile = wrapper.querySelector('.quicklink-tile');
+  const iconEl = wrapper.querySelector('.ql-icon-wrap');
+  const labelEl = wrapper.querySelector('.quicklink-label');
+
+  if (!(tile instanceof HTMLAnchorElement) || !(iconEl instanceof HTMLElement) || !(labelEl instanceof HTMLElement)) {
+    const replacement = createTile(link, hideLabel);
+    wrapper.replaceWith(replacement);
+    return replacement;
+  }
+
+  tile.href = link.url;
+  tile.title = link.title;
+  tile.dataset.id = link.id;
+  setTileIcon(iconEl, link);
+  labelEl.textContent = link.title;
+  labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
+
+  return wrapper;
+}
+
+function createTile(link, hideLabel = false) {
   const wrapper = document.createElement('div');
   wrapper.className = 'quicklink-item';
+  wrapper.dataset.linkId = link.id;
+  wrapper.dataset.id = link.id;
 
   const a = document.createElement('a');
   a.className = 'quicklink-tile';
@@ -180,6 +225,7 @@ function createTile(link) {
   const labelEl = document.createElement('span');
   labelEl.className = 'quicklink-label';
   labelEl.textContent = link.title;
+  labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
 
   a.appendChild(iconEl);
   wrapper.append(a, labelEl);
@@ -200,11 +246,13 @@ function openContextMenu(e, link) {
   const editBtn = document.createElement('button');
   editBtn.className = 'engine-option';
   editBtn.textContent = 'Edit';
+  editBtn.ariaLabel = 'Edit quick link';
   editBtn.onclick = () => { removeContextMenu(); openLinkModal(link); };
 
   const delBtn = document.createElement('button');
   delBtn.className = 'engine-option';
   delBtn.textContent = 'Delete';
+  delBtn.ariaLabel = 'Delete quick link';
   delBtn.onclick = () => { removeContextMenu(); removeLink(link.id); };
 
   menu.append(editBtn, delBtn);
@@ -252,10 +300,12 @@ function openLinkModal(existingLink = null) {
 
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = 'Cancel';
+  cancelBtn.ariaLabel = 'Cancel quick link edit';
   cancelBtn.onclick = close;
 
   const saveBtn = document.createElement('button');
   saveBtn.textContent = 'Save';
+  saveBtn.ariaLabel = 'Save quick link';
   saveBtn.onclick = () => {
     const rawUrl = urlInput.value.trim();
     if (!rawUrl) { toast.error('URL cannot be empty'); return; }

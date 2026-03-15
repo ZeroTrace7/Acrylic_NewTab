@@ -1,14 +1,47 @@
 export const DOM = {
-  clock: document.getElementById('simple-clock'),
-  date: document.getElementById('date-text'),
-  greeting: document.getElementById('greeting-text'),
+  get appBody() {
+    return document.getElementById('app-body');
+  },
 
-  searchInput: document.getElementById('search-input'),
-  searchSubmit: document.getElementById('search-submit'),
-  engineBtn: document.getElementById('engine-btn'),
-  enginePicker: document.getElementById('engine-picker'),
+  get clock() {
+    return document.getElementById('simple-clock');
+  },
 
-  addLinkBtn: document.getElementById('add-link-btn'),
+  get date() {
+    return document.getElementById('date-text');
+  },
+
+  get greeting() {
+    return document.getElementById('greeting-text');
+  },
+
+  get searchInput() {
+    return document.getElementById('search-input');
+  },
+
+  get searchSubmit() {
+    return document.getElementById('search-submit');
+  },
+
+  get searchWrapper() {
+    return document.getElementById('search-wrapper');
+  },
+
+  get engineBtn() {
+    return document.getElementById('engine-btn');
+  },
+
+  get engineIcon() {
+    return document.getElementById('engine-icon');
+  },
+
+  get enginePicker() {
+    return document.getElementById('engine-picker');
+  },
+
+  get addLinkBtn() {
+    return document.getElementById('add-link-btn');
+  },
 
   get sidebarGrid() {
     return document.getElementById('sidebar-apps-grid');
@@ -18,9 +51,17 @@ export const DOM = {
     return document.getElementById('bottom-links-grid');
   },
 
-  settingsBtn: document.getElementById('settings-btn'),
-  toolsFab: document.getElementById('tools-fab'),
-  leftDock: document.getElementById('left-dock'),
+  get settingsBtn() {
+    return document.getElementById('settings-btn');
+  },
+
+  get toolsFab() {
+    return document.getElementById('tools-fab');
+  },
+
+  get leftDock() {
+    return document.getElementById('left-dock');
+  },
 
   get rightPanel() {
     return document.getElementById('right-panel');
@@ -28,6 +69,18 @@ export const DOM = {
 
   get toolsPanelMount() {
     return document.getElementById('tools-panel-mount');
+  },
+
+  get toastContainer() {
+    return document.getElementById('toast-container');
+  },
+
+  get onboardingMount() {
+    return document.getElementById('onboarding-mount');
+  },
+
+  get settingsModalMount() {
+    return document.getElementById('settings-modal-mount');
   }
 };
 
