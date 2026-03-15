@@ -4,17 +4,18 @@ import { toast } from '../modules/toast.js';
 
 let overlayEl = null;
 let currentStep = 0;
-let selections = { name: '', theme: 'midnight', searchEngine: 'google' };
+let selections = { name: '', theme: 'midnight', searchEngine: 'browser' };
 
 const STEPS = [
   { id: 'welcome',     title: 'Welcome to Acrylic',  subtitle: "The most beautiful new tab for Chrome. Let's get you set up in 30 seconds." },
   { id: 'personalize', title: 'Make it yours',        subtitle: 'Choose a name and pick your favorite theme.' },
-  { id: 'search',      title: 'How do you search?',   subtitle: 'Pick your default search engine. You can always change this later.' },
+  { id: 'search',      title: 'How do you search?',   subtitle: 'Choose a mode. Browser default respects your Chrome search setting.' },
 ];
 
 const THEME_COLORS = { midnight:'#0f0f23','deep-blue':'#021b37',aurora:'#003840','rose-noir':'#2d0320',jet:'#000',espresso:'#1c0f0a',slate:'#0f172a',forest:'#0d1f0f' };
 
 const ENGINES = [
+  { id:'browser',    name:'Browser default', desc:'Use your Chrome default search engine (recommended)' },
   { id:'google',     name:'Google',     desc:"The world's most popular search engine" },
   { id:'duckduckgo', name:'DuckDuckGo', desc:'Privacy-first search, no tracking' },
   { id:'bing',       name:'Bing',       desc:"Microsoft's powerful search engine" },
@@ -196,7 +197,7 @@ export async function initOnboarding() {
   const done = await Prefs.get('onboardingDone');
   if (done) return;
   currentStep = 0;
-  selections = { name: '', theme: 'midnight', searchEngine: 'google' };
+  selections = { name: '', theme: 'midnight', searchEngine: 'browser' };
   overlayEl = buildOverlay();
   renderStep();
   (document.getElementById('onboarding-mount') || document.body).appendChild(overlayEl);

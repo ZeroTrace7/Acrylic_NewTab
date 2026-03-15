@@ -5,6 +5,7 @@ import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
 
 const ENGINES = [
+  { id: 'browser',    name: 'Browser default', url: 'https://www.google.com/search?q=',     icon: 'icons/icon16.png' },
   { id: 'google',     name: 'Google',     url: 'https://www.google.com/search?q=',     icon: 'https://www.google.com/favicon.ico' },
   { id: 'bing',       name: 'Bing',       url: 'https://www.bing.com/search?q=',       icon: 'https://www.bing.com/favicon.ico' },
   { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=',           icon: 'https://duckduckgo.com/favicon.ico' },
@@ -14,6 +15,7 @@ const ENGINES = [
 
 let currentEngine = ENGINES[0];
 let highlightedIndex = 0;
+let warnedSearchFallback = false;
 
 function getEngine(id) {
   return ENGINES.find((e) => e.id === id) || ENGINES[0];
@@ -162,12 +164,36 @@ function handlePickerKeydown(e) {
   }
 }
 
-function performSearch(query) {
+function queryBrowserDefault(text) {
+  return new Promise((resolve) => {
+    if (!globalThis.chrome?.search?.query) {
+      resolve(false);
+      return;
+    }
+    try {
+      chrome.search.query({ text, disposition: 'CURRENT_TAB' }, () => {
+        resolve(!chrome.runtime?.lastError);
+      });
+    } catch {
+      resolve(false);
+    }
+  });
+}
+
+async function performSearch(query) {
   const q = query.trim();
   if (!q) return;
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
   } else {
+    if (currentEngine.id === 'browser') {
+      const searched = await queryBrowserDefault(q);
+      if (searched) return;
+      if (!warnedSearchFallback) {
+        warnedSearchFallback = true;
+        toast.info('Browser search unavailable here. Falling back to Google.');
+      }
+    }
     window.location.href = currentEngine.url + encodeURIComponent(q);
   }
 }

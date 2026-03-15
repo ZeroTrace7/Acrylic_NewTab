@@ -29,6 +29,7 @@
 
   "permissions": [
     "storage",
+    "search",
     "tabs",
     "topSites",
     "notifications",
