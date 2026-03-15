@@ -95,15 +95,8 @@ function renderLinks() {
   syncGrid(sidebarGrid, appLinks, true);
   syncGrid(bottomGrid, visibleBottomLinks, false);
 
-  if (DOM.addLinkBtn && DOM.bottomGrid?.parentElement) {
-    DOM.bottomGrid.parentElement.appendChild(DOM.addLinkBtn);
-  }
-
   const hiddenBottomCount = Math.max(0, bottomLinks.length - VISIBLE_BOTTOM_LINKS);
   upsertMoreToggle(hiddenBottomCount);
-
-  const addBtn = DOM.addLinkBtn;
-  if (addBtn) addBtn.style.display = links.length >= maxLinks ? 'none' : '';
 }
 
 function upsertMoreToggle(hiddenBottomCount) {
@@ -130,11 +123,6 @@ function upsertMoreToggle(hiddenBottomCount) {
   }
 
   moreBtn.textContent = showAllBottomLinks ? 'Show less' : `+${hiddenBottomCount} more`;
-
-  if (DOM.addLinkBtn && zone.contains(DOM.addLinkBtn)) {
-    zone.insertBefore(moreBtn, DOM.addLinkBtn);
-    return;
-  }
 
   zone.appendChild(moreBtn);
 }
@@ -370,7 +358,6 @@ export async function initQuickLinks() {
     links = stored;
   }
   renderLinks();
-  DOM.addLinkBtn?.addEventListener('click', () => openLinkModal());
   bus.addEventListener('linksUpdated', (event) => {
     const incoming = event.detail?.links;
     if (!Array.isArray(incoming) || event.detail?.source === 'quicklinks') return;

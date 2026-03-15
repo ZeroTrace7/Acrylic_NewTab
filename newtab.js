@@ -46,31 +46,26 @@ async function initApp() {
 
     // Step 5 — Tools FAB (lazy-loaded)
     const toolsFab = DOM.toolsFab;
-    const syncDockState = () => {
-      const dockOpen = DOM.leftDock?.classList.contains('dock-open') === true;
-      toolsFab?.setAttribute('aria-expanded', String(dockOpen));
-      toolsFab?.setAttribute('aria-label', dockOpen ? 'Close app dock' : 'Open app dock');
+    const syncToolsState = () => {
+      const panelOpen = toolsFab?.classList.contains('active') === true;
+      toolsFab?.setAttribute('aria-expanded', String(panelOpen));
+      toolsFab?.setAttribute('aria-label', panelOpen ? 'Close quick tools' : 'Open quick tools');
     };
-    syncDockState();
+    syncToolsState();
 
     toolsFab?.addEventListener('click', async () => {
-      DOM.leftDock?.classList.toggle('dock-open');
-      syncDockState();
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
       const wasActive = toolsFab.classList.contains('active');
-      toggleToolsPanel(() => toolsFab.classList.remove('active'));
+      toggleToolsPanel(() => {
+        toolsFab.classList.remove('active');
+        syncToolsState();
+      });
       if (wasActive) {
         toolsFab.classList.remove('active');
       } else {
         toolsFab.classList.add('active');
       }
-    });
-
-    document.addEventListener('mousedown', (e) => {
-      if (!DOM.leftDock?.classList.contains('dock-open')) return;
-      if (DOM.leftDock.contains(e.target)) return;
-      DOM.leftDock.classList.remove('dock-open');
-      syncDockState();
+      syncToolsState();
     });
 
     // Step 6 — Keyboard shortcuts
@@ -82,8 +77,6 @@ async function initApp() {
       }
       if (e.key === 'Escape') {
         document.activeElement?.blur();
-        DOM.leftDock?.classList.remove('dock-open');
-        syncDockState();
       }
     });
 
