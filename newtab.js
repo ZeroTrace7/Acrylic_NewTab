@@ -2,6 +2,7 @@ import { initBackground } from './modules/background.js';
 import { initClock }      from './modules/clock.js';
 import { initSearch }     from './modules/search.js';
 import { initQuickLinks } from './modules/quicklinks.js';
+import { initTasks }      from './modules/tasks.js';
 import { Prefs }          from './modules/storage.js';
 import { toast }          from './modules/toast.js';
 import { DOM }            from './modules/dom.js';
@@ -34,6 +35,7 @@ async function initApp() {
       initClock(),
       initSearch(),
       initQuickLinks(),
+      initTasks(),
     ]);
 
     // Step 4 — Settings button (lazy-loaded)

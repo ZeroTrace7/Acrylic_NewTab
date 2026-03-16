@@ -55,6 +55,10 @@ export const DOM = {
     return document.getElementById('settings-btn');
   },
 
+  get tasksBtn() {
+    return document.getElementById('tasks-btn');
+  },
+
   get toolsFab() {
     return document.getElementById('tools-fab');
   },
@@ -81,6 +85,10 @@ export const DOM = {
 
   get settingsModalMount() {
     return document.getElementById('settings-modal-mount');
+  },
+
+  get tasksPanelMount() {
+    return document.getElementById('tasks-panel-mount');
   }
 };
 
