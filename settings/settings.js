@@ -11,6 +11,9 @@ let prefs = {};
 let onCloseCallback = null;
 let escHandler = null;
 let themeChangedHandler = null;
+let openModalRaf = 0;
+let openModalRaf2 = 0;
+let closeModalTimer = 0;
 
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
 
@@ -75,11 +78,12 @@ function slider(label, value, min, max, step, unit, oninput) {
 
 function buildModal() {
   const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
+  overlay.className = 'modal-overlay settings-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
   overlay.onclick = (e) => { if (e.target === overlay) closeSettings(); };
 
   const box = document.createElement('div');
-  box.className = 'modal-box';
+  box.className = 'modal-box settings-box';
   box.setAttribute('style', 'position:relative;display:flex;flex-direction:column;gap:24px;');
   box.onclick = (e) => e.stopPropagation();
 
@@ -215,6 +219,10 @@ function buildModal() {
 
 async function openSettings(callback) {
   onCloseCallback = callback;
+  if (closeModalTimer) {
+    clearTimeout(closeModalTimer);
+    closeModalTimer = 0;
+  }
   prefs = await Prefs.getAll();
   document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
   document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
@@ -222,6 +230,23 @@ async function openSettings(callback) {
   document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
   modalEl = buildModal();
   (DOM.settingsModalMount || document.body).appendChild(modalEl);
+  if (openModalRaf) {
+    cancelAnimationFrame(openModalRaf);
+    openModalRaf = 0;
+  }
+  if (openModalRaf2) {
+    cancelAnimationFrame(openModalRaf2);
+    openModalRaf2 = 0;
+  }
+  openModalRaf = requestAnimationFrame(() => {
+    openModalRaf = 0;
+    openModalRaf2 = requestAnimationFrame(() => {
+      openModalRaf2 = 0;
+      if (!modalEl) return;
+      modalEl.classList.add('is-open');
+      modalEl.setAttribute('aria-hidden', 'false');
+    });
+  });
   escHandler = (e) => { if (e.key === 'Escape') closeSettings(); };
   document.addEventListener('keydown', escHandler);
   themeChangedHandler = async () => {
@@ -240,11 +265,31 @@ async function openSettings(callback) {
 }
 
 function closeSettings() {
-  if (modalEl) { modalEl.remove(); modalEl = null; }
-  if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
-  if (themeChangedHandler) { bus.removeEventListener('themeChanged', themeChangedHandler); themeChangedHandler = null; }
-  onCloseCallback?.();
-  onCloseCallback = null;
+  if (!modalEl) return;
+  if (openModalRaf) {
+    cancelAnimationFrame(openModalRaf);
+    openModalRaf = 0;
+  }
+  if (openModalRaf2) {
+    cancelAnimationFrame(openModalRaf2);
+    openModalRaf2 = 0;
+  }
+  if (closeModalTimer) return;
+
+  const closingModal = modalEl;
+  closingModal.classList.remove('is-open');
+  closingModal.setAttribute('aria-hidden', 'true');
+  closeModalTimer = setTimeout(() => {
+    closeModalTimer = 0;
+    if (modalEl === closingModal) {
+      closingModal.remove();
+      modalEl = null;
+    }
+    if (escHandler) { document.removeEventListener('keydown', escHandler); escHandler = null; }
+    if (themeChangedHandler) { bus.removeEventListener('themeChanged', themeChangedHandler); themeChangedHandler = null; }
+    onCloseCallback?.();
+    onCloseCallback = null;
+  }, 420);
 }
 
 export async function initSettings(onClose) {

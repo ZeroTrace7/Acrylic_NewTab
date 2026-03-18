@@ -16,6 +16,9 @@ const ENGINES = [
 let currentEngine = ENGINES[0];
 let highlightedIndex = 0;
 let warnedSearchFallback = false;
+let pickerOpenRaf = 0;
+let pickerOpenRaf2 = 0;
+let pickerFocusTimer = 0;
 
 function getEngine(id) {
   return ENGINES.find((e) => e.id === id) || ENGINES[0];
@@ -61,20 +64,57 @@ function isPickerOpen() {
 function openPicker(focusList = false) {
   const picker = DOM.enginePicker;
   if (!picker) return;
-  picker.classList.add('is-open');
+  if (pickerOpenRaf) {
+    cancelAnimationFrame(pickerOpenRaf);
+    pickerOpenRaf = 0;
+  }
+  if (pickerOpenRaf2) {
+    cancelAnimationFrame(pickerOpenRaf2);
+    pickerOpenRaf2 = 0;
+  }
+  if (pickerFocusTimer) {
+    clearTimeout(pickerFocusTimer);
+    pickerFocusTimer = 0;
+  }
+  picker.setAttribute('aria-hidden', 'false');
   DOM.engineBtn?.classList.add('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'true');
   const activeIdx = ENGINES.findIndex((engine) => engine.id === currentEngine.id);
   highlightedIndex = activeIdx >= 0 ? activeIdx : 0;
+
+  pickerOpenRaf = requestAnimationFrame(() => {
+    pickerOpenRaf = 0;
+    pickerOpenRaf2 = requestAnimationFrame(() => {
+      pickerOpenRaf2 = 0;
+      picker.classList.add('is-open');
+    });
+  });
+
   if (focusList) {
-    requestAnimationFrame(() => focusOption(highlightedIndex));
+    pickerFocusTimer = setTimeout(() => {
+      pickerFocusTimer = 0;
+      focusOption(highlightedIndex);
+    }, 140);
   }
 }
 
 function closePicker() {
   const picker = DOM.enginePicker;
   if (!picker) return;
+  if (pickerOpenRaf) {
+    cancelAnimationFrame(pickerOpenRaf);
+    pickerOpenRaf = 0;
+  }
+  if (pickerOpenRaf2) {
+    cancelAnimationFrame(pickerOpenRaf2);
+    pickerOpenRaf2 = 0;
+  }
+  if (pickerFocusTimer) {
+    clearTimeout(pickerFocusTimer);
+    pickerFocusTimer = 0;
+  }
   picker.classList.remove('is-open');
+  picker.setAttribute('aria-hidden', 'true');
   DOM.engineBtn?.classList.remove('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'false');
   getEngineOptions().forEach((el) => el.classList.remove('is-focused'));
@@ -91,6 +131,7 @@ function buildPicker() {
   picker.innerHTML = '';
   picker.setAttribute('role', 'listbox');
   picker.setAttribute('aria-label', 'Search engine');
+  picker.setAttribute('aria-hidden', 'true');
   ENGINES.forEach((engine, index) => {
     const opt = document.createElement('button');
     opt.type = 'button';

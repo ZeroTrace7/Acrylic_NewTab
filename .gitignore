@@ -39,3 +39,6 @@
 # tmp/
 # temp/
 
+# Local agent documentation
+Agent.md
+

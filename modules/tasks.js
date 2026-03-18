@@ -12,6 +12,8 @@ let inputEl = null;
 let clearBtnEl = null;
 let isOpen = false;
 let tasks = [];
+let openPanelRaf = 0;
+let openPanelRaf2 = 0;
 
 function normalizeTasks(raw) {
   if (!Array.isArray(raw)) return [];
@@ -219,8 +221,25 @@ function openPanel() {
     mount.appendChild(panelEl);
   }
 
-  panelEl.classList.add('open');
+  if (openPanelRaf) {
+    cancelAnimationFrame(openPanelRaf);
+    openPanelRaf = 0;
+  }
+  if (openPanelRaf2) {
+    cancelAnimationFrame(openPanelRaf2);
+    openPanelRaf2 = 0;
+  }
+
   panelEl.setAttribute('aria-hidden', 'false');
+  // Ensure open transition runs after mount/layout across two frames.
+  openPanelRaf = requestAnimationFrame(() => {
+    openPanelRaf = 0;
+    openPanelRaf2 = requestAnimationFrame(() => {
+      openPanelRaf2 = 0;
+      if (!isOpen || !panelEl) return;
+      panelEl.classList.add('open');
+    });
+  });
 
   const btn = DOM.tasksBtn;
   if (btn) {
@@ -237,6 +256,14 @@ function openPanel() {
 function closePanel() {
   if (!isOpen) return;
   isOpen = false;
+  if (openPanelRaf) {
+    cancelAnimationFrame(openPanelRaf);
+    openPanelRaf = 0;
+  }
+  if (openPanelRaf2) {
+    cancelAnimationFrame(openPanelRaf2);
+    openPanelRaf2 = 0;
+  }
 
   if (panelEl) {
     panelEl.classList.remove('open');

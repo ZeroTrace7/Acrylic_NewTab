@@ -6,6 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="342aae1c-33a9-47c3-8ddf-dfb08e848bfa" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/css/components.css" beforeDir="false" afterPath="$PROJECT_DIR$/css/components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/css/layout.css" beforeDir="false" afterPath="$PROJECT_DIR$/css/layout.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/css/panels.css" beforeDir="false" afterPath="$PROJECT_DIR$/css/panels.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/search.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/search.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/tasks.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/tasks.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/panels/toolspanel.js" beforeDir="false" afterPath="$PROJECT_DIR$/panels/toolspanel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings/settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/settings/settings.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,16 +26,16 @@
     </persistenceIdMap>
   </component>
   <component name="CopilotUserSelectedChatMode">
-    <option name="chatModeId" value="Agent" />
+    <option name="chatModeId" value="Ask" />
   </component>
   <component name="CopilotUserSelectedModel">
     <selectedModels>
-      <entry key="chat-panel" value="GPT-5.2-Codex" />
-      <entry key="agent-panel" value="GPT-5.2-Codex" />
+      <entry key="chat-panel" value="Claude Haiku 4.5" />
+      <entry key="agent-panel" value="Claude Haiku 4.5" />
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="767" />
+    <option name="cachedIndexableFilesCount" value="832" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -77,7 +85,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.LLMConfigurable&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.AcpAgentsConfigurable&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -112,7 +120,9 @@
       <workItem from="1773510116581" duration="11000" />
       <workItem from="1773511254966" duration="7907000" />
       <workItem from="1773576428869" duration="3935000" />
-      <workItem from="1773587547151" duration="12238000" />
+      <workItem from="1773587547151" duration="12559000" />
+      <workItem from="1773674358293" duration="4959000" />
+      <workItem from="1773840926873" duration="1168000" />
     </task>
     <servers />
   </component>

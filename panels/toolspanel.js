@@ -5,6 +5,9 @@ let panelEl = null;
 let isOpen = false;
 let activeTab = 'productivity';
 let onCloseCallback = null;
+let openPanelRaf = 0;
+let openPanelRaf2 = 0;
+let closePanelTimer = 0;
 
 const TABS = [
   { id: 'productivity', label: 'Productivity', icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>` },
@@ -80,15 +83,38 @@ function openPanel(callback) {
   if (isOpen) return;
   isOpen = true;
   onCloseCallback = callback;
+  if (closePanelTimer) {
+    clearTimeout(closePanelTimer);
+    closePanelTimer = 0;
+    panelEl?.remove();
+    panelEl = null;
+  }
+  if (openPanelRaf) {
+    cancelAnimationFrame(openPanelRaf);
+    openPanelRaf = 0;
+  }
+  if (openPanelRaf2) {
+    cancelAnimationFrame(openPanelRaf2);
+    openPanelRaf2 = 0;
+  }
 
   const mount = DOM.toolsPanelMount;
   const rightPanel = DOM.rightPanel;
 
   panelEl = buildPanel();
   (mount || document.body).appendChild(panelEl);
+  panelEl.classList.remove('is-open');
 
-  // Slide in the right panel container
-  if (rightPanel) rightPanel.classList.add('open');
+  // Ensure smooth interpolation by opening on the next paint frames.
+  openPanelRaf = requestAnimationFrame(() => {
+    openPanelRaf = 0;
+    openPanelRaf2 = requestAnimationFrame(() => {
+      openPanelRaf2 = 0;
+      if (!isOpen) return;
+      panelEl?.classList.add('is-open');
+      rightPanel?.classList.add('open');
+    });
+  });
 
   switchTab(activeTab);
   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
@@ -104,13 +130,29 @@ function openPanel(callback) {
 function closePanel() {
   if (!isOpen) return;
   isOpen = false;
+  if (openPanelRaf) {
+    cancelAnimationFrame(openPanelRaf);
+    openPanelRaf = 0;
+  }
+  if (openPanelRaf2) {
+    cancelAnimationFrame(openPanelRaf2);
+    openPanelRaf2 = 0;
+  }
 
   const rightPanel = DOM.rightPanel;
+  panelEl?.classList.remove('is-open');
   if (rightPanel) rightPanel.classList.remove('open');
 
-  if (panelEl) {
-    // Wait for slide-out transition before removing DOM
-    setTimeout(() => { panelEl?.remove(); panelEl = null; }, 310);
+  const closingPanel = panelEl;
+  if (closingPanel) {
+    // Wait for right-drawer and panel transition to finish before cleanup.
+    closePanelTimer = setTimeout(() => {
+      closePanelTimer = 0;
+      if (panelEl === closingPanel) {
+        closingPanel.remove();
+        panelEl = null;
+      }
+    }, 620);
   }
   onCloseCallback?.();
   onCloseCallback = null;
