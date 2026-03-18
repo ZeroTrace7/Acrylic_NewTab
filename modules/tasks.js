@@ -4,6 +4,7 @@ import { generateId } from './utils.js';
 import { toast } from './toast.js';
 
 const TASKS_KEY = 'tasks';
+const SUCCESS_REVEAL_DELAY_MS = 360;
 const SUCCESS_AUTOCLEAR_MS = 3800;
 
 let panelEl = null;
@@ -21,6 +22,7 @@ let tasks = [];
 let openPanelRaf = 0;
 let openPanelRaf2 = 0;
 let successTimeout = null;
+let successRevealTimeout = null;
 
 const taskRows = new Map();
 
@@ -95,6 +97,7 @@ function createTaskRow(task) {
 
 function updateTaskRow(row, task) {
   row.dataset.taskId = task.id;
+  row.dataset.scribble = String(getScribbleVariant(task.id));
   row.classList.toggle('is-done', task.completed);
 
   const toggleBtn = row.querySelector('.tasks-check');
@@ -105,6 +108,14 @@ function updateTaskRow(row, task) {
 
   const textEl = row.querySelector('.tasks-text');
   if (textEl) textEl.textContent = task.text;
+}
+
+function getScribbleVariant(taskId) {
+  let hash = 0;
+  for (let i = 0; i < taskId.length; i += 1) {
+    hash = ((hash << 5) - hash + taskId.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % 3;
 }
 
 function syncTaskList() {
@@ -144,23 +155,32 @@ function updatePanelState() {
   progressFillEl.style.width = `${progress}%`;
 
   clearTimeout(successTimeout);
+  clearTimeout(successRevealTimeout);
+  successRevealTimeout = null;
   clearBtnEl.disabled = !hasCompleted;
   clearBtnEl.style.display = hasCompleted ? 'inline-flex' : 'none';
   emptyEl.style.display = total === 0 ? 'block' : 'none';
 
   if (!panelEl) return;
-  panelEl.classList.toggle('is-success', allComplete);
+  if (!allComplete) {
+    panelEl.classList.remove('is-success');
+  }
   if (allComplete) {
     clearBtnEl.style.display = 'none';
-    successTimeout = setTimeout(() => {
-      clearCompleted({ silent: true });
-    }, SUCCESS_AUTOCLEAR_MS);
+    successRevealTimeout = setTimeout(() => {
+      panelEl?.classList.add('is-success');
+      successTimeout = setTimeout(() => {
+        clearCompleted({ silent: true });
+      }, SUCCESS_AUTOCLEAR_MS);
+    }, SUCCESS_REVEAL_DELAY_MS);
   }
 }
 
 function cleanupSuccessTimer() {
   clearTimeout(successTimeout);
   successTimeout = null;
+  clearTimeout(successRevealTimeout);
+  successRevealTimeout = null;
 }
 
 function resetSuccessStateClass() {

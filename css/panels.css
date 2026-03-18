@@ -401,6 +401,34 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C38 12, 70 4, 104 8 C136 12, 168 5, 198 9 C208 10, 214 8, 218 7' stroke='%23d1d5db' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
 }
 
+.tasks-item[data-scribble='1'].is-done .tasks-text::before {
+  top: 46%;
+  height: 8px;
+  transform: rotate(1.4deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C28 12, 54 4, 86 8 C118 12, 146 4, 178 8 C196 10, 208 7, 218 6' stroke='%23e5e7eb' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
+.tasks-item[data-scribble='1'].is-done .tasks-text::after {
+  top: 52%;
+  height: 7px;
+  transform: rotate(-1.2deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 9 C34 5, 66 11, 98 8 C132 5, 166 11, 198 8 C206 7, 214 7, 218 8' stroke='%23d1d5db' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
+.tasks-item[data-scribble='2'].is-done .tasks-text::before {
+  top: 44%;
+  height: 9px;
+  transform: rotate(-0.8deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 7 C26 5, 58 11, 90 8 C122 5, 154 10, 186 8 C200 7, 210 9, 218 10' stroke='%23e5e7eb' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
+.tasks-item[data-scribble='2'].is-done .tasks-text::after {
+  top: 51%;
+  height: 7px;
+  transform: rotate(1.8deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 10 C30 6, 64 12, 98 9 C132 6, 162 11, 194 8 C206 7, 214 8, 218 9' stroke='%23d1d5db' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
 .tasks-check {
   width: 18px;
   height: 18px;
