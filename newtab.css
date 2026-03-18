@@ -246,8 +246,7 @@ body.acrylic-loaded #bg-layer.anim-bg {
   animation: acrylic-bg-bloom-in 200ms ease 0ms both;
 }
 
-body.acrylic-loaded #bg-overlay.anim-bg,
-body.acrylic-loaded #bg-grain.anim-bg {
+body.acrylic-loaded #bg-overlay.anim-bg {
   animation: acrylic-fade-in 200ms ease 0ms both;
 }
 

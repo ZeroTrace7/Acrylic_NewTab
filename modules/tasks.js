@@ -4,16 +4,25 @@ import { generateId } from './utils.js';
 import { toast } from './toast.js';
 
 const TASKS_KEY = 'tasks';
+const SUCCESS_AUTOCLEAR_MS = 3800;
 
 let panelEl = null;
 let listEl = null;
 let emptyEl = null;
+let contentEl = null;
+let inputRowEl = null;
 let inputEl = null;
 let clearBtnEl = null;
+let progressCountEl = null;
+let progressFillEl = null;
+let successEl = null;
 let isOpen = false;
 let tasks = [];
 let openPanelRaf = 0;
 let openPanelRaf2 = 0;
+let successTimeout = null;
+
+const taskRows = new Map();
 
 function normalizeTasks(raw) {
   if (!Array.isArray(raw)) return [];
@@ -35,59 +44,147 @@ function sortTasks() {
 }
 
 async function loadTasks() {
-  const stored = await Store.get(TASKS_KEY, []);
+  const stored = typeof Store.getTasks === 'function'
+    ? await Store.getTasks()
+    : await Store.get(TASKS_KEY, []);
   tasks = normalizeTasks(stored);
   sortTasks();
 }
 
 async function persistTasks() {
+  if (typeof Store.setTasks === 'function') {
+    await Store.setTasks(tasks);
+    return;
+  }
   await Store.set(TASKS_KEY, tasks);
 }
 
-function updateClearButton() {
-  if (!clearBtnEl) return;
-  const hasCompleted = tasks.some((task) => task.completed);
-  clearBtnEl.disabled = !hasCompleted;
+function createTaskRow(task) {
+  const row = document.createElement('div');
+  row.className = 'tasks-item';
+  row.dataset.taskId = task.id;
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'tasks-check';
+  toggleBtn.type = 'button';
+  toggleBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  `;
+  toggleBtn.addEventListener('click', () => toggleTask(row.dataset.taskId));
+
+  const textEl = document.createElement('span');
+  textEl.className = 'tasks-text';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'tasks-delete';
+  deleteBtn.type = 'button';
+  deleteBtn.setAttribute('aria-label', 'Delete task');
+  deleteBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+      <line x1="6" y1="18" x2="18" y2="6"></line>
+    </svg>
+  `;
+  deleteBtn.addEventListener('click', () => deleteTask(row.dataset.taskId));
+
+  row.append(toggleBtn, textEl, deleteBtn);
+  return row;
+}
+
+function updateTaskRow(row, task) {
+  row.dataset.taskId = task.id;
+  row.classList.toggle('is-done', task.completed);
+
+  const toggleBtn = row.querySelector('.tasks-check');
+  if (toggleBtn) {
+    toggleBtn.classList.toggle('is-done', task.completed);
+    toggleBtn.setAttribute('aria-label', task.completed ? 'Mark task as not done' : 'Mark task as done');
+  }
+
+  const textEl = row.querySelector('.tasks-text');
+  if (textEl) textEl.textContent = task.text;
+}
+
+function syncTaskList() {
+  if (!listEl) return;
+
+  tasks.forEach((task, index) => {
+    let row = taskRows.get(task.id);
+    if (!row) {
+      row = createTaskRow(task);
+      taskRows.set(task.id, row);
+    }
+    updateTaskRow(row, task);
+    const currentAtIndex = listEl.children[index];
+    if (currentAtIndex !== row) {
+      listEl.insertBefore(row, currentAtIndex || null);
+    }
+  });
+
+  const activeIds = new Set(tasks.map((task) => task.id));
+  [...taskRows.entries()].forEach(([id, row]) => {
+    if (activeIds.has(id)) return;
+    row.remove();
+    taskRows.delete(id);
+  });
+}
+
+function updatePanelState() {
+  if (!progressCountEl || !progressFillEl || !emptyEl || !contentEl || !inputRowEl || !listEl || !clearBtnEl || !successEl) return;
+
+  const total = tasks.length;
+  const completed = tasks.reduce((sum, task) => sum + (task.completed ? 1 : 0), 0);
+  const allComplete = total > 0 && completed === total;
+  const progress = total > 0 ? (completed / total) * 100 : 0;
+
+  progressCountEl.textContent = `${completed}/${total}`;
+  progressFillEl.style.width = `${progress}%`;
+
+  clearTimeout(successTimeout);
+  clearBtnEl.disabled = completed === 0;
+  emptyEl.style.display = total === 0 ? 'block' : 'none';
+
+  if (!panelEl) return;
+  panelEl.classList.toggle('is-success', allComplete);
+  if (allComplete) {
+    successTimeout = setTimeout(() => {
+      clearCompleted({ silent: true });
+    }, SUCCESS_AUTOCLEAR_MS);
+  }
+}
+
+function cleanupSuccessTimer() {
+  clearTimeout(successTimeout);
+  successTimeout = null;
+}
+
+function resetSuccessStateClass() {
+  panelEl?.classList.remove('is-success');
+}
+
+function showNormalPanelState() {
+  resetSuccessStateClass();
+  if (emptyEl) emptyEl.style.display = tasks.length === 0 ? 'block' : 'none';
+}
+
+async function clearCompleted(options = {}) {
+  const { silent = false } = options;
+  const remaining = tasks.filter((t) => !t.completed);
+  if (remaining.length === tasks.length) return;
+  tasks = remaining;
+  await persistTasks();
+  showNormalPanelState();
+  renderTasks();
+  if (!silent) {
+    toast.info('Completed tasks cleared');
+  }
 }
 
 function renderTasks() {
-  if (!listEl || !emptyEl) return;
-  listEl.innerHTML = '';
-
-  if (tasks.length === 0) {
-    emptyEl.style.display = 'block';
-    updateClearButton();
-    return;
-  }
-
-  emptyEl.style.display = 'none';
-  tasks.forEach((task) => listEl.appendChild(createTaskItem(task)));
-  updateClearButton();
-}
-
-function createTaskItem(task) {
-  const item = document.createElement('div');
-  item.className = 'tasks-item' + (task.completed ? ' is-done' : '');
-  item.dataset.taskId = task.id;
-
-  const checkBtn = document.createElement('button');
-  checkBtn.className = 'tasks-check' + (task.completed ? ' is-done' : '');
-  checkBtn.ariaLabel = task.completed ? 'Mark task as not done' : 'Mark task as done';
-  checkBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-  checkBtn.onclick = () => toggleTask(task.id);
-
-  const text = document.createElement('span');
-  text.className = 'tasks-text';
-  text.textContent = task.text;
-
-  const delBtn = document.createElement('button');
-  delBtn.className = 'tasks-delete';
-  delBtn.ariaLabel = 'Delete task';
-  delBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="6" y1="18" x2="18" y2="6"></line></svg>`;
-  delBtn.onclick = () => deleteTask(task.id);
-
-  item.append(checkBtn, text, delBtn);
-  return item;
+  syncTaskList();
+  updatePanelState();
 }
 
 async function addTask(raw) {
@@ -96,6 +193,8 @@ async function addTask(raw) {
     toast.error('Task cannot be empty');
     return;
   }
+
+  cleanupSuccessTimer();
 
   const newTask = {
     id: generateId(),
@@ -118,6 +217,7 @@ async function addTask(raw) {
 async function toggleTask(id) {
   const task = tasks.find((t) => t.id === id);
   if (!task) return;
+  cleanupSuccessTimer();
   task.completed = !task.completed;
   sortTasks();
   await persistTasks();
@@ -125,18 +225,11 @@ async function toggleTask(id) {
 }
 
 async function deleteTask(id) {
+  cleanupSuccessTimer();
   tasks = tasks.filter((t) => t.id !== id);
   await persistTasks();
+  showNormalPanelState();
   renderTasks();
-}
-
-async function clearCompleted() {
-  const remaining = tasks.filter((t) => !t.completed);
-  if (remaining.length === tasks.length) return;
-  tasks = remaining;
-  await persistTasks();
-  renderTasks();
-  toast.info('Completed tasks cleared');
 }
 
 function buildPanel() {
@@ -150,27 +243,42 @@ function buildPanel() {
   const header = document.createElement('div');
   header.className = 'tasks-header';
 
-  const title = document.createElement('h3');
-  title.className = 'tasks-title';
-  title.textContent = 'Tasks';
+  const progressHead = document.createElement('div');
+  progressHead.className = 'tasks-progress-head';
 
-  clearBtnEl = document.createElement('button');
-  clearBtnEl.className = 'tasks-clear-btn';
-  clearBtnEl.textContent = 'Clear done';
-  clearBtnEl.onclick = () => clearCompleted();
+  const progressLabel = document.createElement('span');
+  progressLabel.className = 'tasks-progress-label';
+  progressLabel.textContent = 'Progress';
 
-  header.append(title, clearBtnEl);
+  progressCountEl = document.createElement('span');
+  progressCountEl.className = 'tasks-progress-count';
+  progressCountEl.textContent = '0/0';
 
-  const inputRow = document.createElement('div');
-  inputRow.className = 'tasks-input-row';
+  progressHead.append(progressLabel, progressCountEl);
+
+  const progressTrack = document.createElement('div');
+  progressTrack.className = 'tasks-progress-track';
+
+  progressFillEl = document.createElement('div');
+  progressFillEl.className = 'tasks-progress-fill';
+  progressFillEl.style.width = '0%';
+  progressTrack.appendChild(progressFillEl);
+
+  header.append(progressHead, progressTrack);
+
+  contentEl = document.createElement('div');
+  contentEl.className = 'tasks-content';
+
+  inputRowEl = document.createElement('div');
+  inputRowEl.className = 'tasks-input-row';
 
   inputEl = document.createElement('input');
   inputEl.className = 'tasks-input';
   inputEl.type = 'text';
-  inputEl.placeholder = 'Add a task...';
+  inputEl.placeholder = 'Add a new task...';
   inputEl.autocomplete = 'off';
   inputEl.spellcheck = false;
-  inputEl.setAttribute('aria-label', 'Add a task');
+  inputEl.setAttribute('aria-label', 'Add a new task');
   inputEl.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -182,11 +290,17 @@ function buildPanel() {
 
   const addBtn = document.createElement('button');
   addBtn.className = 'tasks-add-btn';
-  addBtn.ariaLabel = 'Add task';
-  addBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
-  addBtn.onclick = () => addTask(inputEl?.value || '');
+  addBtn.type = 'button';
+  addBtn.setAttribute('aria-label', 'Add task');
+  addBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  `;
+  addBtn.addEventListener('click', () => addTask(inputEl?.value || ''));
 
-  inputRow.append(inputEl, addBtn);
+  inputRowEl.append(inputEl, addBtn);
 
   listEl = document.createElement('div');
   listEl.className = 'tasks-list';
@@ -195,7 +309,29 @@ function buildPanel() {
   emptyEl.className = 'tasks-empty';
   emptyEl.textContent = 'No tasks yet';
 
-  panel.append(header, inputRow, listEl, emptyEl);
+  clearBtnEl = document.createElement('button');
+  clearBtnEl.className = 'tasks-clear-btn';
+  clearBtnEl.type = 'button';
+  clearBtnEl.textContent = 'Clear Completed';
+  clearBtnEl.addEventListener('click', () => clearCompleted());
+
+  contentEl.append(inputRowEl, listEl, emptyEl, clearBtnEl);
+
+  successEl = document.createElement('div');
+  successEl.className = 'tasks-success-card';
+  successEl.innerHTML = `
+    <div class="tasks-success-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M5.8 11.3 2 22l10.7-3.8"></path>
+        <path d="M4 3h.01M22 2h.01M18 6h.01M20 10h.01"></path>
+        <path d="m14 10-6-6M9 15l-6-6"></path>
+        <path d="M8.5 8.5 16 16l4-4-7.5-7.5z"></path>
+      </svg>
+    </div>
+    <p class="tasks-success-text">That's it, good job!</p>
+  `;
+
+  panel.append(header, contentEl, successEl);
   return panel;
 }
 
@@ -231,7 +367,6 @@ function openPanel() {
   }
 
   panelEl.setAttribute('aria-hidden', 'false');
-  // Ensure open transition runs after mount/layout across two frames.
   openPanelRaf = requestAnimationFrame(() => {
     openPanelRaf = 0;
     openPanelRaf2 = requestAnimationFrame(() => {
@@ -250,12 +385,15 @@ function openPanel() {
   renderTasks();
   document.addEventListener('mousedown', handleOutsideClick);
   document.addEventListener('keydown', handleKeydown);
-  setTimeout(() => inputEl?.focus(), 60);
+  if (!panelEl.classList.contains('is-success')) {
+    setTimeout(() => inputEl?.focus(), 90);
+  }
 }
 
 function closePanel() {
   if (!isOpen) return;
   isOpen = false;
+  cleanupSuccessTimer();
   if (openPanelRaf) {
     cancelAnimationFrame(openPanelRaf);
     openPanelRaf = 0;

@@ -82,6 +82,19 @@ export const Store = {
     await chrome.storage.local.set({ quickLinks: links });
   },
 
+  // ── Tasks ────────────────────────────────────────────────
+
+  /** Gets the tasks array from local storage. */
+  async getTasks() {
+    const result = await chrome.storage.local.get('tasks');
+    return result.tasks || [];
+  },
+
+  /** Saves the tasks array to local storage. */
+  async setTasks(tasks) {
+    await chrome.storage.local.set({ tasks });
+  },
+
   // ── Notes ────────────────────────────────────────────────
 
   /** Gets the array of note IDs from local storage. */
