@@ -295,6 +295,12 @@
 .tasks-input:focus {
   border-color: rgba(110, 231, 183, 0.62);
   background: rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+
+.tasks-input:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .tasks-add-btn {
@@ -361,16 +367,45 @@
   color: var(--text-primary);
   line-height: 1.35;
   transition: opacity 180ms ease;
+  position: relative;
 }
 
 .tasks-item.is-done .tasks-text {
-  text-decoration: line-through;
   opacity: 0.5;
 }
 
+.tasks-item.is-done .tasks-text::before,
+.tasks-item.is-done .tasks-text::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.tasks-item.is-done .tasks-text::before {
+  top: 43%;
+  height: 8px;
+  opacity: 0.72;
+  transform: rotate(-2deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 9 C34 5, 62 11, 94 8 C126 5, 156 10, 188 7 C202 6, 210 8, 218 9' stroke='%23e5e7eb' stroke-width='3' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
+.tasks-item.is-done .tasks-text::after {
+  top: 50%;
+  height: 7px;
+  opacity: 0.6;
+  transform: rotate(1.2deg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 220 16' preserveAspectRatio='none'%3E%3Cpath d='M2 8 C38 12, 70 4, 104 8 C136 12, 168 5, 198 9 C208 10, 214 8, 218 7' stroke='%23d1d5db' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+}
+
 .tasks-check {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
   border-radius: 50%;
   border: 1.6px solid rgba(226, 232, 240, 0.65);
   background: transparent;
@@ -383,8 +418,8 @@
 }
 
 .tasks-check svg {
-  width: 12px;
-  height: 12px;
+  width: 9px;
+  height: 9px;
   stroke: currentColor;
   stroke-width: 2.8;
   fill: none;
@@ -442,7 +477,7 @@
 }
 
 .tasks-clear-btn {
-  margin-top: auto;
+  margin-top: 4px;
   align-self: flex-start;
   padding: 7px 12px;
   border-radius: 999px;
@@ -488,7 +523,7 @@
   opacity: 0;
   transform: translateY(12px) scale(0.96);
   pointer-events: none;
-  min-height: 170px;
+  min-height: 0;
   padding: 0 18px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
@@ -505,6 +540,7 @@
 
 .tasks-panel.is-success .tasks-success-card {
   max-height: 240px;
+  min-height: 170px;
   margin: auto 0;
   padding: 24px 18px;
   opacity: 1;

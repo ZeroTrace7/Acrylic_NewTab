@@ -138,17 +138,20 @@ function updatePanelState() {
   const completed = tasks.reduce((sum, task) => sum + (task.completed ? 1 : 0), 0);
   const allComplete = total > 0 && completed === total;
   const progress = total > 0 ? (completed / total) * 100 : 0;
+  const hasCompleted = completed > 0;
 
   progressCountEl.textContent = `${completed}/${total}`;
   progressFillEl.style.width = `${progress}%`;
 
   clearTimeout(successTimeout);
-  clearBtnEl.disabled = completed === 0;
+  clearBtnEl.disabled = !hasCompleted;
+  clearBtnEl.style.display = hasCompleted ? 'inline-flex' : 'none';
   emptyEl.style.display = total === 0 ? 'block' : 'none';
 
   if (!panelEl) return;
   panelEl.classList.toggle('is-success', allComplete);
   if (allComplete) {
+    clearBtnEl.style.display = 'none';
     successTimeout = setTimeout(() => {
       clearCompleted({ silent: true });
     }, SUCCESS_AUTOCLEAR_MS);
