@@ -19,13 +19,19 @@ let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 
 function getBodyEl() { return DOM.appBody; }
+function normalizeTheme(themeId) {
+  return THEMES.some((t) => t.id === themeId) ? themeId : 'midnight';
+}
 
 function applyTheme(themeId) {
-  currentTheme = themeId;
+  const nextTheme = normalizeTheme(themeId);
+  currentTheme = nextTheme;
   const body = getBodyEl();
   if (!body) return;
-  THEMES.forEach(t => body.classList.remove(`theme-${t.id}`));
-  body.classList.add(`theme-${themeId}`);
+  Array.from(body.classList).forEach((c) => {
+    if (c.startsWith('theme-')) body.classList.remove(c);
+  });
+  body.classList.add(`theme-${nextTheme}`);
   if (!currentWallpaperUrl) body.classList.remove('has-wallpaper');
   bus.dispatchEvent(new CustomEvent('themeChanged'));
 }
@@ -87,9 +93,10 @@ export async function initBackground() {
   });
 }
 
-export function setTheme(themeId) {
-  applyTheme(themeId);
-  Prefs.set('theme', themeId);
+export async function setTheme(themeId) {
+  const nextTheme = normalizeTheme(themeId);
+  applyTheme(nextTheme);
+  await Prefs.set('theme', nextTheme);
 }
 
 export function setWallpaper(url, blur = 0, darken = 0.45) {
