@@ -11,6 +11,28 @@ import { UI_CONFIG }      from './modules/ui-config.js';
 
 let settingsOpen = false;
 
+function debugStylesheetBinding() {
+  const loadedStylesheets = [...document.styleSheets].map((s) => s.href);
+  console.log('Loaded stylesheets:', loadedStylesheets);
+
+  const hasNewtabCss = loadedStylesheets.some(
+    (href) => typeof href === 'string' && href.includes('newtab.css')
+  );
+
+  if (!hasNewtabCss) {
+    const style = document.createElement('style');
+    style.textContent = `
+body.test-force-bg {
+  background: red !important;
+}
+`;
+    document.head.appendChild(style);
+    document.body.classList.add('test-force-bg');
+  }
+
+  console.info('[Acrylic] DevTools Network: enable "Disable cache" while debugging CSS.');
+}
+
 function armEntryAnimation() {
   const apply = () => {
     requestAnimationFrame(() => {
@@ -28,6 +50,8 @@ function armEntryAnimation() {
 
 async function initApp() {
   try {
+    debugStylesheetBinding();
+
     document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
     document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
     document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);

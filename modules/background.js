@@ -1,7 +1,6 @@
 import { Prefs } from './storage.js';
 import { toast } from './toast.js';
 import { bus } from './event-bus.js';
-import { DOM } from './dom.js';
 
 const THEMES = [
   { id: 'midnight',  label: 'Midnight'  },
@@ -18,7 +17,7 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 
-function getBodyEl() { return DOM.appBody; }
+function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
   return THEMES.some((t) => t.id === themeId) ? themeId : 'midnight';
 }
@@ -28,9 +27,9 @@ function applyTheme(themeId) {
   currentTheme = nextTheme;
   const body = getBodyEl();
   if (!body) return;
-  Array.from(body.classList).forEach((c) => {
-    if (c.startsWith('theme-')) body.classList.remove(c);
-  });
+  [...body.classList]
+    .filter((c) => c.startsWith('theme-'))
+    .forEach((c) => body.classList.remove(c));
   body.classList.add(`theme-${nextTheme}`);
   if (!currentWallpaperUrl) body.classList.remove('has-wallpaper');
   bus.dispatchEvent(new CustomEvent('themeChanged'));
