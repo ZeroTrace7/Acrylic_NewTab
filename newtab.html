@@ -21,9 +21,9 @@
 <body id="app-body" class="theme-midnight">
 
   <!-- ── Background Layers ── -->
-  <div id="bg-layer" aria-hidden="true"></div>
-  <div id="bg-overlay" aria-hidden="true"></div>
-  <div id="bg-grain" aria-hidden="true"></div>
+  <div id="bg-layer" class="anim-hidden anim-bg" aria-hidden="true"></div>
+  <div id="bg-overlay" class="anim-hidden anim-bg" aria-hidden="true"></div>
+  <div id="bg-grain" class="anim-hidden anim-bg" aria-hidden="true"></div>
 
   <!-- ── Layout Root ── -->
   <div class="layout-root">
@@ -42,7 +42,7 @@
     </header>
 
     <!-- Left Dock — vertically centered, absolute -->
-    <aside id="left-dock" class="left-dock">
+    <aside id="left-dock" class="left-dock anim-hidden anim-sidebar">
       <div class="ql-pill">
         <div id="sidebar-apps-grid" class="sidebar-grid"></div>
         <button id="tools-fab" class="fab glass" aria-label="Open quick tools" aria-expanded="false" aria-controls="right-panel">
@@ -57,7 +57,7 @@
 
     <!-- Clock Zone -->
     <section id="clock-zone">
-      <div class="clock-wrapper">
+      <div class="clock-wrapper anim-hidden anim-clock">
         <div id="simple-clock" class="simple-clock" role="timer" aria-label="Current time"></div>
         <div id="date-text" class="clock-date"></div>
       </div>
@@ -65,10 +65,10 @@
 
     <!-- Middle Zone — greeting + search -->
     <section id="middle-zone">
-      <div id="greeting-text" class="clock-greeting"></div>
+      <div id="greeting-text" class="clock-greeting anim-hidden anim-greeting"></div>
 
       <section id="search-section" class="search-section">
-        <div id="search-wrapper" class="search-wrapper glass">
+        <div id="search-wrapper" class="search-wrapper glass anim-hidden anim-search">
           <div id="engine-btn" class="search-engine-btn glass-subtle" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
             <img id="engine-icon" src="icons/icon16.png" alt="Browser default">
             <svg class="engine-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

@@ -11,6 +11,21 @@ import { UI_CONFIG }      from './modules/ui-config.js';
 
 let settingsOpen = false;
 
+function armEntryAnimation() {
+  const apply = () => {
+    requestAnimationFrame(() => {
+      document.body?.classList.add('acrylic-loaded');
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply, { once: true });
+    return;
+  }
+
+  apply();
+}
+
 async function initApp() {
   try {
     document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
@@ -93,5 +108,6 @@ async function initApp() {
   }
 }
 
+armEntryAnimation();
 initApp();
 
