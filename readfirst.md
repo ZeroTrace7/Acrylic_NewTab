@@ -2,49 +2,51 @@
 
 ## CRITICAL RULES — READ BEFORE MAKING ANY CHANGE
 
-### 1. BODY ELEMENT
-- The `<body>` tag has `id="app-body"`
-- All theme selectors MUST use `#app-body.theme-*` NOT `body.theme-*`
-- Animation triggers use `body.acrylic-loaded` (`document.body`)
-- Both refer to the same element
+### 1. BODY + SELECTOR CONTRACT
+- The root element is `<body id="app-body">`.
+- Theme selectors must use `#app-body.theme-*` (not `body.theme-*`).
+- Entry animation trigger uses `document.body.classList.add('acrylic-loaded')`.
+- `body` and `#app-body` are the same node; keep selectors consistent with existing specificity.
 
-### 2. BACKGROUND SYSTEM
-- Three background divs: `#bg-layer`, `#bg-overlay`, `#bg-grain`
-- `#bg-grain` must NEVER have `anim-hidden` class or `anim-bg` animation
-- `#bg-grain` opacity is controlled by `--bg-grain-opacity` CSS variable (`0.035`)
-- Do NOT change `#bg-grain` opacity or add animations to it
-- `#bg-layer` and `#bg-overlay` can have `anim-bg` class but NOT `anim-hidden`
+### 2. BACKGROUND LAYER SYSTEM
+- Background stack is: `#bg-layer` (wallpaper) -> `#bg-overlay` (wallpaper shading) -> `#bg-grain` (texture) -> UI.
+- `#bg-grain` must never receive `anim-hidden` or `anim-bg`.
+- Do not animate `#bg-grain`; its visibility is controlled by `--bg-grain-opacity` (`0.035`).
+- `#bg-overlay` base state must stay `background: none;`.
+- Overlay visuals must only activate through `#app-body.has-wallpaper #bg-overlay`.
 
 ### 3. THEME SYSTEM
-- Default theme: `theme-slate` (navy blue gradient)
-- Theme class is applied to `#app-body` by `modules/background.js`
-- Never hardcode a background color on `#app-body` — themes override it
-- Never add `background: #0a0f1c` or any solid color fallback to `#app-body`
+- Theme classes are applied by `modules/background.js` to `document.body`.
+- Current default preference is `midnight` (`Prefs.defaults.theme`).
+- Keep theme backgrounds in `newtab.css` under `#app-body.theme-*`.
+- Never introduce solid fallback colors that can flatten theme gradients.
 
-### 4. ANIMATION SYSTEM
-- Entry animations are sub-800ms total
-- `acrylic-loaded` class is added to `document.body` via `armEntryAnimation()` in `newtab.js`
-- `anim-hidden` class starts elements at `opacity: 0`
-- `anim-hidden` must NEVER be applied to background divs (`#bg-layer`, `#bg-overlay`, `#bg-grain`)
-- `prefers-reduced-motion` disables all animations
+### 4. ENTRY ANIMATION RULES
+- Entry animation budget is sub-800ms total.
+- `anim-hidden` is only for foreground elements that should fade/slide in.
+- Background elements (`#bg-layer`, `#bg-overlay`, `#bg-grain`) must be visible immediately.
+- Honor `prefers-reduced-motion`; do not add forced motion bypasses.
 
-### 5. CSS SPECIFICITY RULES
-- `#app-body` has higher specificity than `body`
-- Theme gradients on `#app-body.theme-*` will lose to any rule on `#app-body` alone
-- Never add a `background` property directly to `#app-body {}` block
-- If you add a fallback, it must go on `body {}` not `#app-body {}`
+### 5. TASKS PANEL (FINALIZED IMPLEMENTATION)
+- Primary files: `modules/tasks.js` and `css/panels.css`.
+- Trigger is `#tasks-btn`; panel mounts into `#tasks-panel-mount`.
+- Use `.tasks-panel.open` for visible state and `.tasks-panel.is-success` for completed-all reward state.
+- Progress formula: `completed / total * 100` -> `.tasks-progress-fill` width.
+- Task rendering must remain incremental (Map + DOM reuse); do not reintroduce list `innerHTML = ''` redraws.
+- Completed row state must stay on `.tasks-item.is-done` and `.tasks-check.is-done`.
+- Scribble strike is controlled by `data-scribble` variants (`0/1/2`) and must stay three-pattern cycling.
+- Success flow timing constants in `modules/tasks.js` are part of UX tuning: `SUCCESS_REVEAL_DELAY_MS`, `SUCCESS_AUTOCLEAR_MS`, `TASK_REORDER_DELAY_MS`.
+- Keep persistence wired to `Store.getTasks()` and `Store.setTasks()`.
 
-### 6. FILE STRUCTURE
-- All modules are in `/modules/`
-- Panels are in `/panels/`
-- Settings in `/settings/`
-- Onboarding in `/onboarding/`
-- No bundler — pure ES modules
-- Manifest V3 — no background page, uses service worker
+### 6. STORAGE + ARCHITECTURE
+- Manifest V3 extension, no bundler, pure ES modules.
+- Preferences live in `chrome.storage.sync` via `Prefs`.
+- App/panel data (including tasks) live in `chrome.storage.local` via `Store`.
+- Major directories: `/modules` (core logic), `/panels` (tools panel modules), `/settings` (settings UI), `/onboarding` (onboarding flow).
 
-### 7. BEFORE MAKING ANY CHANGE
-- Read this file completely
-- Do not rename selectors without checking specificity
-- Do not add animations to background divs
-- Do not add solid color fallbacks to `#app-body`
-- Test by checking: `getComputedStyle(document.getElementById('app-body')).background`
+### 7. BEFORE YOU CHANGE ANYTHING
+- Read this file first.
+- Check selector specificity impact before editing theme/background CSS.
+- Do not add animations to background layers.
+- Do not add solid color backgrounds that override theme gradients.
+- Validate in DevTools after changes: `getComputedStyle(document.getElementById('app-body')).background`, `getComputedStyle(document.getElementById('bg-grain')).opacity`, `chrome.storage.local.get('tasks')`.

@@ -2,7 +2,7 @@
 
 Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - New Tab".
 
-## Features
+## What Acrylic Includes
 
 - Gloria Hallelujah clock with AM/PM
 - Date display
@@ -19,3 +19,22 @@ Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - Ne
 - Grain texture overlay
 - Onboarding flow
 - Toast notifications
+
+## Tasks Button (Top-Right)
+
+The top-right Tasks button opens a premium floating glass to-do panel designed for fast capture and progress tracking.
+
+- Progress header with live `X/Y` counter and animated progress bar
+- Input row with `Add a new task...` field and circular add button
+- Smooth task completion flow with delayed reorder animation for better readability
+- Completed state styling with a hand-drawn scribble strike effect (3 variants that cycle)
+- Row-level delete action (revealed on hover)
+- `Clear Completed` action shown only when completed items exist
+- Reward state when all tasks are done: celebratory card with auto-reset after a short delay
+- Full persistence through `chrome.storage.local` (`Store.getTasks` / `Store.setTasks`)
+
+## Stack
+
+- Manifest V3 Chrome Extension
+- Pure ES modules (no bundler)
+- `chrome.storage.sync` for preferences, `chrome.storage.local` for app data

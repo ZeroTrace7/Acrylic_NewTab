@@ -6,6 +6,7 @@ import { toast } from './toast.js';
 const TASKS_KEY = 'tasks';
 const SUCCESS_REVEAL_DELAY_MS = 360;
 const SUCCESS_AUTOCLEAR_MS = 3800;
+const TASK_REORDER_DELAY_MS = 180;
 
 let panelEl = null;
 let listEl = null;
@@ -97,7 +98,6 @@ function createTaskRow(task) {
 
 function updateTaskRow(row, task) {
   row.dataset.taskId = task.id;
-  row.dataset.scribble = String(getScribbleVariant(task.id));
   row.classList.toggle('is-done', task.completed);
 
   const toggleBtn = row.querySelector('.tasks-check');
@@ -110,14 +110,6 @@ function updateTaskRow(row, task) {
   if (textEl) textEl.textContent = task.text;
 }
 
-function getScribbleVariant(taskId) {
-  let hash = 0;
-  for (let i = 0; i < taskId.length; i += 1) {
-    hash = ((hash << 5) - hash + taskId.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash) % 3;
-}
-
 function syncTaskList() {
   if (!listEl) return;
 
@@ -128,6 +120,7 @@ function syncTaskList() {
       taskRows.set(task.id, row);
     }
     updateTaskRow(row, task);
+    row.dataset.scribble = String(index % 3);
     const currentAtIndex = listEl.children[index];
     if (currentAtIndex !== row) {
       listEl.insertBefore(row, currentAtIndex || null);
@@ -139,6 +132,34 @@ function syncTaskList() {
     if (activeIds.has(id)) return;
     row.remove();
     taskRows.delete(id);
+  });
+}
+
+function animateListReorder(beforeRects) {
+  if (!listEl) return;
+  const rows = [...listEl.children];
+  rows.forEach((row) => {
+    const taskId = row.dataset.taskId;
+    if (!taskId) return;
+    const prev = beforeRects.get(taskId);
+    if (!prev) return;
+    const next = row.getBoundingClientRect();
+    const dy = prev.top - next.top;
+    if (Math.abs(dy) < 1) return;
+    row.style.transition = 'none';
+    row.style.transform = `translateY(${dy}px)`;
+    row.style.willChange = 'transform';
+    requestAnimationFrame(() => {
+      row.style.transition = 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1)';
+      row.style.transform = 'translateY(0)';
+      const cleanup = () => {
+        row.style.transition = '';
+        row.style.transform = '';
+        row.style.willChange = '';
+        row.removeEventListener('transitionend', cleanup);
+      };
+      row.addEventListener('transitionend', cleanup, { once: true });
+    });
   });
 }
 
@@ -205,8 +226,20 @@ async function clearCompleted(options = {}) {
   }
 }
 
-function renderTasks() {
+function renderTasks(options = {}) {
+  const { animateReorder = false } = options;
+  let beforeRects = null;
+  if (animateReorder && listEl) {
+    beforeRects = new Map(
+      [...listEl.children]
+        .filter((row) => row.dataset.taskId)
+        .map((row) => [row.dataset.taskId, row.getBoundingClientRect()])
+    );
+  }
   syncTaskList();
+  if (beforeRects) {
+    animateListReorder(beforeRects);
+  }
   updatePanelState();
 }
 
@@ -242,9 +275,13 @@ async function toggleTask(id) {
   if (!task) return;
   cleanupSuccessTimer();
   task.completed = !task.completed;
-  sortTasks();
   await persistTasks();
   renderTasks();
+  setTimeout(async () => {
+    sortTasks();
+    await persistTasks();
+    renderTasks({ animateReorder: true });
+  }, TASK_REORDER_DELAY_MS);
 }
 
 async function deleteTask(id) {
@@ -344,12 +381,7 @@ function buildPanel() {
   successEl.className = 'tasks-success-card';
   successEl.innerHTML = `
     <div class="tasks-success-icon" aria-hidden="true">
-      <svg viewBox="0 0 24 24">
-        <path d="M5.8 11.3 2 22l10.7-3.8"></path>
-        <path d="M4 3h.01M22 2h.01M18 6h.01M20 10h.01"></path>
-        <path d="m14 10-6-6M9 15l-6-6"></path>
-        <path d="M8.5 8.5 16 16l4-4-7.5-7.5z"></path>
-      </svg>
+      <span class="tasks-success-emoji">🎉</span>
     </div>
     <p class="tasks-success-text">That's it, good job!</p>
   `;
