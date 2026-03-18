@@ -85,26 +85,26 @@ async function initApp() {
       await initSettings(() => { settingsOpen = false; });
     });
 
-    // Step 5 — Tools FAB (lazy-loaded)
-    const toolsFab = DOM.toolsFab;
+    // Step 5 — Quick Tools trigger (bottom-right grid button)
+    const quickToolsBtn = DOM.quickToolsBtn;
     const syncToolsState = () => {
-      const panelOpen = toolsFab?.classList.contains('active') === true;
-      toolsFab?.setAttribute('aria-expanded', String(panelOpen));
-      toolsFab?.setAttribute('aria-label', panelOpen ? 'Close quick tools' : 'Open quick tools');
+      const panelOpen = quickToolsBtn?.classList.contains('active') === true;
+      quickToolsBtn?.setAttribute('aria-expanded', String(panelOpen));
+      quickToolsBtn?.setAttribute('aria-label', panelOpen ? 'Close quick tools' : 'Open quick tools');
     };
     syncToolsState();
 
-    toolsFab?.addEventListener('click', async () => {
+    quickToolsBtn?.addEventListener('click', async () => {
       const { toggleToolsPanel } = await import('./panels/toolspanel.js');
-      const wasActive = toolsFab.classList.contains('active');
+      const wasActive = quickToolsBtn.classList.contains('active');
       toggleToolsPanel(() => {
-        toolsFab.classList.remove('active');
+        quickToolsBtn.classList.remove('active');
         syncToolsState();
       });
       if (wasActive) {
-        toolsFab.classList.remove('active');
+        quickToolsBtn.classList.remove('active');
       } else {
-        toolsFab.classList.add('active');
+        quickToolsBtn.classList.add('active');
       }
       syncToolsState();
     });

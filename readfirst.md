@@ -50,3 +50,10 @@
 - Do not add animations to background layers.
 - Do not add solid color backgrounds that override theme gradients.
 - Validate in DevTools after changes: `getComputedStyle(document.getElementById('app-body')).background`, `getComputedStyle(document.getElementById('bg-grain')).opacity`, `chrome.storage.local.get('tasks')`.
+
+### Extension Routing Map
+- Middle-Left Dock (`#tools-fab` / ... oval): Triggers "Manage Quick Links" popover.
+- Bottom-Left Icon (`#focus-btn`, target/circles): Triggers "Zen Mode".
+- Bottom-Right Group (List Icon): Triggers "Tasks / Todo" panel.
+- Bottom-Right Group (Grid Icon, `#grid-view-btn`): Triggers "Quick Tools" panel (Productivity/Notes/Tabs).
+- Bottom-Right Group (Slider Icon): Triggers "Settings" modal.

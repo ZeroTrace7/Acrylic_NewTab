@@ -63,6 +63,26 @@ export const DOM = {
     return document.getElementById('tools-fab');
   },
 
+  get manageQuicklinksBtn() {
+    return document.getElementById('manage-quicklinks-btn')
+      || document.getElementById('ql-more-btn')
+      || document.getElementById('tools-fab');
+  },
+
+  get productivityToolBtn() {
+    return document.getElementById('productivity-tool-btn')
+      || document.getElementById('focus-btn');
+  },
+
+  get zenModeBtn() {
+    return document.getElementById('focus-btn');
+  },
+
+  get quickToolsBtn() {
+    return document.getElementById('quick-tools-btn')
+      || document.getElementById('grid-view-btn');
+  },
+
   get leftDock() {
     return document.getElementById('left-dock');
   },
