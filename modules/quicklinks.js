@@ -11,8 +11,33 @@ const QUICK_LIBRARY = [
   { key: 'gmail', title: 'Gmail', url: 'https://mail.google.com' },
   { key: 'youtube', title: 'YouTube', url: 'https://youtube.com' },
   { key: 'chatgpt', title: 'ChatGPT', url: 'https://chat.openai.com' },
+  { key: 'whatsapp', title: 'WhatsApp', url: 'https://web.whatsapp.com' },
   { key: 'x', title: 'X', url: 'https://x.com' },
   { key: 'notion', title: 'Notion', url: 'https://www.notion.so' },
+  { key: 'notebooklm', title: 'NotebookLM', url: 'https://notebooklm.google.com' },
+];
+
+const MONO_ICONS = {
+  gmail: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.8 8s-.2-1.4-.8-2c-.8-.8-1.6-.8-2-.9C16.8 5 12 5 12 5s-4.8 0-7 .1c-.4.1-1.2.1-2 .9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.5c0 1.6.2 3.2.2 3.2s.2 1.4.8 2c.8.8 1.8.8 2.2.8C6.8 19 12 19 12 19s4.8 0 7-.2c.4-.1 1.2-.1 2-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.5C22 9.6 21.8 8 21.8 8ZM10 15V9l5.2 3L10 15Z"/></svg>`,
+  chatgpt: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11.98 2a4.64 4.64 0 0 0-3.97 2.25 4.64 4.64 0 0 0-4.64 8.04 4.64 4.64 0 0 0 4.64 8.04A4.64 4.64 0 0 0 16 19.75a4.64 4.64 0 0 0 4.64-8.04A4.64 4.64 0 0 0 16 3.67 4.62 4.62 0 0 0 11.98 2Zm0 2.22c.92 0 1.77.5 2.23 1.3l.27.46.53.03a2.42 2.42 0 0 1 2.16 3.45l-.22.48.34.4a2.42 2.42 0 0 1-1.84 3.99h-.53l-.28.45a2.42 2.42 0 0 1-4.33 0l-.28-.45h-.53A2.42 2.42 0 0 1 7.66 10l.34-.4-.22-.48A2.42 2.42 0 0 1 9.94 6l.53-.03.27-.46a2.57 2.57 0 0 1 2.24-1.3Z"/></svg>`,
+  notion: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.5 4.3c.8.6 1.1.5 2.5.4l12.4-.7c.3 0 .1-.3 0-.3l-2-1.4c-.4-.3-1-.6-2-.6L3 2.5c-.5.1-.6.3-.4.5Zm.8 3V21c0 .7.4 1 1.2 1l14-.8c.8 0 1-.5 1-1.1V6.4c0-.6-.2-.9-.8-.9L5.9 6.4c-.4 0-.6.3-.6.9Zm12.7.7c.1.4 0 .8-.4.9l-.6.1v10c-.6.3-1.1.5-1.6.5-.7 0-.9-.2-1.5-.9L9.4 11.6v6.8l1.2.3s0 .8-1.2.8l-3.1.2c-.1-.2 0-.6.3-.7l.8-.2V9.9L6.2 9.8c-.1-.4.1-1 .8-1l3.3-.2 4.6 7.1V9.4l-1.2-.1c-.1-.5.2-.9.7-1Z"/></svg>`,
+  whatsapp: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.08-.3-.15-1.26-.46-2.39-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.07 2.88 1.21 3.07.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.69.25-1.29.17-1.41-.07-.12-.27-.2-.57-.35Z"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-4.71-6.23-5.4 6.23H2.74l7.73-8.84-7.22-9.51h6.83l4.25 5.62Zm-1.16 17.52h1.83L7.08 4.13H5.12Z"/></svg>`,
+  notebooklm: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 3h9a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3Zm1 3v12h8a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H7Zm2 3h5v2H9V9Zm0 4h5v2H9v-2Z"/></svg>`,
+};
+
+const MONO_ICON_MATCHERS = [
+  ['mail.google', 'gmail'],
+  ['youtube', 'youtube'],
+  ['youtu.be', 'youtube'],
+  ['openai.com', 'chatgpt'],
+  ['chatgpt', 'chatgpt'],
+  ['notion', 'notion'],
+  ['whatsapp', 'whatsapp'],
+  ['x.com', 'x'],
+  ['twitter.com', 'x'],
+  ['notebooklm', 'notebooklm'],
 ];
 
 let managePanelEl = null;
@@ -106,25 +131,24 @@ function migrateStoredLinks(stored) {
 
 function setTileIcon(iconWrap, link) {
   if (!iconWrap) return;
+  iconWrap.replaceChildren();
 
-  if (link.favicon) {
-    const img = document.createElement('img');
-    img.className = 'quicklink-favicon';
-    img.src = link.favicon;
-    img.onerror = () => {
-      const ph = document.createElement('div');
-      ph.className = 'quicklink-favicon-placeholder';
-      ph.textContent = (link.title[0] || '?').toUpperCase();
-      iconWrap.replaceChildren(ph);
-    };
-    iconWrap.replaceChildren(img);
+  const host = getDomain(link?.url || '').toLowerCase();
+  const match = MONO_ICON_MATCHERS.find(([needle]) => host.includes(needle));
+  const iconKey = match?.[1] || null;
+
+  if (iconKey && MONO_ICONS[iconKey]) {
+    const span = document.createElement('span');
+    span.className = 'quicklink-mono-icon';
+    span.innerHTML = MONO_ICONS[iconKey];
+    iconWrap.appendChild(span);
     return;
   }
 
-  const ph = document.createElement('div');
-  ph.className = 'quicklink-favicon-placeholder';
-  ph.textContent = (link.title[0] || '?').toUpperCase();
-  iconWrap.replaceChildren(ph);
+  const fallback = document.createElement('span');
+  fallback.className = 'mono-text-fallback';
+  fallback.textContent = (link?.title?.trim()?.[0] || 'L').toUpperCase();
+  iconWrap.appendChild(fallback);
 }
 
 function getAppLinks() {

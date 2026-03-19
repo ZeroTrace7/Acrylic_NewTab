@@ -268,30 +268,36 @@
 }
 
 .manage-link-icon-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.manage-link-icon-wrap .quicklink-favicon,
-.manage-link-icon-wrap .quicklink-favicon-placeholder {
-  width: 24px;
-  height: 24px;
+.manage-link-icon-wrap .quicklink-mono-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+  opacity: 0.9;
+  fill: currentColor;
+  pointer-events: none;
 }
 
-.manage-link-icon-wrap .quicklink-favicon {
-  background-color: #ffffff;
-  border-radius: 50%;
-  padding: 3px;
-  object-fit: contain;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.manage-link-icon-wrap .mono-text-fallback {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  opacity: 0.85;
+  user-select: none;
 }
 
 .manage-link-name {
@@ -445,31 +451,36 @@
 }
 
 .manage-library-icon-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   overflow: hidden;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.manage-library-icon-wrap .quicklink-favicon,
-.manage-library-icon-wrap .quicklink-favicon-placeholder {
+.manage-library-icon-wrap .quicklink-mono-icon svg {
   width: 22px;
   height: 22px;
-  border-radius: 7px;
+  color: #ffffff;
+  opacity: 0.9;
+  fill: currentColor;
+  pointer-events: none;
 }
 
-.manage-library-icon-wrap .quicklink-favicon {
-  background-color: #ffffff;
-  border-radius: 50%;
-  padding: 3px;
-  object-fit: contain;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.manage-library-icon-wrap .mono-text-fallback {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  opacity: 0.85;
+  user-select: none;
 }
 
 /* Tasks panel */

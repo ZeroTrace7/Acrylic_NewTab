@@ -144,6 +144,48 @@
   gap: 12px;
 }
 
+/* Monochrome quick links - left dock */
+#left-dock .quicklink-item {
+  width: 44px;
+  height: 44px;
+}
+
+#left-dock .quicklink-item .quicklink-tile {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+#left-dock .quicklink-item .ql-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+#left-dock .quicklink-item .quicklink-mono-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffffff;
+  opacity: 0.9;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+#left-dock .quicklink-item .mono-text-fallback {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-transform: uppercase;
+  opacity: 0.85;
+  user-select: none;
+}
+
 @media (max-width: 768px) {
   .left-dock,
   #left-dock {
