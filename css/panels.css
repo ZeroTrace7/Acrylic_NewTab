@@ -282,11 +282,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.manage-link-icon-wrap .quicklink-mono-icon svg {
-  width: 22px;
-  height: 22px;
+.manage-link-icon-wrap svg {
+  width: 24px;
+  height: 24px;
   color: #ffffff;
-  opacity: 0.9;
+  opacity: 0.95;
   fill: currentColor;
   pointer-events: none;
 }
@@ -465,11 +465,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.manage-library-icon-wrap .quicklink-mono-icon svg {
-  width: 22px;
-  height: 22px;
+.manage-library-icon-wrap svg {
+  width: 24px;
+  height: 24px;
   color: #ffffff;
-  opacity: 0.9;
+  opacity: 0.95;
   fill: currentColor;
   pointer-events: none;
 }
