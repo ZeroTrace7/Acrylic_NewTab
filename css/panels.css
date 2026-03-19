@@ -283,12 +283,21 @@
 }
 
 .manage-link-icon-wrap svg {
-  width: 24px;
-  height: 24px;
+  width: 65%;
+  height: 65%;
+  object-fit: contain;
   color: #ffffff;
   opacity: 0.95;
   fill: currentColor;
   pointer-events: none;
+}
+
+.manage-link-icon-wrap img {
+  width: 65%;
+  height: 65%;
+  object-fit: contain;
+  filter: brightness(0) invert(1) opacity(0.95);
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .manage-link-icon-wrap .mono-text-fallback {
@@ -466,12 +475,21 @@
 }
 
 .manage-library-icon-wrap svg {
-  width: 24px;
-  height: 24px;
+  width: 65%;
+  height: 65%;
+  object-fit: contain;
   color: #ffffff;
   opacity: 0.95;
   fill: currentColor;
   pointer-events: none;
+}
+
+.manage-library-icon-wrap img {
+  width: 65%;
+  height: 65%;
+  object-fit: contain;
+  filter: brightness(0) invert(1) opacity(0.95);
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .manage-library-icon-wrap .mono-text-fallback {

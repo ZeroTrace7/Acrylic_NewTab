@@ -1,0 +1,76 @@
+#manage-links-panel.manage-links-panel {
+  will-change: opacity, transform;
+}
+
+.manage-links-search {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  outline: none;
+  font-family: inherit;
+}
+
+.manage-links-search::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.manage-links-search:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.manage-links-library-grid {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.manage-links-library-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.manage-links-library-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+
+.manage-links-library-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: 10px;
+}
+
+.manage-links-library-empty {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.62);
+  text-align: center;
+}
+
+.manage-library-item {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.10);
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+
+.manage-library-item.manage-library-item-added {
+  background: rgba(52, 211, 153, 0.25) !important;
+  border-color: rgba(52, 211, 153, 0.4) !important;
+}
+
+.manage-library-item:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 2px;
+}
+
+.quicklink-favicon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  filter: grayscale(1) brightness(2);
+  opacity: 0.8;
+}
