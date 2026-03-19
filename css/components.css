@@ -578,6 +578,14 @@
   transform: rotate(45deg) scale(1.05);
 }
 
+.fab.is-manage-open {
+  background: var(--glass-bg-active);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--text-primary);
+  box-shadow: var(--control-shadow);
+  transform: scale(1.03);
+}
+
 #left-dock .fab {
   width: 44px;
   height: 44px;
@@ -594,6 +602,10 @@
 
 #left-dock .fab.active {
   transform: none;
+}
+
+#left-dock .fab.is-manage-open {
+  transform: scale(1.02);
 }
 
 #toast-container {

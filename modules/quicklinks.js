@@ -7,6 +7,23 @@ import { bus } from './event-bus.js';
 let links = [];
 let topSiteLinks = [];
 const TOP_SITE_LIMIT = 6;
+const QUICK_LIBRARY = [
+  { key: 'gmail', title: 'Gmail', url: 'https://mail.google.com' },
+  { key: 'youtube', title: 'YouTube', url: 'https://youtube.com' },
+  { key: 'chatgpt', title: 'ChatGPT', url: 'https://chat.openai.com' },
+  { key: 'x', title: 'X', url: 'https://x.com' },
+  { key: 'notion', title: 'Notion', url: 'https://www.notion.so' },
+];
+
+let managePanelEl = null;
+let managePanelOpen = false;
+let manageAddedGridEl = null;
+let manageLibraryGridEl = null;
+let manageUrlInputEl = null;
+let manageNameInputEl = null;
+let manageAddedEmptyEl = null;
+const manageAddedTiles = new Map();
+const manageLibraryTiles = new Map();
 
 function getDefaultLinks() {
   return [
@@ -110,6 +127,339 @@ function setTileIcon(iconWrap, link) {
   iconWrap.replaceChildren(ph);
 }
 
+function getAppLinks() {
+  return links.filter((link) => link.isApp);
+}
+
+function updateManageButtonState() {
+  const manageBtn = DOM.manageQuicklinksBtn;
+  if (!manageBtn) return;
+  manageBtn.classList.toggle('is-manage-open', managePanelOpen);
+  manageBtn.setAttribute('aria-expanded', String(managePanelOpen));
+}
+
+function createManageAddedTile(link) {
+  const item = document.createElement('div');
+  item.className = 'manage-link-item';
+  item.dataset.linkId = link.id;
+
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'manage-link-icon-wrap';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'manage-link-remove';
+  removeBtn.type = 'button';
+  removeBtn.textContent = '−';
+  removeBtn.setAttribute('aria-label', 'Remove quick link');
+  removeBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    removeLink(item.dataset.linkId);
+  });
+
+  const name = document.createElement('span');
+  name.className = 'manage-link-name';
+
+  item.append(iconWrap, removeBtn, name);
+  return item;
+}
+
+function updateManageAddedTile(item, link) {
+  item.dataset.linkId = link.id;
+  const iconWrap = item.querySelector('.manage-link-icon-wrap');
+  const name = item.querySelector('.manage-link-name');
+  if (iconWrap instanceof HTMLElement) {
+    setTileIcon(iconWrap, link);
+  }
+  if (name instanceof HTMLElement) {
+    name.textContent = link.title;
+  }
+}
+
+function syncManageAddedGrid() {
+  if (!manageAddedGridEl) return;
+  const targetLinks = getAppLinks();
+  manageAddedEmptyEl && (manageAddedEmptyEl.style.display = targetLinks.length === 0 ? 'block' : 'none');
+
+  targetLinks.forEach((link, index) => {
+    let node = manageAddedTiles.get(link.id);
+    if (!node) {
+      node = createManageAddedTile(link);
+      manageAddedTiles.set(link.id, node);
+    }
+    updateManageAddedTile(node, link);
+    const atIndex = manageAddedGridEl.children[index];
+    if (atIndex !== node) {
+      manageAddedGridEl.insertBefore(node, atIndex || null);
+    }
+  });
+
+  const activeIds = new Set(targetLinks.map((link) => link.id));
+  [...manageAddedTiles.entries()].forEach(([id, node]) => {
+    if (activeIds.has(id)) return;
+    node.remove();
+    manageAddedTiles.delete(id);
+  });
+}
+
+function createManageLibraryTile(entry) {
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.className = 'manage-library-item';
+  item.dataset.libraryKey = entry.key;
+  item.title = entry.title;
+  item.setAttribute('aria-label', `Add ${entry.title}`);
+
+  const iconWrap = document.createElement('div');
+  iconWrap.className = 'manage-library-icon-wrap';
+  item.append(iconWrap);
+  item.addEventListener('click', () => addLibraryLink(entry));
+  return item;
+}
+
+function updateManageLibraryTile(item, entry) {
+  const iconWrap = item.querySelector('.manage-library-icon-wrap');
+  if (iconWrap instanceof HTMLElement) {
+    setTileIcon(iconWrap, {
+      title: entry.title,
+      favicon: getFaviconUrl(entry.url),
+    });
+  }
+}
+
+function syncManageLibraryGrid() {
+  if (!manageLibraryGridEl) return;
+  QUICK_LIBRARY.forEach((entry, index) => {
+    let node = manageLibraryTiles.get(entry.key);
+    if (!node) {
+      node = createManageLibraryTile(entry);
+      manageLibraryTiles.set(entry.key, node);
+    }
+    updateManageLibraryTile(node, entry);
+    const atIndex = manageLibraryGridEl.children[index];
+    if (atIndex !== node) {
+      manageLibraryGridEl.insertBefore(node, atIndex || null);
+    }
+  });
+}
+
+function renderManagePanel() {
+  if (!managePanelEl) return;
+  syncManageAddedGrid();
+  syncManageLibraryGrid();
+}
+
+function addLibraryLink(entry) {
+  const normalizedUrl = sanitizeUrl(entry.url);
+  const exists = links.some((link) => link.isApp && sanitizeUrl(link.url) === normalizedUrl);
+  if (exists) {
+    toast.info(`${entry.title} is already added`);
+    return;
+  }
+  links.unshift({
+    id: generateId(),
+    title: entry.title,
+    url: normalizedUrl,
+    favicon: getFaviconUrl(normalizedUrl),
+    isApp: true,
+  });
+  persistLinks();
+  renderLinks();
+  toast.success(`${entry.title} added`);
+}
+
+function addCustomLinkFromPanel() {
+  if (!manageUrlInputEl || !manageNameInputEl) return;
+  const rawUrl = manageUrlInputEl.value.trim();
+  if (!rawUrl) {
+    toast.error('URL cannot be empty');
+    return;
+  }
+
+  const normalizedUrl = sanitizeUrl(rawUrl);
+  const title = manageNameInputEl.value.trim() || getDomain(normalizedUrl) || 'Link';
+  const exists = links.some((link) => link.isApp && sanitizeUrl(link.url) === normalizedUrl);
+  if (exists) {
+    toast.info('This link is already in Quick Links');
+    return;
+  }
+
+  links.unshift({
+    id: generateId(),
+    title,
+    url: normalizedUrl,
+    favicon: getFaviconUrl(normalizedUrl),
+    isApp: true,
+  });
+  persistLinks();
+  renderLinks();
+  manageUrlInputEl.value = '';
+  manageNameInputEl.value = '';
+  manageUrlInputEl.focus();
+  toast.success('Link added!');
+}
+
+function closeManagePanel() {
+  managePanelOpen = false;
+  if (managePanelEl) {
+    managePanelEl.classList.remove('open');
+    managePanelEl.setAttribute('aria-hidden', 'true');
+  }
+  updateManageButtonState();
+}
+
+function openManagePanel() {
+  const panel = ensureManagePanel();
+  managePanelOpen = true;
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  renderManagePanel();
+  updateManageButtonState();
+  setTimeout(() => manageUrlInputEl?.focus(), 50);
+}
+
+function toggleManagePanel() {
+  if (managePanelOpen) {
+    closeManagePanel();
+  } else {
+    openManagePanel();
+  }
+}
+
+function handleManageOutsideClick(event) {
+  if (!managePanelOpen || !managePanelEl) return;
+  const target = event.target;
+  const manageBtn = DOM.manageQuicklinksBtn;
+  if (managePanelEl.contains(target) || (manageBtn && manageBtn.contains(target))) return;
+  closeManagePanel();
+}
+
+function handleManageEscape(event) {
+  if (event.key === 'Escape') {
+    closeManagePanel();
+  }
+}
+
+function buildManagePanel() {
+  const panel = document.createElement('aside');
+  panel.id = 'manage-links-panel';
+  panel.className = 'manage-links-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', 'Manage quick links');
+  panel.setAttribute('aria-hidden', 'true');
+
+  const header = document.createElement('div');
+  header.className = 'manage-links-header';
+
+  const title = document.createElement('h3');
+  title.className = 'manage-links-title';
+  title.textContent = 'Quick Links';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'manage-links-close';
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('aria-label', 'Close quick links panel');
+  closeBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+      <line x1="6" y1="18" x2="18" y2="6"></line>
+    </svg>
+  `;
+  closeBtn.addEventListener('click', closeManagePanel);
+  header.append(title, closeBtn);
+
+  const addedSection = document.createElement('section');
+  addedSection.className = 'manage-links-section';
+  const addedTitle = document.createElement('p');
+  addedTitle.className = 'manage-links-section-title';
+  addedTitle.textContent = 'Active Links';
+  manageAddedGridEl = document.createElement('div');
+  manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
+  manageAddedEmptyEl = document.createElement('p');
+  manageAddedEmptyEl.className = 'manage-links-empty';
+  manageAddedEmptyEl.textContent = 'No links added yet.';
+  addedSection.append(addedTitle, manageAddedGridEl, manageAddedEmptyEl);
+
+  const divider = document.createElement('div');
+  divider.className = 'manage-links-divider';
+
+  const customSection = document.createElement('section');
+  customSection.className = 'manage-links-section';
+  const customTitle = document.createElement('p');
+  customTitle.className = 'manage-links-section-title';
+  customTitle.textContent = 'Add New Link';
+
+  const form = document.createElement('form');
+  form.className = 'manage-links-form';
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    addCustomLinkFromPanel();
+  });
+
+  manageUrlInputEl = document.createElement('input');
+  manageUrlInputEl.type = 'url';
+  manageUrlInputEl.className = 'manage-links-input';
+  manageUrlInputEl.placeholder = 'https://example.com';
+  manageUrlInputEl.autocomplete = 'off';
+  const urlWrap = document.createElement('div');
+  urlWrap.className = 'manage-input-wrap';
+  const urlIcon = document.createElement('span');
+  urlIcon.className = 'manage-input-icon';
+  urlIcon.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 1 0-7.07-7.07L11.6 4.34"></path>
+      <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.4 19.66"></path>
+    </svg>
+  `;
+  urlWrap.append(urlIcon, manageUrlInputEl);
+
+  manageNameInputEl = document.createElement('input');
+  manageNameInputEl.type = 'text';
+  manageNameInputEl.className = 'manage-links-input';
+  manageNameInputEl.placeholder = 'Name';
+  manageNameInputEl.autocomplete = 'off';
+  const nameWrap = document.createElement('div');
+  nameWrap.className = 'manage-input-wrap';
+  const nameIcon = document.createElement('span');
+  nameIcon.className = 'manage-input-icon';
+  nameIcon.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 20h9"></path>
+      <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+    </svg>
+  `;
+  nameWrap.append(nameIcon, manageNameInputEl);
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'submit';
+  submitBtn.className = 'manage-links-submit';
+  submitBtn.textContent = 'Add Link';
+  form.append(urlWrap, nameWrap, submitBtn);
+  customSection.append(customTitle, form);
+
+  const librarySection = document.createElement('section');
+  librarySection.className = 'manage-links-section';
+  const libraryTitle = document.createElement('p');
+  libraryTitle.className = 'manage-links-section-title';
+  libraryTitle.textContent = 'Quick Add';
+  manageLibraryGridEl = document.createElement('div');
+  manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
+  librarySection.append(libraryTitle, manageLibraryGridEl);
+
+  panel.append(header, addedSection, divider, customSection, librarySection);
+  return panel;
+}
+
+function ensureManagePanel() {
+  if (managePanelEl) return managePanelEl;
+  managePanelEl = buildManagePanel();
+  document.body.appendChild(managePanelEl);
+  document.addEventListener('mousedown', handleManageOutsideClick);
+  document.addEventListener('keydown', handleManageEscape);
+  renderManagePanel();
+  return managePanelEl;
+}
+
 function renderLinks() {
   if (!ensureQuicklinksStructure()) return;
   const sidebarGrid = DOM.sidebarGrid;
@@ -122,6 +472,7 @@ function renderLinks() {
 
   syncGrid(sidebarGrid, appLinks, true);
   syncGrid(bottomGrid, bottomLinks, false);
+  renderManagePanel();
 }
 
 function syncGrid(grid, targetLinks, hideLabel = false) {
@@ -355,6 +706,17 @@ export async function initQuickLinks() {
   }
   topSiteLinks = await loadTopSiteLinks();
   renderLinks();
+
+  const manageBtn = DOM.manageQuicklinksBtn;
+  if (manageBtn) {
+    manageBtn.setAttribute('aria-label', 'Manage quick links');
+    manageBtn.setAttribute('aria-expanded', 'false');
+    manageBtn.setAttribute('aria-controls', 'manage-links-panel');
+    manageBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleManagePanel();
+    });
+  }
 
   const refreshTopSites = async () => {
     topSiteLinks = await loadTopSiteLinks();

@@ -66,7 +66,7 @@ export function getDomain(url) {
 export function getFaviconUrl(url) {
   const domain = getDomain(url);
   if (!domain) return '';
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+  return `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
 }
 
 /** Trims and prepends https:// to a URL string if it doesn't already have a protocol. */
