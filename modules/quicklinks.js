@@ -329,15 +329,15 @@ function createManageAddedTile(link) {
   removeBtn.setAttribute('aria-label', 'Remove quick link');
   removeBtn.style.cssText = `
     position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 16px;
-    height: 16px;
+    top: -4px;
+    right: -4px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #ef4444;
-    border: 1.5px solid rgba(0,0,0,0.3);
+    border: 1.25px solid rgba(0,0,0,0.3);
     color: white;
-    font-size: 0.65rem;
+    font-size: 0.55rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -428,7 +428,7 @@ function createManageLibraryTile(entry) {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    width: 100%;
+    width: calc(100% - 3px);
     height: 32px;
     padding: 0;
     border-radius: 10px;
@@ -436,6 +436,7 @@ function createManageLibraryTile(entry) {
     border: 1px solid rgba(255,255,255,0.08);
     transition: background 150ms ease, transform 150ms ease;
     min-width: 0;
+    justify-self: center;
   `;
   tile.innerHTML = MONO_ICONS[entry.key] || '';
   const svg = tile.querySelector('svg');
