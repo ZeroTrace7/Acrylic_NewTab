@@ -325,19 +325,29 @@ function createManageAddedTile(link) {
   const removeBtn = document.createElement('button');
   removeBtn.className = 'manage-link-remove';
   removeBtn.type = 'button';
-  removeBtn.textContent = '−';
   removeBtn.setAttribute('aria-label', 'Remove quick link');
+  const removeGlyph = document.createElement('span');
+  removeGlyph.style.cssText = `
+    width: 4px;
+    height: 1.2px;
+    border-radius: 999px;
+    background: #fff;
+    display: block;
+    pointer-events: none;
+    opacity: 0.95;
+  `;
+  removeBtn.appendChild(removeGlyph);
   removeBtn.style.cssText = `
     position: absolute;
-    top: -4px;
-    right: -4px;
-    width: 14px;
-    height: 14px;
+    top: -1px;
+    right: -1px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
     background: #ef4444;
-    border: 1.25px solid rgba(0,0,0,0.3);
+    border: 0.85px solid rgba(0,0,0,0.22);
     color: white;
-    font-size: 0.55rem;
+    font-size: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -428,10 +438,10 @@ function createManageLibraryTile(entry) {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    width: calc(100% - 3px);
-    height: 32px;
+    width: calc(100% - 8px);
+    height: 30px;
     padding: 0;
-    border-radius: 10px;
+    border-radius: 9px;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.08);
     transition: background 150ms ease, transform 150ms ease;
@@ -440,10 +450,10 @@ function createManageLibraryTile(entry) {
   `;
   tile.innerHTML = MONO_ICONS[entry.key] || '';
   const svg = tile.querySelector('svg');
-  if (svg) svg.style.cssText = 'width:18px;height:18px;opacity:0.85;display:block;';
+  if (svg) svg.style.cssText = 'width:17px;height:17px;opacity:0.85;display:block;';
   tile.addEventListener('mouseenter', () => {
     tile.style.background = 'rgba(255,255,255,0.12)';
-    tile.style.transform = 'scale(1.03)';
+    tile.style.transform = 'scale(1.02)';
   });
   tile.addEventListener('mouseleave', () => {
     tile.style.background = 'rgba(255,255,255,0.06)';
@@ -695,12 +705,13 @@ function buildManagePanel() {
   manageLibraryGridEl.style.cssText = `
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 7px;
+    gap: 6px;
     width: 100%;
     max-height: 220px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 2px 0 4px;
+    justify-items: center;
+    padding: 2px 6px 4px 0;
   `;
 
   panel.appendChild(header);
