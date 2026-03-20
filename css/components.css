@@ -393,19 +393,53 @@
 }
 
 .bottom-grid .quicklink-tile {
-  width: 50px;
-  height: 50px;
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
-.bottom-grid .ql-icon-wrap {
-  width: 100%;
-  height: 100%;
+.bottom-grid .ql-icon-wrap,
+.bottom-grid .quicklink-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .bottom-grid .quicklink-favicon,
 .bottom-grid .quicklink-favicon-placeholder {
   width: 33px;
   height: 33px;
+}
+
+.bottom-grid .quicklink-native-favicon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
+  filter: none;
+}
+
+.bottom-grid .quicklink-icon img,
+.bottom-grid .ql-icon-wrap img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  object-fit: cover;
 }
 
 .bottom-grid .quicklink-label {

@@ -274,9 +274,23 @@ function migrateStoredLinks(stored) {
   return stored.filter((link) => link?.isApp === true);
 }
 
-function setTileIcon(iconEl, link) {
+function setTileIcon(iconEl, link, useRawFavicon = false) {
   if (!iconEl) return;
   iconEl.innerHTML = '';
+  if (useRawFavicon) {
+    const faviconUrl = link?.favicon || getFaviconUrl(link?.url || '');
+    if (!faviconUrl) return;
+    const img = document.createElement('img');
+    img.className = 'quicklink-native-favicon';
+    img.src = faviconUrl;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = () => {
+      img.style.display = 'none';
+    };
+    iconEl.appendChild(img);
+    return;
+  }
   const iconKey = resolveIconKey(link);
 
   if (iconKey && MONO_ICONS[iconKey]) {
@@ -899,12 +913,12 @@ function renderLinks() {
   const appLinks = links.filter((linkData) => linkData.isApp);
   const bottomLinks = topSiteLinks.slice(0, TOP_SITE_LIMIT);
 
-  syncGrid(sidebarGrid, appLinks, true);
-  syncGrid(bottomGrid, bottomLinks, false);
+  syncGrid(sidebarGrid, appLinks, true, false);
+  syncGrid(bottomGrid, bottomLinks, false, true);
   renderManagePanel();
 }
 
-function syncGrid(grid, targetLinks, hideLabel = false) {
+function syncGrid(grid, targetLinks, hideLabel = false, useRawFavicon = false) {
   const existingById = new Map();
   const allChildren = Array.from(grid.children);
 
@@ -918,9 +932,9 @@ function syncGrid(grid, targetLinks, hideLabel = false) {
     let node = existingById.get(linkData.id);
     if (node) {
       existingById.delete(linkData.id);
-      node = updateTile(node, linkData, hideLabel);
+      node = updateTile(node, linkData, hideLabel, useRawFavicon);
     } else {
-      node = createTile(linkData, hideLabel);
+      node = createTile(linkData, hideLabel, useRawFavicon);
     }
 
     const currentAtIndex = grid.children[index] || null;
@@ -932,39 +946,91 @@ function syncGrid(grid, targetLinks, hideLabel = false) {
   existingById.forEach((node) => node.remove());
 }
 
-function updateTile(wrapper, link, hideLabel = false) {
-  if (!(wrapper instanceof HTMLElement)) return createTile(link, hideLabel);
+function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
+  if (!(wrapper instanceof HTMLElement)) return createTile(link, hideLabel, useRawFavicon);
   wrapper.dataset.linkId = link.id;
   wrapper.dataset.id = link.id;
+  wrapper.classList.toggle('quicklink-item-bottom', useRawFavicon);
 
   const tile = wrapper.querySelector('.quicklink-tile');
   const iconEl = wrapper.querySelector('.ql-icon-wrap');
   const labelEl = wrapper.querySelector('.quicklink-label');
 
   if (!(tile instanceof HTMLAnchorElement) || !(iconEl instanceof HTMLElement) || !(labelEl instanceof HTMLElement)) {
-    const replacement = createTile(link, hideLabel);
+    const replacement = createTile(link, hideLabel, useRawFavicon);
     wrapper.replaceWith(replacement);
     return replacement;
   }
 
+  tile.classList.toggle('quicklink-tile-bottom', useRawFavicon);
   tile.href = link.url;
   tile.title = link.title;
   tile.dataset.id = link.id;
-  setTileIcon(iconEl, link);
+  if (useRawFavicon) {
+    Object.assign(wrapper.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      background: 'transparent',
+      border: 'none',
+      gap: '6px',
+    });
+    Object.assign(tile.style, {
+      background: 'transparent',
+      border: 'none',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      boxShadow: 'none',
+      borderRadius: '0',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '6px',
+    });
+    Object.assign(iconEl.style, {
+      width: '52px',
+      height: '52px',
+      background: 'rgba(255,255,255,0.10)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '14px',
+      overflow: 'hidden',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+  } else {
+    wrapper.style.background = '';
+    wrapper.style.border = '';
+    wrapper.style.gap = '';
+    tile.style.cssText = '';
+    iconEl.style.cssText = '';
+  }
+  setTileIcon(iconEl, link, useRawFavicon);
+  if (useRawFavicon) {
+    const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
+    if (rawFavicon instanceof HTMLImageElement) {
+      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:10px;object-fit:cover;filter:none;';
+    }
+  }
   labelEl.textContent = link.title;
   labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
 
   return wrapper;
 }
 
-function createTile(link, hideLabel = false) {
+function createTile(link, hideLabel = false, useRawFavicon = false) {
   const wrapper = document.createElement('div');
   wrapper.className = 'quicklink-item';
+  wrapper.classList.toggle('quicklink-item-bottom', useRawFavicon);
   wrapper.dataset.linkId = link.id;
   wrapper.dataset.id = link.id;
 
   const a = document.createElement('a');
   a.className = 'quicklink-tile';
+  a.classList.toggle('quicklink-tile-bottom', useRawFavicon);
   a.href = link.url;
   a.title = link.title;
   a.dataset.id = link.id;
@@ -985,9 +1051,48 @@ function createTile(link, hideLabel = false) {
   }
 
   const iconEl = document.createElement('div');
-  iconEl.className = 'ql-icon-wrap';
+  iconEl.className = 'ql-icon-wrap quicklink-icon';
 
-  setTileIcon(iconEl, link);
+  if (useRawFavicon) {
+    Object.assign(wrapper.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '6px',
+      background: 'transparent',
+      border: 'none',
+    });
+    Object.assign(a.style, {
+      background: 'transparent',
+      border: 'none',
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      boxShadow: 'none',
+      borderRadius: '0',
+    });
+    Object.assign(iconEl.style, {
+      width: '52px',
+      height: '52px',
+      background: 'rgba(255,255,255,0.10)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      borderRadius: '14px',
+      overflow: 'hidden',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+  }
+
+  setTileIcon(iconEl, link, useRawFavicon);
+  if (useRawFavicon) {
+    const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
+    if (rawFavicon instanceof HTMLImageElement) {
+      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:10px;object-fit:cover;filter:none;';
+    }
+  }
 
   const labelEl = document.createElement('span');
   labelEl.className = 'quicklink-label';
