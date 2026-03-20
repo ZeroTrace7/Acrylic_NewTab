@@ -429,7 +429,7 @@ function createManageLibraryTile(entry) {
     justify-content: center;
     cursor: pointer;
     width: 100%;
-    height: 36px;
+    height: 32px;
     padding: 0;
     border-radius: 10px;
     background: rgba(255,255,255,0.06);
@@ -439,7 +439,7 @@ function createManageLibraryTile(entry) {
   `;
   tile.innerHTML = MONO_ICONS[entry.key] || '';
   const svg = tile.querySelector('svg');
-  if (svg) svg.style.cssText = 'width:19px;height:19px;opacity:0.85;display:block;';
+  if (svg) svg.style.cssText = 'width:18px;height:18px;opacity:0.85;display:block;';
   tile.addEventListener('mouseenter', () => {
     tile.style.background = 'rgba(255,255,255,0.12)';
     tile.style.transform = 'scale(1.03)';
@@ -694,7 +694,7 @@ function buildManagePanel() {
   manageLibraryGridEl.style.cssText = `
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
+    gap: 7px;
     width: 100%;
     max-height: 220px;
     overflow-y: auto;
