@@ -408,7 +408,7 @@
 .bottom-grid .quicklink-icon {
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  border-radius: 18px;
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.12);
   backdrop-filter: blur(8px);
@@ -429,7 +429,7 @@
 .bottom-grid .quicklink-native-favicon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   object-fit: cover;
   filter: none;
 }
@@ -438,7 +438,7 @@
 .bottom-grid .ql-icon-wrap img {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   object-fit: cover;
 }
 

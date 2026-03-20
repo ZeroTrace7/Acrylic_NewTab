@@ -145,6 +145,9 @@ const ICON_KEY_ALIASES = {
   perplexity: ['perplexity.ai'],
 };
 
+const QUICKLINK_LABEL_FONT_FAMILY = "'Geist', 'Inter', system-ui, sans-serif";
+const QUICKLINK_LABEL_FONT_WEIGHT = '300';
+
 function getDefaultLinks() {
   return [
     {
@@ -387,9 +390,9 @@ function createManageAddedTile(link) {
   const name = document.createElement('span');
   name.className = 'manage-link-name';
   name.style.cssText = `
-    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-family: ${QUICKLINK_LABEL_FONT_FAMILY};
     font-size: 0.72rem;
-    font-weight: 500;
+    font-weight: ${QUICKLINK_LABEL_FONT_WEIGHT};
     color: rgba(255,255,255,0.88);
     text-align: center;
     max-width: 72px;
@@ -696,6 +699,15 @@ function buildManagePanel() {
   manageAddedEmptyEl = document.createElement('p');
   manageAddedEmptyEl.className = 'manage-links-empty';
   manageAddedEmptyEl.textContent = 'No links added yet.';
+  manageAddedEmptyEl.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.74rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: rgba(255,255,255,0.72);
+    margin: 2px 0 0 0;
+    text-align: center;
+  `;
 
   const divider1 = document.createElement('div');
   divider1.className = 'manage-links-divider';
@@ -992,7 +1004,7 @@ function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
       height: '52px',
       background: 'rgba(255,255,255,0.10)',
       border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '14px',
+      borderRadius: '18px',
       overflow: 'hidden',
       backdropFilter: 'blur(8px)',
       WebkitBackdropFilter: 'blur(8px)',
@@ -1012,7 +1024,7 @@ function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
   if (useRawFavicon) {
     const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
     if (rawFavicon instanceof HTMLImageElement) {
-      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:10px;object-fit:cover;filter:none;';
+      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:12px;object-fit:cover;filter:none;';
     }
   }
   labelEl.textContent = link.title;
@@ -1075,7 +1087,7 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
       height: '52px',
       background: 'rgba(255,255,255,0.10)',
       border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '14px',
+      borderRadius: '18px',
       overflow: 'hidden',
       backdropFilter: 'blur(8px)',
       WebkitBackdropFilter: 'blur(8px)',
@@ -1090,7 +1102,7 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
   if (useRawFavicon) {
     const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
     if (rawFavicon instanceof HTMLImageElement) {
-      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:10px;object-fit:cover;filter:none;';
+      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:12px;object-fit:cover;filter:none;';
     }
   }
 
@@ -1098,6 +1110,20 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
   labelEl.className = 'quicklink-label';
   labelEl.textContent = link.title;
   labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
+  Object.assign(labelEl.style, {
+    fontFamily: QUICKLINK_LABEL_FONT_FAMILY,
+    fontSize: useRawFavicon ? '0.76rem' : '0.72rem',
+    fontWeight: QUICKLINK_LABEL_FONT_WEIGHT,
+    color: useRawFavicon ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.9)',
+    lineHeight: useRawFavicon ? '1.2' : '1.15',
+    letterSpacing: useRawFavicon ? '0' : '0.01em',
+    textAlign: 'center',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textShadow: useRawFavicon ? '0 1px 1px rgba(0,0,0,0.18)' : 'none',
+    maxWidth: useRawFavicon ? '78px' : '58px',
+  });
 
   a.appendChild(iconEl);
   wrapper.append(a, labelEl);
@@ -1119,12 +1145,16 @@ function openContextMenu(e, link) {
   editBtn.className = 'engine-option';
   editBtn.textContent = 'Edit';
   editBtn.ariaLabel = 'Edit quick link';
+  editBtn.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  editBtn.style.fontWeight = '500';
   editBtn.onclick = () => { removeContextMenu(); openLinkModal(link); };
 
   const delBtn = document.createElement('button');
   delBtn.className = 'engine-option';
   delBtn.textContent = 'Delete';
   delBtn.ariaLabel = 'Delete quick link';
+  delBtn.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  delBtn.style.fontWeight = '500';
   delBtn.onclick = () => { removeContextMenu(); removeLink(link.id); };
 
   menu.append(editBtn, delBtn);
@@ -1149,19 +1179,40 @@ function openLinkModal(existingLink = null) {
 
   const heading = document.createElement('h3');
   heading.textContent = existingLink ? 'Edit Quick Link' : 'Add Quick Link';
+  heading.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    color: rgba(255,255,255,0.94);
+    margin: 0 0 8px 0;
+  `;
 
   const titleInput = document.createElement('input');
   titleInput.type = 'text';
   titleInput.placeholder = 'Title e.g. GitHub';
   if (existingLink) titleInput.value = existingLink.title;
+  titleInput.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  titleInput.style.fontSize = '0.84rem';
+  titleInput.style.fontWeight = '500';
+  titleInput.style.color = 'rgba(255,255,255,0.9)';
 
   const urlInput = document.createElement('input');
   urlInput.type = 'text';
   urlInput.placeholder = 'https://...';
   if (existingLink) urlInput.value = existingLink.url;
+  urlInput.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  urlInput.style.fontSize = '0.84rem';
+  urlInput.style.fontWeight = '500';
+  urlInput.style.color = 'rgba(255,255,255,0.9)';
 
   const sidebarToggleLabel = document.createElement('label');
   sidebarToggleLabel.className = 'ql-sidebar-toggle';
+  sidebarToggleLabel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  sidebarToggleLabel.style.fontSize = '0.82rem';
+  sidebarToggleLabel.style.fontWeight = '500';
+  sidebarToggleLabel.style.color = 'rgba(255,255,255,0.88)';
   const sidebarToggle = document.createElement('input');
   sidebarToggle.type = 'checkbox';
   sidebarToggle.id = 'ql-pin-sidebar';
@@ -1173,11 +1224,15 @@ function openLinkModal(existingLink = null) {
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = 'Cancel';
   cancelBtn.ariaLabel = 'Cancel quick link edit';
+  cancelBtn.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  cancelBtn.style.fontWeight = '500';
   cancelBtn.onclick = close;
 
   const saveBtn = document.createElement('button');
   saveBtn.textContent = 'Save';
   saveBtn.ariaLabel = 'Save quick link';
+  saveBtn.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
+  saveBtn.style.fontWeight = '600';
   saveBtn.onclick = () => {
     const rawUrl = urlInput.value.trim();
     if (!rawUrl) { toast.error('URL cannot be empty'); return; }

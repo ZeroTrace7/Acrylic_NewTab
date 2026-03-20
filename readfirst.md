@@ -69,6 +69,9 @@
   - click adds the preset immediately to active links
 - Keep active link icon rendering on `MONO_ICONS` + URL/key matching; custom links still use favicon fallback only when no mono match exists.
 - `MONO_ICONS` is the source of truth for branded monochrome icons used in both active links and the preset library.
+- Quick Links labels are now intentionally explicit in JS, not inherited:
+  - shared label font family and weight are defined in `modules/quicklinks.js`
+  - sidebar labels, bottom-row labels, and active-link labels should stay visually aligned unless there is a deliberate UX reason to split them
 
 ### 7. STORAGE + ARCHITECTURE
 - Manifest V3 extension, no bundler, pure ES modules.
@@ -76,7 +79,23 @@
 - App/panel data (including tasks) live in `chrome.storage.local` via `Store`.
 - Major directories: `/modules` (core logic), `/panels` (tools panel modules), `/settings` (settings UI), `/onboarding` (onboarding flow).
 
-### 8. BEFORE YOU CHANGE ANYTHING
+### 8. QUICK LINKS VISUAL MODES
+- There are three different Quick Links surfaces. Do not collapse them back into one style:
+- Left sidebar dock:
+  - glass squircle icon tile
+  - monochrome app icon treatment
+  - compact label below icon
+- Bottom quick links row:
+  - Glassy-style soft squircle favicon tile
+  - favicon remains full-color inside the glass shell
+  - label is lighter/thinner than before and tuned separately for readability on the bottom row
+- Manage Quick Links panel:
+  - active links use compact management tiles with small corner remove badges
+  - preset library uses dense icon-only tiles
+- Bottom-row icon shell styling is partly enforced inline in `modules/quicklinks.js` because shared tile CSS is overridden there.
+- If bottom-row visuals are not changing, inspect the inline styles in `createTile()` / `updateTile()` first before editing CSS.
+
+### 9. BEFORE YOU CHANGE ANYTHING
 - Read this file first.
 - Check selector specificity impact before editing theme/background CSS.
 - Do not add animations to background layers.

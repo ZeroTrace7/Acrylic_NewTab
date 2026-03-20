@@ -47,6 +47,16 @@ The Manage Quick Links panel is a compact glass popover for editing the left doc
 - Icons use the internal monochrome SVG dictionary first, then favicon fallback for unknown domains
 - Panel typography uses Geist for title, labels, inputs, and button copy
 
+## Quick Links System
+
+Quick Links now use three distinct presentation modes tuned for the Acrylic UI instead of sharing a single visual treatment everywhere.
+
+- Left sidebar dock: glass squircle app tiles with clear Geist labels
+- Bottom quick links row: Glassy-style soft squircle favicon tiles with lighter Geist labels and truncated names
+- Manage Quick Links panel: active links grid, compact custom-link form, divider-separated layout, and 50-app preset library
+- Shared icon rendering prefers `MONO_ICONS` for known apps and falls back to favicons for unknown custom links
+- Shared label styling is centralized in `modules/quicklinks.js` so future typography tuning stays consistent across Quick Links surfaces
+
 ## Stack
 
 - Manifest V3 Chrome Extension
