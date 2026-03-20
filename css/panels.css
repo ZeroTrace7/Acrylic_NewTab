@@ -206,8 +206,8 @@
 
 .manage-links-title {
   font-size: 0.92rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   color: rgba(226, 232, 240, 0.92);
 }
 

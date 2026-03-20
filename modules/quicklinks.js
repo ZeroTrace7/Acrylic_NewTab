@@ -650,13 +650,9 @@ function buildManagePanel() {
   closeBtn.addEventListener('click', closeManagePanel);
   header.append(title, closeBtn);
 
-  const activeLabel = document.createElement('p');
-  activeLabel.className = 'manage-links-section-title';
-  activeLabel.textContent = 'ACTIVE LINKS';
-
   manageAddedGridEl = document.createElement('div');
   manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
-  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:8px 0;';
+  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:2px 0 10px;';
   manageAddedEmptyEl = document.createElement('p');
   manageAddedEmptyEl.className = 'manage-links-empty';
   manageAddedEmptyEl.textContent = 'No links added yet.';
@@ -723,7 +719,6 @@ function buildManagePanel() {
   `;
 
   panel.appendChild(header);
-  panel.appendChild(activeLabel);
   panel.appendChild(manageAddedGridEl);
   panel.appendChild(divider1);
   panel.appendChild(addLabel);
