@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="342aae1c-33a9-47c3-8ddf-dfb08e848bfa" name="Changes" comment="" />
+    <list default="true" id="342aae1c-33a9-47c3-8ddf-dfb08e848bfa" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/quicklinks.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/quicklinks.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,7 +28,7 @@
     </selectedModels>
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="832" />
+    <option name="cachedIndexableFilesCount" value="833" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -115,6 +118,9 @@
       <workItem from="1773840926873" duration="1298000" />
       <workItem from="1773846489011" duration="16440000" />
       <workItem from="1773906886494" duration="3730000" />
+      <workItem from="1773946805775" duration="6852000" />
+      <workItem from="1773987560266" duration="220000" />
+      <workItem from="1774018653406" duration="1661000" />
     </task>
     <servers />
   </component>

@@ -7,6 +7,58 @@ import { bus } from './event-bus.js';
 let links = [];
 let topSiteLinks = [];
 const TOP_SITE_LIMIT = 6;
+const QUICK_LIBRARY = [
+  { key: 'gmail', label: 'Gmail', url: 'https://mail.google.com' },
+  { key: 'youtube', label: 'YouTube', url: 'https://youtube.com' },
+  { key: 'chatgpt', label: 'ChatGPT', url: 'https://chat.openai.com' },
+  { key: 'github', label: 'GitHub', url: 'https://github.com' },
+  { key: 'twitter', label: 'X', url: 'https://x.com' },
+  { key: 'notion', label: 'Notion', url: 'https://notion.so' },
+  { key: 'whatsapp', label: 'WhatsApp', url: 'https://web.whatsapp.com' },
+  { key: 'instagram', label: 'Instagram', url: 'https://instagram.com' },
+  { key: 'facebook', label: 'Facebook', url: 'https://facebook.com' },
+  { key: 'linkedin', label: 'LinkedIn', url: 'https://linkedin.com' },
+  { key: 'discord', label: 'Discord', url: 'https://discord.com' },
+  { key: 'slack', label: 'Slack', url: 'https://slack.com' },
+  { key: 'spotify', label: 'Spotify', url: 'https://open.spotify.com' },
+  { key: 'reddit', label: 'Reddit', url: 'https://reddit.com' },
+  { key: 'tiktok', label: 'TikTok', url: 'https://tiktok.com' },
+  { key: 'pinterest', label: 'Pinterest', url: 'https://pinterest.com' },
+  { key: 'telegram', label: 'Telegram', url: 'https://web.telegram.org' },
+  { key: 'drive', label: 'Drive', url: 'https://drive.google.com' },
+  { key: 'calendar', label: 'Calendar', url: 'https://calendar.google.com' },
+  { key: 'figma', label: 'Figma', url: 'https://figma.com' },
+  { key: 'vscode', label: 'VS Code', url: 'https://vscode.dev' },
+  { key: 'linear', label: 'Linear', url: 'https://linear.app' },
+  { key: 'vercel', label: 'Vercel', url: 'https://vercel.com' },
+  { key: 'openai', label: 'OpenAI', url: 'https://openai.com' },
+  { key: 'amazon', label: 'Amazon', url: 'https://amazon.com' },
+  { key: 'claude', label: 'Claude', url: 'https://claude.ai' },
+  { key: 'gemini', label: 'Gemini', url: 'https://gemini.google.com' },
+  { key: 'notebooklm', label: 'NotebookLM', url: 'https://notebooklm.google.com' },
+  { key: 'perplexity', label: 'Perplexity', url: 'https://perplexity.ai' },
+  { key: 'netflix', label: 'Netflix', url: 'https://netflix.com' },
+  { key: 'stackoverflow', label: 'Stack Overflow', url: 'https://stackoverflow.com' },
+  { key: 'leetcode', label: 'LeetCode', url: 'https://leetcode.com' },
+  { key: 'codepen', label: 'CodePen', url: 'https://codepen.io' },
+  { key: 'replit', label: 'Replit', url: 'https://replit.com' },
+  { key: 'huggingface', label: 'HuggingFace', url: 'https://huggingface.co' },
+  { key: 'medium', label: 'Medium', url: 'https://medium.com' },
+  { key: 'hashnode', label: 'Hashnode', url: 'https://hashnode.com' },
+  { key: 'devto', label: 'Dev.to', url: 'https://dev.to' },
+  { key: 'producthunt', label: 'Product Hunt', url: 'https://producthunt.com' },
+  { key: 'anthropic', label: 'Anthropic', url: 'https://anthropic.com' },
+  { key: 'excalidraw', label: 'Excalidraw', url: 'https://excalidraw.com' },
+  { key: 'netlify', label: 'Netlify', url: 'https://netlify.com' },
+  { key: 'supabase', label: 'Supabase', url: 'https://supabase.com' },
+  { key: 'railway', label: 'Railway', url: 'https://railway.app' },
+  { key: 'npm', label: 'npm', url: 'https://npmjs.com' },
+  { key: 'mdn', label: 'MDN', url: 'https://developer.mozilla.org' },
+  { key: 'cloudflare', label: 'Cloudflare', url: 'https://cloudflare.com' },
+  { key: 'twitch', label: 'Twitch', url: 'https://twitch.tv' },
+  { key: 'maps', label: 'Maps', url: 'https://maps.google.com' },
+  { key: 'translate', label: 'Translate', url: 'https://translate.google.com' },
+];
 
 const MONO_ICONS = {
   gmail: `<svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`,
@@ -61,15 +113,17 @@ const MONO_ICONS = {
   translate: `<svg viewBox="0 0 24 24" fill="white"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>`,
 };
 
-MONO_ICONS.claude = `<svg viewBox="0 0 46 46" fill="white"><path d="M26.35 5.9L35.98 24l-3.96 7.27H24.1L19.48 24l4.62-8.48zm-6.7 0L9.98 24l9.63 18.1h7.92L37.16 24 27.53 5.9z"/></svg>`;
+MONO_ICONS.claude = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="white"><path d="m9.429 31.911 9.435-5.294.158-.462-.158-.255h-.462l-1.578-.097-5.392-.145-4.674-.195-4.53-.243-1.141-.242-1.069-1.409.11-.704.959-.644 1.372.122 3.036.206 4.553.316 3.303.194 4.894.51h.777l.109-.316-.267-.194-.207-.194-4.711-3.194-5.1-3.375-2.671-1.943-1.445-.984-.73-.923-.316-2.015 1.312-1.445 1.76.121.45.122L8.992 10.6l3.813 2.95 4.978 3.667.729.608.291-.207.036-.146-.327-.546-2.708-4.894-2.89-4.978-1.287-2.064-.34-1.239a6 6 0 0 1-.207-1.457L12.574.267 13.4 0l1.99.267.839.729 1.238 2.829 2.004 4.456 3.108 6.06.911 1.797.486 1.663.182.51h.316v-.291l.255-3.412.473-4.188.461-5.392.158-1.517.753-1.82 1.49-.984 1.164.559.959 1.372-.134.887-.571 3.703-1.116 5.804-.729 3.886h.425l.486-.486 1.966-2.611 3.303-4.128 1.457-1.639 1.699-1.81 1.092-.863h2.064l1.517 2.258-.68 2.332-2.126 2.695-1.76 2.283-2.526 3.4-1.578 2.72.146.218.376-.036 5.707-1.214 3.084-.559 3.679-.632 1.663.777.182.79-.656 1.614-3.934.972-4.614.923-6.872 1.627-.085.061.097.121 3.097 3.267 3.776 4.128 2.782 2.938 1.117 1.421.34 1.9-1.02 1.505-1.9-.097-.923-.486-3.46-3.861-3.63-4.164-2.31-2.598h-.267l-.036.146 1.02 3.594 2.186 7.601.911 3.788.061 1.93-1.093 1.554-1.311.34-1.7-.972-.607-1.517-.814-3.945-1.86-7.262-1.14-4.42-.243-.146-.17.146-1.554 3.63-3.46 8.131-1.578 3.703-.972 1.93-1.8 1.02h-1.6l-1.02-1.75.34-2.04 1.02-2.04 3.46-7.03 2.43-4.9.17-.68-.17-.17h-.194l-3.9 2.916-7.31 5.44-3.5 2.38-1.73.51-1.75-.79-.17-2.04z"/></svg>`;
 
 let managePanelEl = null;
 let managePanelOpen = false;
 let manageAddedGridEl = null;
+let manageLibraryGridEl = null;
 let manageUrlInputEl = null;
 let manageNameInputEl = null;
 let manageAddedEmptyEl = null;
 const manageAddedTiles = new Map();
+const manageLibraryTiles = new Map();
 
 const ICON_KEY_ALIASES = {
   twitter: ['x.com', 'twitter.com'],
@@ -275,6 +329,25 @@ function createManageAddedTile(link) {
   removeBtn.type = 'button';
   removeBtn.textContent = '−';
   removeBtn.setAttribute('aria-label', 'Remove quick link');
+  removeBtn.style.cssText = `
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1.5px solid rgba(0,0,0,0.3);
+    color: white;
+    font-size: 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-weight: 700;
+    z-index: 10;
+  `;
   removeBtn.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -326,9 +399,95 @@ function syncManageAddedGrid() {
   });
 }
 
+function addQuickLink(entry) {
+  const label = entry.label || entry.title || entry.key;
+  const normalizedUrl = sanitizeUrl(entry.url);
+  const exists = links.some((link) => link.isApp && sanitizeUrl(link.url) === normalizedUrl);
+  if (exists) {
+    toast.info(`${label} is already added`);
+    return false;
+  }
+  links.unshift({
+    id: generateId(),
+    key: normalizeIconKey(entry.key),
+    title: label,
+    url: normalizedUrl,
+    favicon: getFaviconUrl(normalizedUrl),
+    isApp: true,
+  });
+  persistLinks();
+  renderLinks();
+  toast.success(`${label} added`);
+  return true;
+}
+
+function createManageLibraryTile(entry) {
+  const tile = document.createElement('div');
+  tile.className = 'manage-library-item';
+  tile.dataset.libraryKey = entry.key;
+  tile.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 150ms ease, transform 150ms ease;
+  `;
+  tile.innerHTML = MONO_ICONS[entry.key] || '';
+  const svg = tile.querySelector('svg');
+  if (svg) svg.style.cssText = 'width:22px;height:22px;opacity:0.85;';
+  tile.addEventListener('mouseenter', () => {
+    tile.style.background = 'rgba(255,255,255,0.12)';
+    tile.style.transform = 'scale(1.08)';
+  });
+  tile.addEventListener('mouseleave', () => {
+    tile.style.background = 'rgba(255,255,255,0.06)';
+    tile.style.transform = 'scale(1)';
+  });
+  tile.addEventListener('click', () => {
+    const added = addQuickLink(entry);
+    if (!added) return;
+    const orig = tile.innerHTML;
+    tile.innerHTML = `<svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    tile.style.background = 'rgba(52,211,153,0.2)';
+    setTimeout(() => {
+      tile.innerHTML = orig;
+      tile.style.background = 'rgba(255,255,255,0.06)';
+    }, 800);
+  });
+  return tile;
+}
+
+function syncManageLibraryGrid() {
+  if (!manageLibraryGridEl) return;
+  QUICK_LIBRARY.forEach((entry, index) => {
+    let node = manageLibraryTiles.get(entry.key);
+    if (!node) {
+      node = createManageLibraryTile(entry);
+      manageLibraryTiles.set(entry.key, node);
+    }
+    const atIndex = manageLibraryGridEl.children[index];
+    if (atIndex !== node) {
+      manageLibraryGridEl.insertBefore(node, atIndex || null);
+    }
+  });
+
+  const activeKeys = new Set(QUICK_LIBRARY.map((entry) => entry.key));
+  [...manageLibraryTiles.entries()].forEach(([key, node]) => {
+    if (activeKeys.has(key)) return;
+    node.remove();
+    manageLibraryTiles.delete(key);
+  });
+}
+
 function renderManagePanel() {
   if (!managePanelEl) return;
   syncManageAddedGrid();
+  syncManageLibraryGrid();
 }
 
 function addCustomLinkFromPanel() {
@@ -530,6 +689,18 @@ function buildManagePanel() {
   addBtn.textContent = 'Add Link';
   addBtn.addEventListener('click', () => addCustomLinkFromPanel());
 
+  manageLibraryGridEl = document.createElement('div');
+  manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
+  manageLibraryGridEl.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(5, 44px);
+    gap: 8px;
+    padding: 4px 0;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  `;
+
   panel.appendChild(header);
   panel.appendChild(activeLabel);
   panel.appendChild(manageAddedGridEl);
@@ -537,6 +708,7 @@ function buildManagePanel() {
   panel.appendChild(addLabel);
   panel.appendChild(urlWrap);
   panel.appendChild(nameWrap);
+  panel.appendChild(manageLibraryGridEl);
   panel.appendChild(addBtn);
   return panel;
 }
