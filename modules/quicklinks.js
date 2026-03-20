@@ -328,8 +328,8 @@ function createManageAddedTile(link) {
   removeBtn.setAttribute('aria-label', 'Remove quick link');
   const removeGlyph = document.createElement('span');
   removeGlyph.style.cssText = `
-    width: 4px;
-    height: 1.2px;
+    width: 6px;
+    height: 1.4px;
     border-radius: 999px;
     background: #fff;
     display: block;
@@ -338,14 +338,20 @@ function createManageAddedTile(link) {
   `;
   removeBtn.appendChild(removeGlyph);
   removeBtn.style.cssText = `
+    all: unset;
     position: absolute;
     top: -1px;
-    right: -1px;
-    width: 9px;
-    height: 9px;
+    right: 6px;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
     border-radius: 50%;
     background: #ef4444;
-    border: 0.85px solid rgba(0,0,0,0.22);
+    border: 1px solid rgba(255,255,255,0.55);
     color: white;
     font-size: 0;
     cursor: pointer;
@@ -354,6 +360,8 @@ function createManageAddedTile(link) {
     justify-content: center;
     line-height: 1;
     font-weight: 700;
+    box-shadow: none;
+    flex-shrink: 0;
     z-index: 10;
   `;
   removeBtn.addEventListener('click', (event) => {
