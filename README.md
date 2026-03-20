@@ -35,14 +35,17 @@ The top-right Tasks button opens a premium floating glass to-do panel designed f
 
 ## Quick Links Management (Middle-Left `...`)
 
-The Manage Quick Links panel is intentionally compact and focused on active links + manual add flow.
+The Manage Quick Links panel is a compact glass popover for editing the left dock and adding app links quickly.
 
 - Opens from the middle-left dock `...` button
 - Panel opens to the right of the sidebar and is vertically centered in the viewport
-- Active links section shows current app links with remove controls
-- Add New Link section includes URL field, Name field, and full-width Add Link button
-- Quick Add library/search grid is removed by design (do not expect preset app picker)
-- Active link tiles use the internal monochrome SVG icon system with URL/key-based mapping
+- Active links render in a 4-column management grid with small corner remove badges
+- Divider cleanly separates current links from the add flow
+- Add New Link section includes URL field and Name field with leading icons
+- Quick Add library provides a dense preset grid of 50 monochrome app icons
+- Add Link button stays below the library grid for manual custom-link creation
+- Icons use the internal monochrome SVG dictionary first, then favicon fallback for unknown domains
+- Panel typography uses Geist for title, labels, inputs, and button copy
 
 ## Stack
 

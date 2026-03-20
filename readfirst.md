@@ -43,22 +43,32 @@
 - Panel id/class: `#manage-links-panel.manage-links-panel`.
 - Trigger: middle-left dock `...` button (`DOM.manageQuicklinksBtn`).
 - Layout order must stay:
-  1) Header (`QUICK LINKS` + close)
-  2) `ACTIVE LINKS` label
-  3) Active links grid
-  4) Divider
-  5) `ADD NEW LINK` label
-  6) URL input
-  7) Name input
+  1) Header (`Quick Links` + close)
+  2) Active links grid
+  3) Divider
+  4) `Add New Link` label
+  5) URL input row
+  6) Name input row
+  7) Quick Add preset library grid
   8) Add Link button
-- Quick Add is removed by design:
-  - No `QUICK ADD` label
-  - No app search input
-  - No preset library grid
-  - No library stagger animation/filter logic
 - Positioning is applied on every open inside `openManagePanel()` using fixed positioning and direct `panel.style.*` assignments.
 - Do not reintroduce `cssText +=` positioning merges for the panel.
-- Keep active link icon rendering on `MONO_ICONS` + URL/key matching; custom links still use fallback favicon only when no mono match exists.
+- Panel opens to the right of the left dock and is vertically centered.
+- Panel typography uses `Geist`; `newtab.html` loads the font and the panel applies it inline.
+- Active links use small red corner remove badges. Keep them manually styled in `modules/quicklinks.js`; do not convert them back to default browser buttons.
+- Active link labels are compact title-case text below the icon tile.
+- Divider between active links and add flow is a subtle 1px horizontal line with controlled top/bottom spacing.
+- URL and Name rows are icon-leading fields:
+  - wrapper is `position: relative`
+  - left icon is absolutely positioned
+  - input text uses extra left padding to avoid icon overlap
+- Quick Add library is present:
+  - 50 preset entries from `QUICK_LIBRARY`
+  - dense 5-column grid
+  - monochrome SVG icon tiles only, no text labels under tiles
+  - click adds the preset immediately to active links
+- Keep active link icon rendering on `MONO_ICONS` + URL/key matching; custom links still use favicon fallback only when no mono match exists.
+- `MONO_ICONS` is the source of truth for branded monochrome icons used in both active links and the preset library.
 
 ### 7. STORAGE + ARCHITECTURE
 - Manifest V3 extension, no bundler, pure ES modules.

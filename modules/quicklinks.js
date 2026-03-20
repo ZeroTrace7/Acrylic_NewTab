@@ -372,6 +372,19 @@ function createManageAddedTile(link) {
 
   const name = document.createElement('span');
   name.className = 'manage-link-name';
+  name.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.88);
+    text-align: center;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    margin-top: 2px;
+  `;
 
   item.append(iconWrap, removeBtn, name);
   return item;
@@ -629,6 +642,7 @@ function buildManagePanel() {
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-label', 'Manage quick links');
   panel.setAttribute('aria-hidden', 'true');
+  panel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
 
   const header = document.createElement('div');
   header.className = 'manage-links-header';
@@ -636,6 +650,16 @@ function buildManagePanel() {
   const title = document.createElement('h3');
   title.className = 'manage-links-title';
   title.textContent = 'Quick Links';
+  title.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 1.24rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    margin: 0;
+    color: rgba(255,255,255,0.92);
+    text-transform: none;
+  `;
 
   const closeBtn = document.createElement('button');
   closeBtn.className = 'manage-links-close';
@@ -652,27 +676,91 @@ function buildManagePanel() {
 
   manageAddedGridEl = document.createElement('div');
   manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
-  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:2px 0 10px;';
+  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:2px 0 0 0;';
+  manageAddedGridEl.style.marginBottom = '0';
+  manageAddedGridEl.style.paddingBottom = '0';
   manageAddedEmptyEl = document.createElement('p');
   manageAddedEmptyEl.className = 'manage-links-empty';
   manageAddedEmptyEl.textContent = 'No links added yet.';
 
   const divider1 = document.createElement('div');
   divider1.className = 'manage-links-divider';
+  divider1.style.cssText = `
+    width: 100%;
+    height: 1px;
+    background: rgba(255,255,255,0.10);
+    margin: 8px 0 8px 0;
+    display: block;
+    flex-shrink: 0;
+  `;
 
   const addLabel = document.createElement('p');
   addLabel.className = 'manage-links-section-title';
-  addLabel.textContent = 'ADD NEW LINK';
+  addLabel.textContent = 'Add New Link';
+  addLabel.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    color: rgba(255,255,255,0.78);
+    text-transform: none;
+    margin-bottom: 6px;
+  `;
+  addLabel.style.marginTop = '0';
+  addLabel.style.marginBottom = '6px';
 
   manageUrlInputEl = document.createElement('input');
   manageUrlInputEl.type = 'url';
   manageUrlInputEl.className = 'manage-links-input';
   manageUrlInputEl.placeholder = 'https://example.com';
   manageUrlInputEl.autocomplete = 'off';
+  manageUrlInputEl.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.79rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 8px 12px 8px 38px;
+    width: 100%;
+    min-height: 42px;
+    outline: none;
+    transition: border 150ms ease;
+  `;
+  manageUrlInputEl.addEventListener('focus', () => {
+    manageUrlInputEl.style.border = '1px solid rgba(255,255,255,0.25)';
+  });
+  manageUrlInputEl.addEventListener('blur', () => {
+    manageUrlInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
+  });
   const urlWrap = document.createElement('div');
   urlWrap.className = 'manage-input-wrap';
+  urlWrap.style.cssText = `
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 42px;
+    margin-bottom: 8px;
+  `;
   const urlIcon = document.createElement('span');
   urlIcon.className = 'manage-input-icon';
+  urlIcon.style.cssText = `
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: rgba(255,255,255,0.42);
+    pointer-events: none;
+    z-index: 1;
+  `;
   urlIcon.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 1 0-7.07-7.07L11.6 4.34"></path>
@@ -686,10 +774,52 @@ function buildManagePanel() {
   manageNameInputEl.className = 'manage-links-input';
   manageNameInputEl.placeholder = 'Name';
   manageNameInputEl.autocomplete = 'off';
+  manageNameInputEl.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.79rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 10px;
+    padding: 8px 12px 8px 38px;
+    width: 100%;
+    min-height: 42px;
+    outline: none;
+    transition: border 150ms ease;
+  `;
+  manageNameInputEl.addEventListener('focus', () => {
+    manageNameInputEl.style.border = '1px solid rgba(255,255,255,0.25)';
+  });
+  manageNameInputEl.addEventListener('blur', () => {
+    manageNameInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
+  });
   const nameWrap = document.createElement('div');
   nameWrap.className = 'manage-input-wrap';
+  nameWrap.style.cssText = `
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 42px;
+    margin-bottom: 8px;
+  `;
   const nameIcon = document.createElement('span');
   nameIcon.className = 'manage-input-icon';
+  nameIcon.style.cssText = `
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: rgba(255,255,255,0.42);
+    pointer-events: none;
+    z-index: 1;
+  `;
   nameIcon.innerHTML = `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 20h9"></path>
@@ -702,6 +832,26 @@ function buildManagePanel() {
   addBtn.type = 'button';
   addBtn.className = 'manage-links-submit';
   addBtn.textContent = 'Add Link';
+  addBtn.style.cssText = `
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background: rgba(59,130,246,0.85);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    width: 100%;
+    cursor: pointer;
+    transition: background 150ms ease;
+  `;
+  addBtn.addEventListener('mouseenter', () => {
+    addBtn.style.background = 'rgba(59,130,246,1)';
+  });
+  addBtn.addEventListener('mouseleave', () => {
+    addBtn.style.background = 'rgba(59,130,246,0.85)';
+  });
   addBtn.addEventListener('click', () => addCustomLinkFromPanel());
 
   manageLibraryGridEl = document.createElement('div');
@@ -711,11 +861,11 @@ function buildManagePanel() {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 6px;
     width: 100%;
-    max-height: 220px;
+    max-height: 204px;
     overflow-y: auto;
     overflow-x: hidden;
     justify-items: center;
-    padding: 2px 6px 4px 0;
+    padding: 2px 4px 6px 0;
   `;
 
   panel.appendChild(header);
