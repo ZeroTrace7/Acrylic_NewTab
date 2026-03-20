@@ -425,12 +425,12 @@ function createManageLibraryTile(entry) {
   tile.dataset.libraryKey = entry.key;
   tile.style.cssText = `
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
     cursor: pointer;
-    padding: 6px 4px;
+    width: 100%;
+    height: 36px;
+    padding: 0;
     border-radius: 10px;
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.08);
@@ -439,26 +439,14 @@ function createManageLibraryTile(entry) {
   `;
   tile.innerHTML = MONO_ICONS[entry.key] || '';
   const svg = tile.querySelector('svg');
-  if (svg) svg.style.cssText = 'width:20px;height:20px;opacity:0.85;display:block;';
-  let addLabel = document.createElement('span');
-  addLabel.textContent = '+';
-  addLabel.style.cssText = `
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.35);
-    font-family: inherit;
-    line-height: 1;
-    font-weight: 500;
-  `;
-  tile.appendChild(addLabel);
+  if (svg) svg.style.cssText = 'width:19px;height:19px;opacity:0.85;display:block;';
   tile.addEventListener('mouseenter', () => {
     tile.style.background = 'rgba(255,255,255,0.12)';
-    tile.style.transform = 'scale(1.06)';
-    addLabel.style.color = 'rgba(255,255,255,0.7)';
+    tile.style.transform = 'scale(1.03)';
   });
   tile.addEventListener('mouseleave', () => {
     tile.style.background = 'rgba(255,255,255,0.06)';
     tile.style.transform = 'scale(1)';
-    addLabel.style.color = 'rgba(255,255,255,0.35)';
   });
   tile.addEventListener('click', () => {
     const added = addQuickLink(entry);
@@ -468,7 +456,6 @@ function createManageLibraryTile(entry) {
     tile.style.background = 'rgba(52,211,153,0.2)';
     setTimeout(() => {
       tile.innerHTML = orig;
-      addLabel = tile.querySelector('span');
       tile.style.background = 'rgba(255,255,255,0.06)';
     }, 800);
   });
@@ -706,13 +693,13 @@ function buildManagePanel() {
   manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
   manageLibraryGridEl.style.cssText = `
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
-    gap: 8px 6px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
     width: 100%;
     max-height: 220px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 4px 0;
+    padding: 2px 0 4px;
   `;
 
   panel.appendChild(header);
