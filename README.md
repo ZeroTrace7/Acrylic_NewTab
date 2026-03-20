@@ -33,6 +33,17 @@ The top-right Tasks button opens a premium floating glass to-do panel designed f
 - Reward state when all tasks are done: celebratory card with auto-reset after a short delay
 - Full persistence through `chrome.storage.local` (`Store.getTasks` / `Store.setTasks`)
 
+## Quick Links Management (Middle-Left `...`)
+
+The Manage Quick Links panel is intentionally compact and focused on active links + manual add flow.
+
+- Opens from the middle-left dock `...` button
+- Panel opens to the right of the sidebar and is vertically centered in the viewport
+- Active links section shows current app links with remove controls
+- Add New Link section includes URL field, Name field, and full-width Add Link button
+- Quick Add library/search grid is removed by design (do not expect preset app picker)
+- Active link tiles use the internal monochrome SVG icon system with URL/key-based mapping
+
 ## Stack
 
 - Manifest V3 Chrome Extension

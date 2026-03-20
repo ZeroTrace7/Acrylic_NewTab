@@ -38,13 +38,35 @@
 - Success flow timing constants in `modules/tasks.js` are part of UX tuning: `SUCCESS_REVEAL_DELAY_MS`, `SUCCESS_AUTOCLEAR_MS`, `TASK_REORDER_DELAY_MS`.
 - Keep persistence wired to `Store.getTasks()` and `Store.setTasks()`.
 
-### 6. STORAGE + ARCHITECTURE
+### 6. QUICK LINKS PANEL (CURRENT CONTRACT)
+- Primary file: `modules/quicklinks.js`.
+- Panel id/class: `#manage-links-panel.manage-links-panel`.
+- Trigger: middle-left dock `...` button (`DOM.manageQuicklinksBtn`).
+- Layout order must stay:
+  1) Header (`QUICK LINKS` + close)
+  2) `ACTIVE LINKS` label
+  3) Active links grid
+  4) Divider
+  5) `ADD NEW LINK` label
+  6) URL input
+  7) Name input
+  8) Add Link button
+- Quick Add is removed by design:
+  - No `QUICK ADD` label
+  - No app search input
+  - No preset library grid
+  - No library stagger animation/filter logic
+- Positioning is applied on every open inside `openManagePanel()` using fixed positioning and direct `panel.style.*` assignments.
+- Do not reintroduce `cssText +=` positioning merges for the panel.
+- Keep active link icon rendering on `MONO_ICONS` + URL/key matching; custom links still use fallback favicon only when no mono match exists.
+
+### 7. STORAGE + ARCHITECTURE
 - Manifest V3 extension, no bundler, pure ES modules.
 - Preferences live in `chrome.storage.sync` via `Prefs`.
 - App/panel data (including tasks) live in `chrome.storage.local` via `Store`.
 - Major directories: `/modules` (core logic), `/panels` (tools panel modules), `/settings` (settings UI), `/onboarding` (onboarding flow).
 
-### 7. BEFORE YOU CHANGE ANYTHING
+### 8. BEFORE YOU CHANGE ANYTHING
 - Read this file first.
 - Check selector specificity impact before editing theme/background CSS.
 - Do not add animations to background layers.

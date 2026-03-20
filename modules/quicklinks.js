@@ -7,58 +7,6 @@ import { bus } from './event-bus.js';
 let links = [];
 let topSiteLinks = [];
 const TOP_SITE_LIMIT = 6;
-const QUICK_LIBRARY = [
-  { key: 'gmail', label: 'Gmail', url: 'https://mail.google.com' },
-  { key: 'youtube', label: 'YouTube', url: 'https://youtube.com' },
-  { key: 'chatgpt', label: 'ChatGPT', url: 'https://chat.openai.com' },
-  { key: 'github', label: 'GitHub', url: 'https://github.com' },
-  { key: 'twitter', label: 'X', url: 'https://x.com' },
-  { key: 'notion', label: 'Notion', url: 'https://notion.so' },
-  { key: 'whatsapp', label: 'WhatsApp', url: 'https://web.whatsapp.com' },
-  { key: 'instagram', label: 'Instagram', url: 'https://instagram.com' },
-  { key: 'facebook', label: 'Facebook', url: 'https://facebook.com' },
-  { key: 'linkedin', label: 'LinkedIn', url: 'https://linkedin.com' },
-  { key: 'discord', label: 'Discord', url: 'https://discord.com' },
-  { key: 'slack', label: 'Slack', url: 'https://slack.com' },
-  { key: 'spotify', label: 'Spotify', url: 'https://open.spotify.com' },
-  { key: 'reddit', label: 'Reddit', url: 'https://reddit.com' },
-  { key: 'tiktok', label: 'TikTok', url: 'https://tiktok.com' },
-  { key: 'pinterest', label: 'Pinterest', url: 'https://pinterest.com' },
-  { key: 'telegram', label: 'Telegram', url: 'https://web.telegram.org' },
-  { key: 'drive', label: 'Drive', url: 'https://drive.google.com' },
-  { key: 'calendar', label: 'Calendar', url: 'https://calendar.google.com' },
-  { key: 'figma', label: 'Figma', url: 'https://figma.com' },
-  { key: 'vscode', label: 'VS Code', url: 'https://vscode.dev' },
-  { key: 'linear', label: 'Linear', url: 'https://linear.app' },
-  { key: 'vercel', label: 'Vercel', url: 'https://vercel.com' },
-  { key: 'openai', label: 'OpenAI', url: 'https://openai.com' },
-  { key: 'claude', label: 'Claude', url: 'https://claude.ai' },
-  { key: 'gemini', label: 'Gemini', url: 'https://gemini.google.com' },
-  { key: 'notebooklm', label: 'NotebookLM', url: 'https://notebooklm.google.com' },
-  { key: 'perplexity', label: 'Perplexity', url: 'https://perplexity.ai' },
-  { key: 'amazon', label: 'Amazon', url: 'https://amazon.com' },
-  { key: 'netflix', label: 'Netflix', url: 'https://netflix.com' },
-  { key: 'stackoverflow', label: 'Stack Overflow', url: 'https://stackoverflow.com' },
-  { key: 'leetcode', label: 'LeetCode', url: 'https://leetcode.com' },
-  { key: 'codepen', label: 'CodePen', url: 'https://codepen.io' },
-  { key: 'replit', label: 'Replit', url: 'https://replit.com' },
-  { key: 'huggingface', label: 'HuggingFace', url: 'https://huggingface.co' },
-  { key: 'medium', label: 'Medium', url: 'https://medium.com' },
-  { key: 'hashnode', label: 'Hashnode', url: 'https://hashnode.com' },
-  { key: 'devto', label: 'Dev.to', url: 'https://dev.to' },
-  { key: 'producthunt', label: 'Product Hunt', url: 'https://producthunt.com' },
-  { key: 'anthropic', label: 'Anthropic', url: 'https://anthropic.com' },
-  { key: 'excalidraw', label: 'Excalidraw', url: 'https://excalidraw.com' },
-  { key: 'netlify', label: 'Netlify', url: 'https://netlify.com' },
-  { key: 'supabase', label: 'Supabase', url: 'https://supabase.com' },
-  { key: 'railway', label: 'Railway', url: 'https://railway.app' },
-  { key: 'npm', label: 'npm', url: 'https://npmjs.com' },
-  { key: 'mdn', label: 'MDN', url: 'https://developer.mozilla.org' },
-  { key: 'cloudflare', label: 'Cloudflare', url: 'https://cloudflare.com' },
-  { key: 'twitch', label: 'Twitch', url: 'https://twitch.tv' },
-  { key: 'maps', label: 'Maps', url: 'https://maps.google.com' },
-  { key: 'translate', label: 'Translate', url: 'https://translate.google.com' },
-];
 
 const MONO_ICONS = {
   gmail: `<svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`,
@@ -113,17 +61,15 @@ const MONO_ICONS = {
   translate: `<svg viewBox="0 0 24 24" fill="white"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>`,
 };
 
+MONO_ICONS.claude = `<svg viewBox="0 0 46 46" fill="white"><path d="M26.35 5.9L35.98 24l-3.96 7.27H24.1L19.48 24l4.62-8.48zm-6.7 0L9.98 24l9.63 18.1h7.92L37.16 24 27.53 5.9z"/></svg>`;
+
 let managePanelEl = null;
 let managePanelOpen = false;
 let manageAddedGridEl = null;
-let manageLibraryGridEl = null;
 let manageUrlInputEl = null;
 let manageNameInputEl = null;
 let manageAddedEmptyEl = null;
-let manageLibrarySearchEl = null;
-let manageLibraryEmptyEl = null;
 const manageAddedTiles = new Map();
-const manageLibraryTiles = new Map();
 
 const ICON_KEY_ALIASES = {
   twitter: ['x.com', 'twitter.com'],
@@ -380,150 +326,9 @@ function syncManageAddedGrid() {
   });
 }
 
-function setManageLibraryEmptyState(visible) {
-  if (!manageLibraryEmptyEl) return;
-  manageLibraryEmptyEl.style.display = visible ? 'block' : 'none';
-}
-
-function applyManageLibraryFilter() {
-  const query = (manageLibrarySearchEl?.value || '').trim().toLowerCase();
-  let visibleCount = 0;
-  QUICK_LIBRARY.forEach((entry) => {
-    const node = manageLibraryTiles.get(entry.key);
-    if (!node) return;
-    const label = (entry.label || '').toLowerCase();
-    const matches = !query || label.includes(query) || entry.key.includes(query);
-    node.style.display = matches ? 'flex' : 'none';
-    if (matches) visibleCount += 1;
-  });
-  setManageLibraryEmptyState(visibleCount === 0);
-  return visibleCount;
-}
-
-function animateManageLibraryItems() {
-  if (!manageLibraryGridEl || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const libraryItems = Array.from(manageLibraryGridEl.querySelectorAll('.manage-library-item'))
-    .filter((item) => item instanceof HTMLElement && item.style.display !== 'none');
-
-  libraryItems.forEach((item, i) => {
-    const delay = i * 18;
-    item.style.opacity = '0';
-    item.style.transform = 'scale(0.85)';
-    item.style.transition = `opacity 180ms ease ${delay}ms, transform 180ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        item.style.opacity = '1';
-        item.style.transform = 'scale(1)';
-      });
-    });
-    setTimeout(() => {
-      item.style.transition = '';
-    }, delay + 240);
-  });
-}
-
-function showManageLibraryAddFeedback(item) {
-  const iconWrap = item.querySelector('.manage-library-icon-wrap');
-  if (!(iconWrap instanceof HTMLElement)) return;
-  const original = iconWrap.innerHTML;
-  iconWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="white" width="22" height="22"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
-  item.classList.add('manage-library-item-added');
-  setTimeout(() => {
-    iconWrap.innerHTML = original;
-    item.classList.remove('manage-library-item-added');
-  }, 800);
-}
-
-function createManageLibraryTile(entry) {
-  const label = entry.label || entry.title || entry.key;
-  const item = document.createElement('button');
-  item.type = 'button';
-  item.className = 'manage-library-item';
-  item.dataset.libraryKey = entry.key;
-  item.dataset.label = label;
-  item.title = label;
-  item.setAttribute('aria-label', `Add ${label}`);
-
-  const iconWrap = document.createElement('div');
-  iconWrap.className = 'manage-library-icon-wrap';
-  item.append(iconWrap);
-  item.addEventListener('mouseenter', () => {
-    if (item.classList.contains('manage-library-item-added')) return;
-    item.style.transform = 'scale(1.08)';
-    item.style.background = 'rgba(255,255,255,0.13)';
-  });
-  item.addEventListener('mouseleave', () => {
-    if (item.classList.contains('manage-library-item-added')) return;
-    item.style.transform = 'scale(1)';
-    item.style.background = 'rgba(255,255,255,0.07)';
-  });
-  item.addEventListener('click', () => {
-    const added = addLibraryLink(entry);
-    if (added) showManageLibraryAddFeedback(item);
-  });
-  return item;
-}
-
-function updateManageLibraryTile(item, entry) {
-  const iconWrap = item.querySelector('.manage-library-icon-wrap');
-  if (iconWrap instanceof HTMLElement) {
-    setTileIcon(iconWrap, {
-      key: entry.key,
-      title: entry.label || entry.title || entry.key,
-      url: entry.url,
-    });
-  }
-}
-
-function syncManageLibraryGrid() {
-  if (!manageLibraryGridEl) return;
-  QUICK_LIBRARY.forEach((entry, index) => {
-    let node = manageLibraryTiles.get(entry.key);
-    if (!node) {
-      node = createManageLibraryTile(entry);
-      manageLibraryTiles.set(entry.key, node);
-    }
-    updateManageLibraryTile(node, entry);
-    const atIndex = manageLibraryGridEl.children[index];
-    if (atIndex !== node) {
-      manageLibraryGridEl.insertBefore(node, atIndex || null);
-    }
-  });
-  const activeKeys = new Set(QUICK_LIBRARY.map((entry) => entry.key));
-  [...manageLibraryTiles.entries()].forEach(([key, node]) => {
-    if (activeKeys.has(key)) return;
-    node.remove();
-    manageLibraryTiles.delete(key);
-  });
-  applyManageLibraryFilter();
-}
-
 function renderManagePanel() {
   if (!managePanelEl) return;
   syncManageAddedGrid();
-  syncManageLibraryGrid();
-}
-
-function addLibraryLink(entry) {
-  const label = entry.label || entry.title || entry.key;
-  const normalizedUrl = sanitizeUrl(entry.url);
-  const exists = links.some((link) => link.isApp && sanitizeUrl(link.url) === normalizedUrl);
-  if (exists) {
-    toast.info(`${label} is already added`);
-    return false;
-  }
-  links.unshift({
-    id: generateId(),
-    key: normalizeIconKey(entry.key),
-    title: label,
-    url: normalizedUrl,
-    favicon: getFaviconUrl(normalizedUrl),
-    isApp: true,
-  });
-  persistLinks();
-  renderLinks();
-  toast.success(`${label} added`);
-  return true;
 }
 
 function addCustomLinkFromPanel() {
@@ -572,20 +377,47 @@ function closeManagePanel() {
 
 function openManagePanel() {
   const panel = ensureManagePanel();
+  // Get sidebar pill element
+  const sidebarEl = document.getElementById('quicklinks-section');
+  const sidebarRect = sidebarEl
+    ? sidebarEl.getBoundingClientRect()
+    : { right: 88, top: 0, bottom: window.innerHeight };
+
+  // Panel dimensions
+  const panelW = 360;
+  const panelH = Math.min(580, window.innerHeight - 32);
+
+  // Left: immediately to the right of sidebar pill + gap
+  const leftPos = sidebarRect.right + 12;
+
+  // Top: vertically centered in viewport
+  const topPos = Math.max(16, (window.innerHeight - panelH) / 2);
+
+  // Apply — do NOT use cssText += as it appends and conflicts
+  // Set each property individually
+  panel.style.position = 'fixed';
+  panel.style.left = `${leftPos}px`;
+  panel.style.top = `${topPos}px`;
+  panel.style.bottom = 'auto';
+  panel.style.right = 'auto';
+  panel.style.width = `${panelW}px`;
+  panel.style.maxHeight = `${panelH}px`;
+  panel.style.overflowY = 'auto';
+  panel.style.zIndex = '9999';
+  console.log('[Acrylic] Panel pos — left:', leftPos, 'top:', topPos, 'sidebarRight:', sidebarRect.right);
+
   managePanelOpen = true;
   panel.classList.add('open');
   panel.setAttribute('aria-hidden', 'false');
   renderManagePanel();
+  panel.style.transformOrigin = 'left center';
   panel.style.opacity = '0';
-  panel.style.transform = 'translateX(-12px) scale(0.97)';
-  panel.style.transition = 'opacity 220ms cubic-bezier(0.16,1,0.3,1), transform 220ms cubic-bezier(0.16,1,0.3,1)';
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      panel.style.opacity = '1';
-      panel.style.transform = 'translateX(0) scale(1)';
-    });
-  });
-  animateManageLibraryItems();
+  panel.style.transform = 'scale(0.92) translateX(-8px)';
+  panel.style.transition = 'opacity 200ms cubic-bezier(0.16,1,0.3,1), transform 200ms cubic-bezier(0.16,1,0.3,1)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    panel.style.opacity = '1';
+    panel.style.transform = 'scale(1) translateX(0)';
+  }));
   updateManageButtonState();
   setTimeout(() => manageUrlInputEl?.focus(), 50);
 }
@@ -640,33 +472,23 @@ function buildManagePanel() {
   closeBtn.addEventListener('click', closeManagePanel);
   header.append(title, closeBtn);
 
-  const addedSection = document.createElement('section');
-  addedSection.className = 'manage-links-section';
-  const addedTitle = document.createElement('p');
-  addedTitle.className = 'manage-links-section-title';
-  addedTitle.textContent = 'Active Links';
+  const activeLabel = document.createElement('p');
+  activeLabel.className = 'manage-links-section-title';
+  activeLabel.textContent = 'ACTIVE LINKS';
+
   manageAddedGridEl = document.createElement('div');
   manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
+  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:8px 0;';
   manageAddedEmptyEl = document.createElement('p');
   manageAddedEmptyEl.className = 'manage-links-empty';
   manageAddedEmptyEl.textContent = 'No links added yet.';
-  addedSection.append(addedTitle, manageAddedGridEl, manageAddedEmptyEl);
 
-  const divider = document.createElement('div');
-  divider.className = 'manage-links-divider';
+  const divider1 = document.createElement('div');
+  divider1.className = 'manage-links-divider';
 
-  const customSection = document.createElement('section');
-  customSection.className = 'manage-links-section';
-  const customTitle = document.createElement('p');
-  customTitle.className = 'manage-links-section-title';
-  customTitle.textContent = 'Add New Link';
-
-  const form = document.createElement('form');
-  form.className = 'manage-links-form';
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    addCustomLinkFromPanel();
-  });
+  const addLabel = document.createElement('p');
+  addLabel.className = 'manage-links-section-title';
+  addLabel.textContent = 'ADD NEW LINK';
 
   manageUrlInputEl = document.createElement('input');
   manageUrlInputEl.type = 'url';
@@ -702,35 +524,20 @@ function buildManagePanel() {
   `;
   nameWrap.append(nameIcon, manageNameInputEl);
 
-  const submitBtn = document.createElement('button');
-  submitBtn.type = 'submit';
-  submitBtn.className = 'manage-links-submit';
-  submitBtn.textContent = 'Add Link';
-  form.append(urlWrap, nameWrap, submitBtn);
-  customSection.append(customTitle, form);
+  const addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'manage-links-submit';
+  addBtn.textContent = 'Add Link';
+  addBtn.addEventListener('click', () => addCustomLinkFromPanel());
 
-  const librarySection = document.createElement('section');
-  librarySection.className = 'manage-links-section';
-  const libraryTitle = document.createElement('p');
-  libraryTitle.className = 'manage-links-section-title';
-  libraryTitle.textContent = 'Quick Add';
-  manageLibrarySearchEl = document.createElement('input');
-  manageLibrarySearchEl.type = 'search';
-  manageLibrarySearchEl.className = 'manage-links-search';
-  manageLibrarySearchEl.placeholder = 'Search apps...';
-  manageLibrarySearchEl.autocomplete = 'off';
-  manageLibrarySearchEl.addEventListener('input', () => {
-    applyManageLibraryFilter();
-  });
-  manageLibraryGridEl = document.createElement('div');
-  manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
-  manageLibraryEmptyEl = document.createElement('p');
-  manageLibraryEmptyEl.className = 'manage-links-library-empty';
-  manageLibraryEmptyEl.textContent = 'No matching apps';
-  manageLibraryEmptyEl.style.display = 'none';
-  librarySection.append(libraryTitle, manageLibrarySearchEl, manageLibraryGridEl, manageLibraryEmptyEl);
-
-  panel.append(header, addedSection, divider, customSection, librarySection);
+  panel.appendChild(header);
+  panel.appendChild(activeLabel);
+  panel.appendChild(manageAddedGridEl);
+  panel.appendChild(divider1);
+  panel.appendChild(addLabel);
+  panel.appendChild(urlWrap);
+  panel.appendChild(nameWrap);
+  panel.appendChild(addBtn);
   return panel;
 }
 
