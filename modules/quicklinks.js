@@ -120,6 +120,7 @@ let manageLibraryGridEl = null;
 let manageUrlInputEl = null;
 let manageNameInputEl = null;
 let manageAddedEmptyEl = null;
+let managePanelCloseTimer = null;
 const manageAddedTiles = new Map();
 const manageLibraryTiles = new Map();
 
@@ -574,17 +575,30 @@ function addCustomLinkFromPanel() {
 function closeManagePanel() {
   managePanelOpen = false;
   if (managePanelEl) {
+    managePanelEl.classList.remove('animate-premium-panel');
     managePanelEl.classList.remove('open');
     managePanelEl.setAttribute('aria-hidden', 'true');
-    managePanelEl.style.opacity = '';
-    managePanelEl.style.transform = '';
-    managePanelEl.style.transition = '';
+    managePanelEl.style.transformOrigin = 'left center';
+    managePanelEl.style.transition = 'opacity 140ms ease, transform 140ms ease';
+    managePanelEl.style.opacity = '0';
+    managePanelEl.style.transform = 'translateX(-10px) scale(0.985)';
+    if (managePanelCloseTimer) clearTimeout(managePanelCloseTimer);
+    managePanelCloseTimer = setTimeout(() => {
+      if (!managePanelOpen && managePanelEl) {
+        managePanelEl.style.display = 'none';
+      }
+      managePanelCloseTimer = null;
+    }, 140);
   }
   updateManageButtonState();
 }
 
 function openManagePanel() {
   const panel = ensureManagePanel();
+  if (managePanelCloseTimer) {
+    clearTimeout(managePanelCloseTimer);
+    managePanelCloseTimer = null;
+  }
   // Get sidebar pill element
   const sidebarEl = document.getElementById('quicklinks-section');
   const sidebarRect = sidebarEl
@@ -615,19 +629,19 @@ function openManagePanel() {
   console.log('[Acrylic] Panel pos — left:', leftPos, 'top:', topPos, 'sidebarRight:', sidebarRect.right);
 
   managePanelOpen = true;
+  renderManagePanel();
+  panel.style.display = 'flex';
+  panel.style.transition = 'none';
+  panel.style.opacity = '';
+  panel.style.transform = '';
+  panel.style.willChange = '';
+  panel.classList.remove('animate-premium-panel');
+  void panel.offsetHeight;
   panel.classList.add('open');
   panel.setAttribute('aria-hidden', 'false');
-  renderManagePanel();
-  panel.style.transformOrigin = 'left center';
-  panel.style.opacity = '0';
-  panel.style.transform = 'scale(0.92) translateX(-8px)';
-  panel.style.transition = 'opacity 200ms cubic-bezier(0.16,1,0.3,1), transform 200ms cubic-bezier(0.16,1,0.3,1)';
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    panel.style.opacity = '1';
-    panel.style.transform = 'scale(1) translateX(0)';
-  }));
+  panel.classList.add('animate-premium-panel');
   updateManageButtonState();
-  setTimeout(() => manageUrlInputEl?.focus(), 50);
+  manageUrlInputEl?.focus();
 }
 
 function toggleManagePanel() {
