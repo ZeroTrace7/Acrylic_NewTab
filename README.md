@@ -9,6 +9,7 @@ Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - Ne
 - Greeting with user name
 - Search bar with engine picker (Google, Bing, DuckDuckGo, Brave, Perplexity)
 - Left sidebar dock with glass pill container
+- Left dock app reordering with smooth drag-and-drop
 - Bottom quick links row with labels
 - Bottom-left focus button
 - Bottom-right grid + sliders buttons
@@ -39,6 +40,7 @@ The Manage Quick Links panel is a compact glass popover for editing the left doc
 
 - Opens from the middle-left dock `...` button
 - Panel opens to the right of the sidebar and is vertically centered in the viewport
+- Panel uses a premium scale-and-glide open animation (`premiumPanelOpen`, `0.4s cubic-bezier(0.16, 1, 0.3, 1)`)
 - Active links render in a 4-column management grid with small corner remove badges
 - Divider cleanly separates current links from the add flow
 - Add New Link section includes URL field and Name field with leading icons
@@ -51,7 +53,7 @@ The Manage Quick Links panel is a compact glass popover for editing the left doc
 
 Quick Links now use three distinct presentation modes tuned for the Acrylic UI instead of sharing a single visual treatment everywhere.
 
-- Left sidebar dock: glass squircle app tiles with clear Geist labels
+- Left sidebar dock: glass squircle app tiles with clear Geist labels, manual drag reordering, and a custom drag preview/cursor state
 - Bottom quick links row: Glassy-style soft squircle favicon tiles with lighter Geist labels and truncated names
 - Manage Quick Links panel: active links grid, compact custom-link form, divider-separated layout, and 50-app preset library
 - Shared icon rendering prefers `MONO_ICONS` for known apps and falls back to favicons for unknown custom links

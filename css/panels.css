@@ -194,16 +194,16 @@
 @keyframes premiumPanelOpen {
   0% {
     opacity: 0;
-    transform: translateX(-18px) scale(0.985);
+    transform: scale(0.96) translateY(12px);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 .animate-premium-panel {
-  animation: premiumPanelOpen 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: premiumPanelOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: left center;
   will-change: transform, opacity;
 }
@@ -222,23 +222,46 @@
 }
 
 .manage-links-close {
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(226, 232, 240, 0.85);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(226, 232, 240, 0.82);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.9;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease, opacity 160ms ease;
 }
 
 .manage-links-close svg {
-  width: 13px;
-  height: 13px;
+  width: 17px;
+  height: 17px;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.6;
   fill: none;
+}
+
+.manage-links-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(241, 245, 249, 0.98);
+  opacity: 1;
+}
+
+.manage-links-close:active {
+  transform: scale(0.94);
+}
+
+.manage-links-close:focus-visible {
+  outline: 2px solid rgba(148, 163, 184, 0.5);
+  outline-offset: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  opacity: 1;
 }
 
 .manage-links-section {

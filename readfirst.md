@@ -54,7 +54,13 @@
 - Positioning is applied on every open inside `openManagePanel()` using fixed positioning and direct `panel.style.*` assignments.
 - Do not reintroduce `cssText +=` positioning merges for the panel.
 - Panel opens to the right of the left dock and is vertically centered.
+- Panel open motion is the premium scale-and-glide path:
+  - `@keyframes premiumPanelOpen` in `css/panels.css`
+  - `.animate-premium-panel` on the outer panel wrapper
+  - timing must stay `0.4s cubic-bezier(0.16, 1, 0.3, 1)`
+- Do not reintroduce legacy fade classes or inline open transitions that fight `.animate-premium-panel`.
 - Panel typography uses `Geist`; `newtab.html` loads the font and the panel applies it inline.
+- Close affordance is a larger bare circular hit target with hover circle feedback; do not wrap it in an always-visible box again.
 - Active links use small red corner remove badges. Keep them manually styled in `modules/quicklinks.js`; do not convert them back to default browser buttons.
 - Active link labels are compact title-case text below the icon tile.
 - Divider between active links and add flow is a subtle 1px horizontal line with controlled top/bottom spacing.
@@ -85,6 +91,11 @@
   - glass squircle icon tile
   - monochrome app icon treatment
   - compact label below icon
+  - manual mouse drag reordering is supported
+  - drag start is delegated from `#sidebar-apps-grid` in `modules/quicklinks.js`
+  - do not switch this back to native HTML5 drag-and-drop; native `dragstart` is intentionally suppressed
+  - reorder animation uses `SIDEBAR_REORDER_ANIM_MS`
+  - active drag cursor state is forced through `#app-body.is-sidebar-reordering` in `css/components.css` to avoid hand/arrow flicker
 - Bottom quick links row:
   - Glassy-style soft squircle favicon tile
   - favicon remains full-color inside the glass shell
@@ -94,6 +105,7 @@
   - preset library uses dense icon-only tiles
 - Bottom-row icon shell styling is partly enforced inline in `modules/quicklinks.js` because shared tile CSS is overridden there.
 - If bottom-row visuals are not changing, inspect the inline styles in `createTile()` / `updateTile()` first before editing CSS.
+- Left dock menu button (`#tools-fab`) is a slim rounded rectangle with 3 larger dots; preserve its softer spacing and lower-opacity default state unless explicitly redesigning it.
 
 ### 9. BEFORE YOU CHANGE ANYTHING
 - Read this file first.
