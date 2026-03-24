@@ -642,6 +642,7 @@ function handleSidebarDragStart(event) {
   if (event.button !== 0) return;
   if (event instanceof PointerEvent && event.isPrimary === false) return;
   if (draggingSidebarLinkId || sidebarDragPointerId !== null) return;
+  if (document.body.classList.contains('is-layout-editing')) return;
 
   const source = event.target instanceof Element
     ? event.target.closest('.quicklink-item')

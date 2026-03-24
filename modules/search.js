@@ -1,4 +1,4 @@
-import { Prefs } from './storage.js';
+import { Prefs, Store } from './storage.js';
 import { sanitizeUrl, isValidUrl } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
@@ -19,6 +19,115 @@ let warnedSearchFallback = false;
 let pickerOpenRaf = 0;
 let pickerOpenRaf2 = 0;
 let pickerFocusTimer = 0;
+let searchHistoryEnabled = true;
+let searchHistoryItems = [];
+
+function getHistoryPanel() {
+  return DOM.searchHistoryPanel;
+}
+
+function closeHistoryPanel() {
+  const panel = getHistoryPanel();
+  if (!panel) return;
+  panel.classList.remove('is-open');
+  panel.setAttribute('aria-hidden', 'true');
+}
+
+function renderHistoryPanel(filterText = '') {
+  const panel = getHistoryPanel();
+  if (!panel) return false;
+
+  const needle = filterText.trim().toLowerCase();
+  const matches = searchHistoryItems
+    .filter((item) => !needle || item.toLowerCase().includes(needle))
+    .slice(0, 6);
+
+  panel.innerHTML = '';
+  if (!searchHistoryEnabled || !matches.length) {
+    closeHistoryPanel();
+    return false;
+  }
+
+  const header = document.createElement('div');
+  header.className = 'search-history-header';
+  header.innerHTML = `
+    <span class="search-history-title">Recent Searches</span>
+    <button type="button" class="search-history-clear">Clear</button>
+  `;
+
+  header.querySelector('.search-history-clear')?.addEventListener('click', async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    searchHistoryItems = [];
+    await Store.setSearchHistory([]);
+    closeHistoryPanel();
+  });
+
+  panel.appendChild(header);
+
+  matches.forEach((item) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'search-history-item';
+    const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    icon.setAttribute('viewBox', '0 0 24 24');
+    icon.setAttribute('fill', 'none');
+    icon.setAttribute('stroke', 'currentColor');
+    icon.setAttribute('stroke-width', '1.9');
+    icon.setAttribute('stroke-linecap', 'round');
+    icon.setAttribute('stroke-linejoin', 'round');
+    icon.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M12 8v5l3 2');
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', '12');
+    circle.setAttribute('cy', '12');
+    circle.setAttribute('r', '8');
+    icon.append(path, circle);
+
+    const copy = document.createElement('span');
+    copy.className = 'search-history-copy';
+    const query = document.createElement('span');
+    query.className = 'search-history-query';
+    query.textContent = item;
+    const meta = document.createElement('span');
+    meta.className = 'search-history-meta';
+    meta.textContent = 'Search again';
+    copy.append(query, meta);
+
+    button.append(icon, copy);
+    button.addEventListener('click', async () => {
+      if (DOM.searchInput) DOM.searchInput.value = item;
+      await performSearch(item);
+    });
+    panel.appendChild(button);
+  });
+
+  return true;
+}
+
+function openHistoryPanel(filterText = '') {
+  const panel = getHistoryPanel();
+  if (!panel) return;
+  if (!renderHistoryPanel(filterText)) return;
+  closePicker();
+  panel.classList.add('is-open');
+  panel.setAttribute('aria-hidden', 'false');
+}
+
+async function rememberSearchQuery(query) {
+  if (!searchHistoryEnabled) return;
+  const clean = query.trim();
+  if (!clean) return;
+  if (isValidUrl(sanitizeUrl(clean))) return;
+
+  searchHistoryItems = [
+    clean,
+    ...searchHistoryItems.filter((item) => item.toLowerCase() !== clean.toLowerCase()),
+  ].slice(0, 8);
+
+  await Store.setSearchHistory(searchHistoryItems);
+}
 
 function getEngine(id) {
   return ENGINES.find((e) => e.id === id) || ENGINES[0];
@@ -64,6 +173,7 @@ function isPickerOpen() {
 function openPicker(focusList = false) {
   const picker = DOM.enginePicker;
   if (!picker) return;
+  closeHistoryPanel();
   if (pickerOpenRaf) {
     cancelAnimationFrame(pickerOpenRaf);
     pickerOpenRaf = 0;
@@ -226,6 +336,8 @@ function queryBrowserDefault(text) {
 async function performSearch(query) {
   const q = query.trim();
   if (!q) return;
+  closeHistoryPanel();
+  await rememberSearchQuery(q);
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
   } else {
@@ -244,6 +356,8 @@ async function performSearch(query) {
 /** Initializes the search bar, engine picker, and all related event listeners. */
 export async function initSearch() {
   const savedId = await Prefs.get('searchEngine');
+  searchHistoryEnabled = await Prefs.get('searchHistory');
+  searchHistoryItems = await Store.getSearchHistory();
   setEngine(getEngine(savedId));
   buildPicker();
 
@@ -278,9 +392,31 @@ export async function initSearch() {
   if (input) {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') performSearch(input.value);
+      if (e.key === 'Escape') closeHistoryPanel();
+      if (e.key === 'ArrowDown' && getHistoryPanel()?.classList.contains('is-open')) {
+        const firstSuggestion = getHistoryPanel()?.querySelector('.search-history-item');
+        if (firstSuggestion instanceof HTMLElement) {
+          e.preventDefault();
+          firstSuggestion.focus();
+        }
+      }
     });
     input.addEventListener('input', () => {
       input.placeholder = input.value.startsWith('http') ? 'Press Enter to navigate...' : 'Search anything...';
+      if (!searchHistoryEnabled) return;
+      if (!input.value.trim()) {
+        openHistoryPanel('');
+        return;
+      }
+      openHistoryPanel(input.value);
+    });
+    input.addEventListener('focus', () => {
+      if (!searchHistoryEnabled) return;
+      openHistoryPanel(input.value);
+    });
+    input.addEventListener('click', () => {
+      if (!searchHistoryEnabled) return;
+      openHistoryPanel(input.value);
     });
     setTimeout(() => input.focus(), 100);
   }
@@ -292,11 +428,20 @@ export async function initSearch() {
   document.addEventListener('click', (e) => {
     if (!searchWrapper || searchWrapper.contains(e.target)) return;
     closePicker();
+    closeHistoryPanel();
   });
 
   Prefs.onChange((changes) => {
     if ('searchEngine' in changes) setEngine(getEngine(changes.searchEngine));
+    if ('searchHistory' in changes) {
+      searchHistoryEnabled = changes.searchHistory !== false;
+      if (!searchHistoryEnabled) closeHistoryPanel();
+      else if (document.activeElement === input) openHistoryPanel(input?.value || '');
+    }
   });
 
-  bus.addEventListener('themeChanged', closePicker);
+  bus.addEventListener('themeChanged', () => {
+    closePicker();
+    closeHistoryPanel();
+  });
 }

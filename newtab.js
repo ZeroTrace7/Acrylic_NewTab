@@ -8,6 +8,7 @@ import { toast }          from './modules/toast.js';
 import { DOM }            from './modules/dom.js';
 import { bus }            from './modules/event-bus.js';
 import { UI_CONFIG }      from './modules/ui-config.js';
+import { initPreferences } from './modules/preferences.js';
 
 let settingsOpen = false;
 
@@ -69,7 +70,10 @@ async function initApp() {
       await initOnboarding();
     }
 
-    // Step 3 — Initialize UI modules in parallel
+    // Step 3 — Apply persisted dashboard preferences before UI init
+    await initPreferences();
+
+    // Step 4 — Initialize UI modules in parallel
     await Promise.all([
       initClock(),
       initSearch(),
@@ -77,7 +81,7 @@ async function initApp() {
       initTasks(),
     ]);
 
-    // Step 4 — Settings button (lazy-loaded)
+    // Step 5 — Preferances button (lazy-loaded)
     DOM.settingsBtn?.addEventListener('click', async () => {
       if (settingsOpen) return;
       settingsOpen = true;
@@ -85,7 +89,7 @@ async function initApp() {
       await initSettings(() => { settingsOpen = false; });
     });
 
-    // Step 5 — Quick Tools trigger (bottom-right grid button)
+    // Step 6 — Quick Tools trigger (bottom-right grid button)
     const quickToolsBtn = DOM.quickToolsBtn;
     const syncToolsState = () => {
       const panelOpen = quickToolsBtn?.classList.contains('active') === true;
@@ -109,7 +113,7 @@ async function initApp() {
       syncToolsState();
     });
 
-    // Step 6 — Keyboard shortcuts
+    // Step 7 — Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       const tag = document.activeElement?.tagName;
       if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
@@ -126,7 +130,7 @@ async function initApp() {
     });
 
   } catch (err) {
-    // Step 7 — Graceful error handling
+    // Step 8 — Graceful error handling
     console.error('Acrylic init error:', err);
     toast.error('Something went wrong. Please refresh.');
   }

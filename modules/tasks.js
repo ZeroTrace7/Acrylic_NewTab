@@ -4,8 +4,8 @@ import { generateId } from './utils.js';
 import { toast } from './toast.js';
 
 const TASKS_KEY = 'tasks';
-const SUCCESS_REVEAL_DELAY_MS = 360;
-const SUCCESS_AUTOCLEAR_MS = 3800;
+const SUCCESS_REVEAL_DELAY_MS = 480;
+const SUCCESS_AUTOCLEAR_MS = 4300;
 const TASK_REORDER_DELAY_MS = 180;
 
 let panelEl = null;

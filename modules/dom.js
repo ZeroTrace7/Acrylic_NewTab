@@ -15,8 +15,16 @@ export const DOM = {
     return document.getElementById('greeting-text');
   },
 
+  get clockZone() {
+    return document.getElementById('clock-zone');
+  },
+
   get searchInput() {
     return document.getElementById('search-input');
+  },
+
+  get searchSection() {
+    return document.getElementById('search-section');
   },
 
   get searchSubmit() {
@@ -39,6 +47,10 @@ export const DOM = {
     return document.getElementById('engine-picker');
   },
 
+  get searchHistoryPanel() {
+    return document.getElementById('search-history-panel');
+  },
+
   get addLinkBtn() {
     return document.getElementById('add-link-btn');
   },
@@ -49,6 +61,10 @@ export const DOM = {
 
   get bottomGrid() {
     return document.getElementById('bottom-links-grid');
+  },
+
+  get quicklinksZone() {
+    return document.getElementById('quicklinks-zone');
   },
 
   get settingsBtn() {

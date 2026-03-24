@@ -4,6 +4,14 @@
   --center-top: 53%;
   --quicklinks-bottom: 4.2vh;
   --sidebar-left: 20px;
+  --clock-offset-x: 0px;
+  --clock-offset-y: 0px;
+  --center-offset-x: 0px;
+  --center-offset-y: 0px;
+  --quicklinks-offset-x: 0px;
+  --quicklinks-offset-y: 0px;
+  --sidebar-offset-x: 0px;
+  --sidebar-offset-y: 0px;
 }
 
 .layout-root {
@@ -19,7 +27,7 @@
   position: absolute;
   left: var(--sidebar-left);
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translate3d(var(--sidebar-offset-x), var(--sidebar-offset-y), 0);
   width: 66px;
   height: auto;
   display: flex;
@@ -27,23 +35,25 @@
   align-items: center;
   gap: 12px;
   z-index: 30;
+  will-change: transform;
 }
 
 #clock-zone {
   position: absolute;
   top: var(--clock-top);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translate3d(var(--clock-offset-x), var(--clock-offset-y), 0);
   display: flex;
   flex-direction: column;
   align-items: center;
+  will-change: transform;
 }
 
 #middle-zone {
   position: absolute;
   top: var(--center-top);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) translate3d(var(--center-offset-x), var(--center-offset-y), 0);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,13 +62,15 @@
   width: 100%;
   max-width: 680px;
   pointer-events: auto;
+  will-change: transform;
 }
 
 #quicklinks-zone {
   position: absolute;
   bottom: var(--quicklinks-bottom);
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translate3d(var(--quicklinks-offset-x), var(--quicklinks-offset-y), 0);
+  will-change: transform;
 }
 
 .right-panel,
@@ -141,7 +153,25 @@
   bottom: 24px;
   right: 24px;
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+}
+
+#bottom-right-controls .bottom-right-divider {
+  width: 1px;
+  height: 26px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.24) 18%,
+    rgba(255, 255, 255, 0.34) 50%,
+    rgba(255, 255, 255, 0.24) 82%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
+  opacity: 0.88;
+  pointer-events: none;
 }
 
 /* Monochrome quick links - left dock */

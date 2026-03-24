@@ -14,7 +14,22 @@ export const Prefs = {
     grainOpacity:    0.035,
     userName:        '',
     searchEngine:    'browser',
+    searchHistory:   true,
     clockFormat:     '12h',
+    textDepth:       true,
+    editLayoutMode:  false,
+    showClock:       true,
+    showGreeting:    true,
+    layoutOffsets: {
+      clockX:      0,
+      clockY:      0,
+      centerX:     0,
+      centerY:     0,
+      quicklinksX: 0,
+      quicklinksY: 0,
+      sidebarX:    0,
+      sidebarY:    0,
+    },
     quickLinksMax:   6,
     onboardingDone:  false,
   },
@@ -93,6 +108,20 @@ export const Store = {
   /** Saves the tasks array to local storage. */
   async setTasks(tasks) {
     await chrome.storage.local.set({ tasks });
+  },
+
+  // ── Search History ───────────────────────────────────────
+
+  /** Gets the recent search query list from local storage. */
+  async getSearchHistory() {
+    const result = await chrome.storage.local.get('searchHistoryItems');
+    return Array.isArray(result.searchHistoryItems) ? result.searchHistoryItems : [];
+  },
+
+  /** Saves the recent search query list to local storage. */
+  async setSearchHistory(items) {
+    const next = Array.isArray(items) ? items.filter((item) => typeof item === 'string' && item.trim()) : [];
+    await chrome.storage.local.set({ searchHistoryItems: next.slice(0, 8) });
   },
 
   // ── Notes ────────────────────────────────────────────────

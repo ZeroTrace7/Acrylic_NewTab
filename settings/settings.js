@@ -5,6 +5,7 @@ import { isValidUrl } from '../modules/utils.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
 import { DOM } from '../modules/dom.js';
+import { resetLayoutOffsets, setLayoutEditMode } from '../modules/preferences.js';
 
 let modalEl = null;
 let prefs = {};
@@ -22,37 +23,73 @@ function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTi
 function sectionLabel(text) {
   const el = document.createElement('div');
   el.textContent = text;
-  el.setAttribute('style', 'font-size:0.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;');
+  el.className = 'settings-section-label';
   return el;
 }
 
 function toggle(on, onclick, label = 'Toggle setting') {
-  const wrap = document.createElement('div');
-  wrap.setAttribute('style', `width:42px;height:24px;border-radius:12px;cursor:pointer;position:relative;transition:background 200ms ease;background:${on ? 'rgba(52,211,153,0.7)' : 'var(--glass-subtle)'};border:1px solid var(--glass-border-soft);`);
-  wrap.setAttribute('role', 'button');
-  wrap.setAttribute('tabindex', '0');
+  const wrap = document.createElement('button');
+  wrap.type = 'button';
+  wrap.className = `settings-toggle${on ? ' is-on' : ''}`;
   wrap.setAttribute('aria-pressed', String(on));
   wrap.setAttribute('aria-label', label);
   const knob = document.createElement('div');
-  knob.setAttribute('style', `position:absolute;top:3px;width:18px;height:18px;border-radius:50%;background:white;transition:transform 200ms ease;transform:translateX(${on ? '21px' : '3px'});`);
+  knob.className = 'settings-toggle-thumb';
   wrap.appendChild(knob);
-  wrap.onclick = onclick;
-  wrap.onkeydown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onclick();
-    }
-  };
+  wrap.addEventListener('click', (e) => {
+    e.preventDefault();
+    onclick();
+  });
   return wrap;
 }
 
-function toggleRow(label, on, onclick) {
+function toggleRow(label, description, on, onclick) {
   const row = document.createElement('div');
-  row.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;padding:4px 0;');
-  const lbl = document.createElement('span');
-  lbl.textContent = label;
-  lbl.setAttribute('style', 'font-size:0.85rem;color:var(--text-primary);');
-  row.append(lbl, toggle(on, onclick, label));
+  row.className = 'settings-row';
+  const copy = document.createElement('div');
+  copy.className = 'settings-row-copy';
+  const title = document.createElement('div');
+  title.className = 'settings-row-title';
+  title.textContent = label;
+  copy.appendChild(title);
+  if (description) {
+    const desc = document.createElement('div');
+    desc.className = 'settings-row-description';
+    desc.textContent = description;
+    copy.appendChild(desc);
+  }
+  row.append(copy, toggle(on, onclick, label));
+  return row;
+}
+
+function actionRow(label, description, actionLabel, onclick) {
+  const row = document.createElement('div');
+  row.className = 'settings-row settings-row-action';
+
+  const copy = document.createElement('div');
+  copy.className = 'settings-row-copy';
+  const title = document.createElement('div');
+  title.className = 'settings-row-title';
+  title.textContent = label;
+  copy.appendChild(title);
+
+  if (description) {
+    const desc = document.createElement('div');
+    desc.className = 'settings-row-description';
+    desc.textContent = description;
+    copy.appendChild(desc);
+  }
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'settings-inline-action';
+  button.textContent = actionLabel;
+  button.addEventListener('click', (e) => {
+    e.preventDefault();
+    onclick();
+  });
+
+  row.append(copy, button);
   return row;
 }
 
@@ -83,7 +120,7 @@ function buildModal() {
   overlay.onclick = (e) => { if (e.target === overlay) closeSettings(); };
 
   const box = document.createElement('div');
-  box.className = 'modal-box settings-box';
+  box.className = 'modal-box settings-box settings-panel';
   box.setAttribute('style', 'position:relative;display:flex;flex-direction:column;gap:24px;');
   box.onclick = (e) => e.stopPropagation();
 
@@ -91,17 +128,18 @@ function buildModal() {
   const header = document.createElement('div');
   header.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
   const h2 = document.createElement('h2');
-  h2.textContent = 'Settings';
+  h2.textContent = 'Preferances';
   h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  closeBtn.ariaLabel = 'Close settings';
+  closeBtn.ariaLabel = 'Close preferances';
   closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
   closeBtn.onclick = closeSettings;
   header.append(h2, closeBtn);
 
   // Section 1 — Profile
   const sec1 = document.createElement('div');
+  sec1.className = 'settings-card';
   sec1.appendChild(sectionLabel('Profile'));
   const nameLabel = document.createElement('label');
   nameLabel.textContent = 'Your name';
@@ -117,6 +155,7 @@ function buildModal() {
 
   // Section 2 — Theme
   const sec2 = document.createElement('div');
+  sec2.className = 'settings-card';
   sec2.appendChild(sectionLabel('Theme'));
   const grid = document.createElement('div');
   grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;');
@@ -137,9 +176,95 @@ function buildModal() {
   renderThemes();
   sec2.appendChild(grid);
 
-  // Section 3 — Wallpaper
+  // Section 3 — Display
   const sec3 = document.createElement('div');
-  sec3.appendChild(sectionLabel('Wallpaper'));
+  sec3.className = 'settings-card';
+  sec3.appendChild(sectionLabel('Display'));
+  const displayRows = document.createElement('div');
+  const renderDisplay = () => {
+    displayRows.innerHTML = '';
+    displayRows.append(
+      toggleRow(
+        'Text depth effect',
+        'Adds subtle shadow to make text readable on bright wallpapers',
+        prefs.textDepth !== false,
+        async () => {
+          prefs.textDepth = prefs.textDepth === false;
+          await Prefs.set('textDepth', prefs.textDepth);
+          renderDisplay();
+        }
+      ),
+      toggleRow(
+        'Search history',
+        'Show recent searches below the search bar',
+        prefs.searchHistory !== false,
+        async () => {
+          prefs.searchHistory = prefs.searchHistory === false;
+          await Prefs.set('searchHistory', prefs.searchHistory);
+          renderDisplay();
+        }
+      ),
+      toggleRow(
+        'Edit layout',
+        'Unlock the dashboard to reposition the dock, time, search, and quick links',
+        prefs.editLayoutMode === true,
+        async () => {
+          const next = prefs.editLayoutMode !== true;
+          prefs.editLayoutMode = next;
+          await setLayoutEditMode(next, { persist: true, announce: true });
+          renderDisplay();
+        }
+      ),
+      actionRow(
+        'Reset layout',
+        'Restore default dashboard positions',
+        'Reset',
+        async () => {
+          await resetLayoutOffsets({ persist: true, announce: true });
+        }
+      )
+    );
+  };
+  renderDisplay();
+  sec3.appendChild(displayRows);
+
+  // Section 4 — Widgets
+  const sec4 = document.createElement('div');
+  sec4.className = 'settings-card';
+  sec4.appendChild(sectionLabel('Widgets'));
+  const widgetRows = document.createElement('div');
+  const renderWidgets = () => {
+    widgetRows.innerHTML = '';
+    widgetRows.append(
+      toggleRow(
+        'Time',
+        'Show or hide the clock and date block',
+        prefs.showClock !== false,
+        async () => {
+          prefs.showClock = prefs.showClock === false;
+          await Prefs.set('showClock', prefs.showClock);
+          renderWidgets();
+        }
+      ),
+      toggleRow(
+        'Greeting',
+        'Show or hide the greeting above the search bar',
+        prefs.showGreeting !== false,
+        async () => {
+          prefs.showGreeting = prefs.showGreeting === false;
+          await Prefs.set('showGreeting', prefs.showGreeting);
+          renderWidgets();
+        }
+      )
+    );
+  };
+  renderWidgets();
+  sec4.appendChild(widgetRows);
+
+  // Section 5 — Wallpaper
+  const sec5 = document.createElement('div');
+  sec5.className = 'settings-card';
+  sec5.appendChild(sectionLabel('Wallpaper'));
   const wpRow = document.createElement('div');
   wpRow.setAttribute('style', 'display:flex;gap:8px;');
   const wpIn = document.createElement('input');
@@ -157,7 +282,7 @@ function buildModal() {
     rebuildWpControls();
   };
   wpRow.append(wpIn, applyBtn);
-  sec3.appendChild(wpRow);
+  sec5.appendChild(wpRow);
 
   const wpControls = document.createElement('div');
   const rebuildWpControls = () => {
@@ -174,24 +299,26 @@ function buildModal() {
     wpControls.appendChild(slider('Grain', prefs.grainOpacity, 0, 0.1, 0.005, '', (v) => { prefs.grainOpacity = v; setGrain(v); }));
   };
   rebuildWpControls();
-  sec3.appendChild(wpControls);
+  sec5.appendChild(wpControls);
 
-  // Section 4 — Clock
-  const sec4 = document.createElement('div');
-  sec4.appendChild(sectionLabel('Clock'));
+  // Section 6 — Clock
+  const sec6 = document.createElement('div');
+  sec6.className = 'settings-card';
+  sec6.appendChild(sectionLabel('Clock'));
   const renderClock = () => {
     const is24 = prefs.clockFormat === '24h';
-    while (sec4.childNodes.length > 1) sec4.removeChild(sec4.lastChild);
-    sec4.appendChild(toggleRow('24-hour format', is24, () => {
+    while (sec6.childNodes.length > 1) sec6.removeChild(sec6.lastChild);
+    sec6.appendChild(toggleRow('24-hour format', 'Switch between 12-hour and 24-hour time', is24, () => {
       prefs.clockFormat = is24 ? '12h' : '24h';
       Prefs.set('clockFormat', prefs.clockFormat); renderClock();
     }));
   };
   renderClock();
 
-  // Section 5 — Quick Links
-  const sec5 = document.createElement('div');
-  sec5.appendChild(sectionLabel('Quick Links'));
+  // Section 7 — Quick Links
+  const sec7 = document.createElement('div');
+  sec7.className = 'settings-card';
+  sec7.appendChild(sectionLabel('Quick Links'));
   const qlRow = document.createElement('div');
   qlRow.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
   const qlLbl = document.createElement('span');
@@ -201,18 +328,18 @@ function buildModal() {
   qlValue.textContent = '6';
   qlValue.setAttribute('style', 'min-width:70px;padding:6px 10px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:8px;color:var(--text-primary);font-size:0.9rem;text-align:center;');
   qlRow.append(qlLbl, qlValue);
-  sec5.appendChild(qlRow);
+  sec7.appendChild(qlRow);
   const qlHint = document.createElement('div');
   qlHint.textContent = 'Shows your top 6 browser sites automatically.';
   qlHint.setAttribute('style', 'margin-top:8px;font-size:0.75rem;color:var(--text-secondary);');
-  sec5.appendChild(qlHint);
+  sec7.appendChild(qlHint);
 
   // Footer
   const footer = document.createElement('div');
-  footer.textContent = 'Acrylic v1.0.0 — Settings sync across devices';
-  footer.setAttribute('style', 'font-size:0.7rem;color:var(--text-ghost);text-align:center;');
+  footer.textContent = 'Acrylic v1.0.0 — Preferances sync across devices';
+  footer.className = 'settings-footer-note';
 
-  box.append(header, sec1, sec2, sec3, sec4, sec5, footer);
+  box.append(header, sec1, sec2, sec3, sec4, sec5, sec6, sec7, footer);
   overlay.appendChild(box);
   return overlay;
 }

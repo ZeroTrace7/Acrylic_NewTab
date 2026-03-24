@@ -83,7 +83,7 @@
 - Manifest V3 extension, no bundler, pure ES modules.
 - Preferences live in `chrome.storage.sync` via `Prefs`.
 - App/panel data (including tasks) live in `chrome.storage.local` via `Store`.
-- Major directories: `/modules` (core logic), `/panels` (tools panel modules), `/settings` (settings UI), `/onboarding` (onboarding flow).
+- Major directories: `/modules` (core logic), `/panels` (tools panel modules), `/settings` (Preferances UI), `/onboarding` (onboarding flow).
 
 ### 8. QUICK LINKS VISUAL MODES
 - There are three different Quick Links surfaces. Do not collapse them back into one style:
@@ -117,6 +117,5 @@
 ### Extension Routing Map
 - Middle-Left Dock (`#tools-fab` / ... oval): Triggers "Manage Quick Links" popover.
 - Bottom-Left Icon (`#focus-btn`, target/circles): Triggers "Zen Mode".
-- Bottom-Right Group (List Icon): Triggers "Tasks / Todo" panel.
+- Bottom-Right Group (List Icon, `#settings-btn`): Triggers "Preferances" modal.
 - Bottom-Right Group (Grid Icon, `#grid-view-btn`): Triggers "Quick Tools" panel (Productivity/Notes/Tabs).
-- Bottom-Right Group (Slider Icon): Triggers "Settings" modal.

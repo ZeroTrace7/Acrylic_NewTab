@@ -12,7 +12,7 @@ Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - Ne
 - Left dock app reordering with smooth drag-and-drop
 - Bottom quick links row with labels
 - Bottom-left focus button
-- Bottom-right grid + sliders buttons
+- Bottom-right Preferances + grid buttons
 - Premium entry animation (sub-800ms, staggered)
 - Multiple themes (midnight, deep-blue, aurora, rose-noir, jet, espresso, slate, forest)
 - Pomodoro, Notes, Tabs, Clipboard panels

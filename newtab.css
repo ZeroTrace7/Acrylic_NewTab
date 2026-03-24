@@ -41,6 +41,8 @@
   --text-secondary: rgba(255, 255, 255, 0.75);
   --text-muted:     rgba(255, 255, 255, 0.55);
   --text-ghost:     rgba(255, 255, 255, 0.25);
+  --dashboard-text-depth-strong: 0 4px 24px rgba(0, 0, 0, 0.40);
+  --dashboard-text-depth-soft: 0 2px 16px rgba(0, 0, 0, 0.26);
 
   /* Accents */
   --accent-blue:  rgba(96, 165, 250, 0.90);
@@ -99,6 +101,11 @@ body {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+}
+
+#app-body.text-depth-disabled {
+  --dashboard-text-depth-strong: none;
+  --dashboard-text-depth-soft: none;
 }
 
 #app-body {
@@ -394,6 +401,7 @@ body.acrylic-loaded .anim-sidebar {
   color: var(--text-secondary);
   font-weight: 400;
   letter-spacing: 0.01em;
+  text-shadow: var(--dashboard-text-depth-soft);
 }
 
 .clock-greeting {
@@ -404,6 +412,7 @@ body.acrylic-loaded .anim-sidebar {
   color: var(--text-primary);
   text-align: center;
   margin: 0;
+  text-shadow: var(--dashboard-text-depth-soft);
 }
 
 .simple-clock {
@@ -412,7 +421,7 @@ body.acrylic-loaded .anim-sidebar {
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
-  text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  text-shadow: var(--dashboard-text-depth-strong);
   line-height: 1;
   text-align: center;
 }
