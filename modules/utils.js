@@ -62,6 +62,21 @@ export function getDomain(url) {
   }
 }
 
+/** Derives a user-friendly name from a URL. */
+export function getFriendlyName(url) {
+  const safeUrl = sanitizeUrl(url);
+  const domain = getDomain(safeUrl).replace(/^www\./i, '');
+  if (!domain) return '';
+  const parts = domain.split('.');
+  if (parts.length === 0) return '';
+  let word = parts.length > 2 ? parts[1] : parts[0];
+  if (parts.length > 2 && parts[0].length > parts[1].length) {
+    word = parts[0];
+  }
+  if (!word) return '';
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 /** Trims and prepends https:// to a URL string if it doesn't already have a protocol. */
 export function sanitizeUrl(url) {
   const trimmed = url.trim();
@@ -69,8 +84,16 @@ export function sanitizeUrl(url) {
   return 'https://' + trimmed;
 }
 
-/** Returns a Google favicon service URL for the given URL, or empty string if domain is invalid. */
+/** Returns an icon.horse favicon service URL for the given domain, or empty string if domain is invalid. */
 export function getFaviconUrl(url) {
+  let domain = getDomain(url);
+  if (!domain) return '';
+  domain = domain.replace(/^www\./, '');
+  return `https://icon.horse/icon/${domain}`;
+}
+
+/** Returns a Google favicon service URL which guarantees an image response (either real icon or generic globe). */
+export function getFaviconFallbackUrl(url) {
   const domain = getDomain(url);
   if (!domain) return '';
   return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(sanitizeUrl(url))}&size=128`;

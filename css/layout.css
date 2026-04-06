@@ -225,8 +225,8 @@
   vector-effect: non-scaling-stroke !important;
 }
 
-.manage-link-icon-wrap img:not(.quicklink-favicon):not(.quicklink-native-favicon),
-.manage-library-icon-wrap img:not(.quicklink-favicon):not(.quicklink-native-favicon) {
+.manage-link-icon-wrap img:not(.quicklink-color-favicon):not(.quicklink-native-favicon),
+.manage-library-icon-wrap img:not(.quicklink-color-favicon):not(.quicklink-native-favicon) {
   width: 65% !important;
   height: 65% !important;
   object-fit: contain !important;
@@ -235,19 +235,19 @@
   image-rendering: -webkit-optimize-contrast !important;
 }
 
-.quicklink-favicon,
-.manage-link-icon-wrap .quicklink-favicon,
-.manage-library-icon-wrap .quicklink-favicon {
-  width: 22px !important;
-  height: 22px !important;
+/* Color favicon for custom links — shown in native colors within glass tile */
+.quicklink-color-favicon {
+  width: 24px !important;
+  height: 24px !important;
   object-fit: contain !important;
   border-radius: 6px !important;
-  filter: brightness(0) invert(1) opacity(0.95) !important;
-  image-rendering: -webkit-optimize-contrast !important;
+  filter: none !important;
 }
 
-.bottom-grid .quicklink-favicon {
-  filter: none !important;
+.manage-link-icon-wrap .quicklink-color-favicon {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
 }
 
 .quicklink-item,

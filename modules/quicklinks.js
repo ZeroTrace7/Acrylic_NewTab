@@ -1,5 +1,5 @@
 import { Store } from './storage.js';
-import { generateId, getFaviconUrl, sanitizeUrl, getDomain } from './utils.js';
+import { generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
@@ -247,16 +247,23 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
   if (!iconEl) return;
   iconEl.innerHTML = '';
   if (useRawFavicon) {
-    const faviconUrl = link?.favicon || getFaviconUrl(link?.url || '');
-    if (!faviconUrl) return;
+    const primaryUrl = link?.favicon || getFaviconUrl(link?.url || '');
+    const fallbackUrl = getFaviconFallbackUrl(link?.url || '');
+    if (!primaryUrl) return;
     const img = document.createElement('img');
     img.className = 'quicklink-native-favicon';
-    img.src = faviconUrl;
+    img.src = primaryUrl;
     img.alt = '';
     img.loading = 'lazy';
     img.draggable = false;
+    let triedFallback = false;
     img.onerror = () => {
-      img.style.display = 'none';
+      if (!triedFallback && fallbackUrl) {
+        triedFallback = true;
+        img.src = fallbackUrl;
+      } else {
+        img.style.display = 'none';
+      }
     };
     iconEl.appendChild(img);
     return;
@@ -278,18 +285,30 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
 
   const domain = getNormalizedDomain(link?.url || '');
   if (!domain) return;
+  const letter = (link?.title || domain || '?').charAt(0).toUpperCase();
+
+  const primaryUrl = getFaviconUrl(link?.url || '');
+  const fallbackUrl = getFaviconFallbackUrl(link?.url || '');
+
   const img = document.createElement('img');
-  img.className = 'quicklink-favicon';
-  img.src = getFaviconUrl(link?.url || '');
+  img.className = 'quicklink-color-favicon';
+  img.src = primaryUrl;
   img.alt = '';
   img.loading = 'lazy';
   img.draggable = false;
+  
+  let triedFallback = false;
   img.onerror = () => {
-    img.remove();
-    const fallback = document.createElement('span');
-    fallback.className = 'mono-text-fallback';
-    fallback.textContent = (link?.title || domain || '?').charAt(0).toUpperCase();
-    iconEl.appendChild(fallback);
+    if (!triedFallback && fallbackUrl) {
+      triedFallback = true;
+      img.src = fallbackUrl;
+    } else {
+      img.remove();
+      const fallbackSpan = document.createElement('span');
+      fallbackSpan.className = 'mono-text-fallback';
+      fallbackSpan.textContent = letter;
+      iconEl.appendChild(fallbackSpan);
+    }
   };
   iconEl.appendChild(img);
 }
@@ -889,6 +908,7 @@ function addCustomLinkFromPanel() {
   renderLinks();
   manageUrlInputEl.value = '';
   manageNameInputEl.value = '';
+  manageUrlInputEl.dataset.autoName = '';
   manageUrlInputEl.focus();
   toast.success('Link added!');
 }
@@ -1095,6 +1115,20 @@ function buildManagePanel() {
   manageUrlInputEl.addEventListener('blur', () => {
     manageUrlInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
   });
+  manageUrlInputEl.addEventListener('input', () => {
+    if (!manageUrlInputEl.value.trim() && manageNameInputEl && manageNameInputEl.value.trim() === manageUrlInputEl.dataset.autoName) {
+      manageNameInputEl.value = '';
+      manageUrlInputEl.dataset.autoName = '';
+      return;
+    }
+    const derived = getFriendlyName(manageUrlInputEl.value.trim());
+    const currentName = manageNameInputEl ? manageNameInputEl.value.trim() : '';
+    if (derived && (!currentName || currentName === manageUrlInputEl.dataset.autoName)) {
+      if (manageNameInputEl) manageNameInputEl.value = derived;
+      manageUrlInputEl.dataset.autoName = derived;
+    }
+  });
+
   const urlWrap = document.createElement('div');
   urlWrap.className = 'manage-input-wrap';
   urlWrap.style.cssText = `
@@ -1561,6 +1595,19 @@ function openLinkModal(existingLink = null) {
   urlInput.style.fontSize = '0.84rem';
   urlInput.style.fontWeight = '500';
   urlInput.style.color = 'rgba(255,255,255,0.9)';
+
+  urlInput.addEventListener('input', () => {
+    if (!urlInput.value.trim() && titleInput.value.trim() === urlInput.dataset.autoName) {
+      titleInput.value = '';
+      urlInput.dataset.autoName = '';
+      return;
+    }
+    const derived = getFriendlyName(urlInput.value.trim());
+    if (derived && (!titleInput.value.trim() || titleInput.value.trim() === urlInput.dataset.autoName)) {
+      titleInput.value = derived;
+      urlInput.dataset.autoName = derived;
+    }
+  });
 
   const sidebarToggleLabel = document.createElement('label');
   sidebarToggleLabel.className = 'ql-sidebar-toggle';
