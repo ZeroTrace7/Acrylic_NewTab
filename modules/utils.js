@@ -62,18 +62,18 @@ export function getDomain(url) {
   }
 }
 
-/** Returns a Google favicon service URL for the given URL, or empty string if domain is invalid. */
-export function getFaviconUrl(url) {
-  const domain = getDomain(url);
-  if (!domain) return '';
-  return `https://www.google.com/s2/favicons?sz=128&domain=${domain}`;
-}
-
 /** Trims and prepends https:// to a URL string if it doesn't already have a protocol. */
 export function sanitizeUrl(url) {
   const trimmed = url.trim();
   if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
   return 'https://' + trimmed;
+}
+
+/** Returns a Google favicon service URL for the given URL, or empty string if domain is invalid. */
+export function getFaviconUrl(url) {
+  const domain = getDomain(url);
+  if (!domain) return '';
+  return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(sanitizeUrl(url))}&size=128`;
 }
 
 /** Truncates a string to maxLength characters, appending "…" if it exceeds the limit. */

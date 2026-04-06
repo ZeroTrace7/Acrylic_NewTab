@@ -225,15 +225,29 @@
   vector-effect: non-scaling-stroke !important;
 }
 
-.quicklink-favicon,
-.manage-link-icon-wrap img,
-.manage-library-icon-wrap img {
+.manage-link-icon-wrap img:not(.quicklink-favicon):not(.quicklink-native-favicon),
+.manage-library-icon-wrap img:not(.quicklink-favicon):not(.quicklink-native-favicon) {
   width: 65% !important;
   height: 65% !important;
   object-fit: contain !important;
   margin: 0 !important;
   filter: brightness(0) invert(1) opacity(0.95) !important;
   image-rendering: -webkit-optimize-contrast !important;
+}
+
+.quicklink-favicon,
+.manage-link-icon-wrap .quicklink-favicon,
+.manage-library-icon-wrap .quicklink-favicon {
+  width: 22px !important;
+  height: 22px !important;
+  object-fit: contain !important;
+  border-radius: 6px !important;
+  filter: brightness(0) invert(1) opacity(0.95) !important;
+  image-rendering: -webkit-optimize-contrast !important;
+}
+
+.bottom-grid .quicklink-favicon {
+  filter: none !important;
 }
 
 .quicklink-item,

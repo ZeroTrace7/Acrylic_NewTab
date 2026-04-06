@@ -329,8 +329,11 @@
   width: 65%;
   height: 65%;
   object-fit: contain;
-  filter: brightness(0) invert(1) opacity(0.95);
   image-rendering: -webkit-optimize-contrast;
+}
+
+.manage-link-icon-wrap img:not(.quicklink-favicon):not(.quicklink-native-favicon) {
+  filter: brightness(0) invert(1) opacity(0.95);
 }
 
 .manage-link-icon-wrap .mono-text-fallback {
