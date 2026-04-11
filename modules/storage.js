@@ -66,13 +66,15 @@ export const Prefs = {
 
   /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
   onChange(callback) {
-    chrome.storage.sync.onChanged.addListener((changes) => {
+    const handler = (changes) => {
       const flat = {};
       for (const key in changes) {
         flat[key] = changes[key].newValue;
       }
       callback(flat);
-    });
+    };
+    chrome.storage.sync.onChanged.addListener(handler);
+    return () => chrome.storage.sync.onChanged.removeListener(handler);
   },
 };
 
@@ -235,12 +237,14 @@ export const Store = {
 
   /** Listens for local storage changes and calls callback with flattened {key: newValue} pairs. */
   onChange(callback) {
-    chrome.storage.local.onChanged.addListener((changes) => {
+    const handler = (changes) => {
       const flat = {};
       for (const key in changes) {
         flat[key] = changes[key].newValue;
       }
       callback(flat);
-    });
+    };
+    chrome.storage.local.onChanged.addListener(handler);
+    return () => chrome.storage.local.onChanged.removeListener(handler);
   },
 };

@@ -8,11 +8,22 @@ let onCloseCallback = null;
 let openPanelRaf = 0;
 let openPanelRaf2 = 0;
 let closePanelTimer = 0;
+let currentTabCleanup = null;
+
+function handleOutsideClick(e) {
+  const triggerBtn = DOM.quickToolsBtn;
+  const rp = DOM.rightPanel;
+  if (panelEl && rp && !rp.contains(e.target) && (!triggerBtn || !triggerBtn.contains(e.target))) {
+    closePanel();
+  }
+}
+let handleDocumentMouseDown = null;
 
 const TABS = [
   { id: 'productivity', label: 'Productivity', icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>` },
   { id: 'notes', label: 'Notes', icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>` },
   { id: 'tabs', label: 'Tabs Manager', icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>` },
+  { id: 'clipboard', label: 'Clipboard', icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>` },
 ];
 
 function buildPanel() {
@@ -69,13 +80,22 @@ function switchTab(tabId) {
   if (!contentEl) return;
   contentEl.innerHTML = '<div class="panel-loading">Loading...</div>';
 
+  if (currentTabCleanup) {
+    currentTabCleanup();
+    currentTabCleanup = null;
+  }
+
   const loaders = {
     productivity: () => import('../panels/pomodoro.js').then(m => m.initPomodoro),
     notes:        () => import('../panels/notes.js').then(m => m.initNotes),
     tabs:         () => import('../panels/tabs.js').then(m => m.initTabs),
+    clipboard:    () => import('../panels/clipboard.js').then(m => m.initClipboard),
   };
   loaders[tabId]()
-    .then(init => { contentEl.innerHTML = ''; init(contentEl); })
+    .then(async (init) => { 
+      contentEl.innerHTML = ''; 
+      currentTabCleanup = await init(contentEl); 
+    })
     .catch(() => toast.error('Failed to load panel'));
 }
 
@@ -118,12 +138,22 @@ function openPanel(callback) {
 
   switchTab(activeTab);
   panelEl.querySelector('#panel-close-btn').onclick = closePanel;
+  handleDocumentMouseDown = (e) => {
+    const quickToolsBtn = DOM.quickToolsBtn;
+    const fab = DOM.toolsFab;
+    const rp = DOM.rightPanel;
+    const target = e.target;
+
+    if (!panelEl || !rp || rp.contains(target)) return;
+    if (quickToolsBtn && quickToolsBtn.contains(target)) return;
+    if (fab && fab.contains(target)) return;
+
+    closePanel();
+  };
+
   setTimeout(() => {
-    document.addEventListener('mousedown', (e) => {
-      const fab = DOM.toolsFab;
-      const rp = DOM.rightPanel;
-      if (panelEl && rp && !rp.contains(e.target) && (!fab || !fab.contains(e.target))) closePanel();
-    }, { once: true });
+    if (!isOpen || !handleDocumentMouseDown) return;
+    document.addEventListener('mousedown', handleDocumentMouseDown);
   }, 10);
 }
 
@@ -137,6 +167,15 @@ function closePanel() {
   if (openPanelRaf2) {
     cancelAnimationFrame(openPanelRaf2);
     openPanelRaf2 = 0;
+  }
+  if (handleDocumentMouseDown) {
+    document.removeEventListener('mousedown', handleDocumentMouseDown);
+    handleDocumentMouseDown = null;
+  }
+
+  if (currentTabCleanup) {
+    currentTabCleanup();
+    currentTabCleanup = null;
   }
 
   const rightPanel = DOM.rightPanel;

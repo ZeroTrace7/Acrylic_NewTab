@@ -28,61 +28,109 @@ function render() {
   const running = state.isRunning;
   const full = state.timeLeft === MODES[state.mode];
 
-  containerEl.innerHTML = `
-    <div style="display:flex;gap:4px;margin-bottom:8px;">
-      ${['pomodoro','shortBreak','longBreak'].map(m => {
-        const active = state.mode === m;
-        const label = m === 'pomodoro' ? 'Pomodoro' : m === 'shortBreak' ? 'Short Break' : 'Long Break';
-        return `<button data-mode="${m}" style="padding:6px 0;border-radius:10px;font-size:0.75rem;font-weight:500;flex:1;cursor:${running?'not-allowed':'pointer'};transition:all 150ms ease;
-          background:${active?'var(--glass-bg)':'transparent'};color:${active?'var(--text-primary)':'var(--text-muted)'};
-          border:1px solid ${active?'var(--glass-border-soft)':'transparent'};${running?'opacity:0.4;':''}"
-          ${running?'disabled':''}>${label}</button>`;
-      }).join('')}
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 0;">
-      <svg width="180" height="180" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
-        <circle id="pomo-ring" cx="50" cy="50" r="42" fill="none" stroke="${getModeColor()}" stroke-width="4"
-          stroke-linecap="round" transform="rotate(-90 50 50)"
-          stroke-dasharray="${CIRC}" stroke-dashoffset="${CIRC - (CIRC * getProgress() / 100)}"
-          style="transition:stroke-dashoffset 0.4s ease"/>
-        <foreignObject x="10" y="25" width="80" height="50">
-          <div xmlns="http://www.w3.org/1999/xhtml" style="text-align:center;">
-            <div id="pomo-time" style="font-family:var(--font-mono),monospace;font-size:2rem;font-weight:700;color:var(--text-primary);">${formatTime(state.timeLeft)}</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);text-transform:capitalize;">${state.mode.replace(/([A-Z])/g,' $1')}</div>
-          </div>
-        </foreignObject>
-      </svg>
-    </div>
-    <div style="display:flex;justify-content:center;gap:12px;">
-      <button id="pomo-toggle" style="width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-        background:var(--glass-bg);border:1px solid var(--glass-border-soft);color:var(--text-primary);cursor:pointer;transition:all 150ms ease;">
-        ${running
-          ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>'
-          : '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>'}
-      </button>
-      <button id="pomo-reset" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-        background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;transition:all 150ms ease;
-        ${!running && full ? 'opacity:0.3;cursor:not-allowed;' : ''}"
-        ${!running && full ? 'disabled' : ''}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      </button>
-    </div>
-    <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin-top:8px;">🍅 ${dailyCount} today</div>`;
+  containerEl.innerHTML = '';
+  
+  containerEl.style.display = 'flex';
+  containerEl.style.flexDirection = 'column';
+  containerEl.style.height = '100%';
 
-  containerEl.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.onclick = () => changeMode(btn.dataset.mode);
+  // 1. Daily Stats at top
+  const statsDiv = document.createElement('div');
+  statsDiv.className = 'qt-title';
+  statsDiv.style.textAlign = 'left';
+  statsDiv.style.marginBottom = '16px';
+  statsDiv.style.display = 'flex';
+  statsDiv.style.alignItems = 'center';
+  statsDiv.style.gap = '8px';
+  statsDiv.innerHTML = `<span style="font-size:1.1rem">🍅</span> <span>${dailyCount}</span>`;
+  containerEl.appendChild(statsDiv);
+
+  // Middle group wrapper (absorbs available space to push modeRow down safely)
+  const middleGroup = document.createElement('div');
+  middleGroup.style.flex = '1';
+  middleGroup.style.display = 'flex';
+  middleGroup.style.flexDirection = 'column';
+  middleGroup.style.alignItems = 'center';
+  middleGroup.style.justifyContent = 'center';
+
+  // 2. Circular Timer SVG
+  const timerWrapper = document.createElement('div');
+  timerWrapper.className = 'qt-flex-center';
+  timerWrapper.style.position = 'relative'; // Anchor for absolute text overlay
+  timerWrapper.style.minHeight = '180px';
+  timerWrapper.innerHTML = `
+    <!-- The Ring -->
+    <svg width="200" height="200" viewBox="0 0 100 100" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+      <circle cx="50" cy="50" r="44" fill="none" stroke="var(--glass-subtle)" stroke-width="4"/>
+      <circle id="pomo-ring" cx="50" cy="50" r="44" fill="none" stroke="${getModeColor()}" stroke-width="4"
+        stroke-linecap="round" transform="rotate(-90 50 50)"
+        stroke-dasharray="${CIRC * (44 / 42)}" stroke-dashoffset="${(CIRC * (44 / 42)) - ((CIRC * (44 / 42)) * getProgress() / 100)}"
+        style="transition:stroke-dashoffset 0.4s ease"/>
+    </svg>
+    <!-- Overlay Text (Fixes SVG clipping limits) -->
+    <div style="position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+      <div id="pomo-time" style="font-family:var(--font-ui),sans-serif;font-size:3rem;font-weight:700;color:var(--text-primary);letter-spacing:1px;line-height:1.2;">${formatTime(state.timeLeft)}</div>
+      <div class="qt-muted" style="text-transform:capitalize;margin-top:2px;font-size:0.75rem;">${state.isRunning ? 'Focusing...' : 'Ready For Focus'}</div>
+    </div>
+  `;
+  middleGroup.appendChild(timerWrapper);
+
+  // 3. Controls Row directly under timer
+  const controlsRow = document.createElement('div');
+  controlsRow.className = 'qt-flex-center qt-gap-md';
+  controlsRow.style.marginTop = '16px';
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'qt-icon-btn';
+  toggleBtn.style.width = '40px';
+  toggleBtn.style.height = '40px';
+  toggleBtn.style.borderRadius = '50%';
+  toggleBtn.style.background = 'var(--glass-bg)';
+  toggleBtn.style.color = 'var(--text-primary)';
+  toggleBtn.innerHTML = running
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>'
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>';
+  toggleBtn.onclick = toggleTimer;
+
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'qt-icon-btn';
+  resetBtn.style.width = '36px';
+  resetBtn.style.height = '36px';
+  resetBtn.style.borderRadius = '50%';
+  resetBtn.disabled = !running && full;
+  resetBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+  resetBtn.onclick = resetTimer;
+
+  controlsRow.append(toggleBtn, resetBtn);
+  middleGroup.appendChild(controlsRow);
+  
+  containerEl.appendChild(middleGroup);
+
+  // 4. Mode Selection Row at the very bottom
+  const modeRow = document.createElement('div');
+  modeRow.className = 'qt-flex qt-gap-sm';
+  modeRow.style.marginTop = '24px';
+  modeRow.style.paddingTop = '16px';
+  ['pomodoro', 'shortBreak', 'longBreak'].forEach(m => {
+    const active = state.mode === m;
+    const label = m === 'pomodoro' ? 'Pomodoro' : m === 'shortBreak' ? 'Short Break' : 'Long Break';
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.className = `qt-btn ${active ? 'qt-btn-primary' : ''}`;
+    btn.style.flex = '1';
+    btn.style.padding = '8px 0';
+    if (running) btn.disabled = true;
+    btn.onclick = () => changeMode(m);
+    modeRow.appendChild(btn);
   });
-  containerEl.querySelector('#pomo-toggle').onclick = toggleTimer;
-  containerEl.querySelector('#pomo-reset').onclick = resetTimer;
+  containerEl.appendChild(modeRow);
 }
 
 function updateDisplay() {
   const timeEl = containerEl?.querySelector('#pomo-time');
   const ring = containerEl?.querySelector('#pomo-ring');
   if (timeEl) timeEl.textContent = formatTime(state.timeLeft);
-  if (ring) ring.setAttribute('stroke-dashoffset', String(CIRC - (CIRC * getProgress() / 100)));
+  if (ring) ring.setAttribute('stroke-dashoffset', String((CIRC * (44 / 42)) - ((CIRC * (44 / 42)) * getProgress() / 100)));
 }
 
 function startLocalTick() {
@@ -144,7 +192,7 @@ export async function initPomodoro(container) {
   }
   render();
 
-  Store.onChange((changes) => {
+  const unsubStore = Store.onChange((changes) => {
     if ('timerState' in changes) {
       state = changes.timerState;
       clearInterval(tickInterval);
@@ -160,7 +208,10 @@ export async function initPomodoro(container) {
     }
   });
 
-  return () => clearInterval(tickInterval);
+  return () => {
+    clearInterval(tickInterval);
+    if (typeof unsubStore === 'function') unsubStore();
+  };
 }
 
 

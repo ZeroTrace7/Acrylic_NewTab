@@ -789,6 +789,14 @@
   transform: scale(0.92);
 }
 
+.icon-btn.active {
+  background: var(--glass-bg-active);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: var(--text-primary);
+  transform: scale(1.05);
+  box-shadow: var(--control-shadow);
+}
+
 .fab.active {
   background: var(--glass-bg-active);
   border-color: rgba(255, 255, 255, 0.28);

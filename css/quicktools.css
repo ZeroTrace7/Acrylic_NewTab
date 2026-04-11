@@ -1,0 +1,340 @@
+/* ==========================================================================
+   Quick Tools Suite Styles (Pomodoro, Notes, Tabs, Clipboard)
+   Acrylic Glassmorphism Design System
+   ========================================================================== */
+
+/* Typography */
+.qt-title {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.qt-h3 {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 12px 0 4px;
+}
+
+.qt-text {
+  font-family: var(--font-ui), sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.qt-muted {
+  font-size: 0.65rem;
+  color: var(--text-ghost);
+}
+
+.qt-date {
+  font-size: 0.65rem;
+  color: var(--text-ghost);
+}
+
+/* Layouts */
+.qt-flex {
+  display: flex;
+}
+.qt-flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qt-flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.qt-gap-sm { gap: 6px; }
+.qt-gap-md { gap: 10px; }
+.qt-gap-lg { gap: 16px; }
+.qt-mt-sm { margin-top: 8px; }
+.qt-mb-sm { margin-bottom: 8px; }
+.qt-mt-md { margin-top: 12px; }
+.qt-mb-md { margin-bottom: 12px; }
+.qt-my-md { margin: 12px 0; }
+
+.qt-divider {
+  height: 1px;
+  background: var(--glass-border-soft);
+  margin: 16px 0;
+}
+
+/* Buttons */
+.qt-btn {
+  font-family: var(--font-ui), sans-serif;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--glass-border-soft);
+  background: var(--glass-subtle);
+  color: var(--text-secondary);
+  transition: all 150ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.qt-btn:not(:disabled):hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+}
+.qt-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qt-btn-primary {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border-color: rgba(96, 165, 250, 0.5); /* Soft accent */
+}
+.qt-btn-primary:not(:disabled):hover {
+  background: rgba(96, 165, 250, 0.15);
+  border-color: rgba(96, 165, 250, 0.8);
+}
+
+.qt-btn-ghost {
+  background: transparent;
+  border: none;
+  color: var(--accent-red);
+  font-size: 0.65rem;
+  padding: 4px 6px;
+}
+.qt-btn-ghost:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+}
+
+/* Icon Buttons */
+.qt-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 150ms ease;
+  padding: 0;
+}
+.qt-icon-btn:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+/* Input Fields */
+.qt-input {
+  width: 100%;
+  font-family: var(--font-ui), sans-serif;
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border-soft);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 200ms ease;
+  box-sizing: border-box;
+}
+.qt-input:focus {
+  border-color: var(--glass-border);
+}
+
+.qt-textarea {
+  width: 100%;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  resize: none;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  min-height: 180px;
+  outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}
+.qt-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.qt-input-minimal {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--glass-border-soft);
+  padding: 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  outline: none;
+  margin-bottom: 12px;
+  border-radius: 0;
+}
+.qt-input-minimal:focus {
+  border-bottom-color: var(--glass-border);
+}
+
+/* Trigger Button (Like "Take a note...") */
+.qt-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border-soft);
+  cursor: text;
+  margin: 10px 0;
+  transition: all 150ms ease;
+}
+.qt-trigger-btn:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+/* Glass Cards */
+.qt-card {
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--glass-subtle);
+  border: 1px solid var(--glass-border-soft);
+  cursor: default;
+  transition: all 150ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.qt-card.interactive {
+  cursor: pointer;
+}
+.qt-card.interactive:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+/* Card Actions (Hover-revealed) */
+.qt-card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  position: absolute;
+}
+.qt-card.interactive:hover .qt-card-actions {
+  opacity: 1;
+}
+
+/* Masonry Layout */
+.qt-masonry {
+  columns: 2;
+  column-gap: 10px;
+}
+.qt-masonry > .qt-card {
+  break-inside: avoid;
+  margin-bottom: 10px;
+  display: inline-block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Empty States */
+.qt-empty {
+  text-align: center;
+  padding: 32px 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.qt-empty svg {
+  margin-bottom: 8px;
+  opacity: 0.4;
+}
+
+/* Toggle Switch Badge */
+.qt-toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: background 150ms ease;
+  border: 1px solid var(--glass-border-soft);
+}
+.qt-toggle.on { background: var(--accent-green); }
+.qt-toggle.off { background: var(--glass-subtle); }
+.qt-toggle-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  position: absolute;
+  top: 2px;
+  transition: left 150ms ease;
+}
+.qt-toggle.on .qt-toggle-dot { left: 18px; }
+.qt-toggle.off .qt-toggle-dot { left: 2px; }
+
+/* Tabs List Row */
+.qt-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  transition: background 150ms ease;
+}
+.qt-list-row:hover {
+  background: var(--glass-subtle);
+}
+
+/* Typography Overrides inside card */
+.qt-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  margin-top: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qt-card-body {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* Note Content Detail */
+.qt-note-content {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-y: auto;
+  margin-top: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) transparent;
+}

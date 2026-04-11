@@ -1,84 +1,94 @@
-# Glassy
+# Glassy Architecture & UX Reference (glassy.md)
+1. Core Design Philosophy
+Glassy operates on the principle that a browser new tab should be a premium, calming environment, not a cluttered billboard.
 
-This document serves as the reverse-engineered knowledge base for "Glassy", the predecessor to the Acrylic Chrome Extension. The information here was extracted directly from the minified production React code of Glassy to ensure feature parity during the Vanilla JS rewrite.
+Visual Hierarchy: Relies on depth (glassmorphism) and negative space rather than heavy borders or solid colors.
 
-## 🛠 Architecture & Tech Stack
+Data Sovereignty: 100% local storage. No external servers. Features JSON export/import for user backups.
 
-The original Glassy project was built with a modern frontend framework toolchain:
-- **Core Library:** React.js (using Hooks like `useState`, `useEffect`, `useRef`)
-- **Bundler:** Vite (using standard `index.html` entry point mounting a `<div id="root"></div>` with ES module scripts).
-- **Styling:** Tailwind CSS (utility-first CSS)
-- **Environment:** Chrome Manifest V3
+Frictionless UX: Interactions (like adding a bookmark) require minimal clicks and feature pre-curated choices rather than forcing the user to do the work.
 
----
+2. The Glassmorphism Formula (Pixel-Perfect Math)
+The biggest mistake in amateur glass UI is the \"milky\" effect (too much opacity, too little blur). Glassy uses a highly calibrated mathematical formula to achieve deep refraction.
 
-## 🎨 UI & Aesthetics
+The Container (Squircle):
 
-Glassy achieved a highly premium, modern aesthetic centered around **Glassmorphism**.
-- **External Media Capabilities:** The HTML entry point explicitly preconnects to `images.unsplash.com`, `i.gifer.com`, and `media.giphy.com`, implying robust support for dynamically fetching high-resolution photographic wallpapers, live GIFs, or rich background assets.
-- **Theming:** Custom linear and radial gradients used for backgrounds (`theme-dark`, `theme-blue`, `theme-espresso`, etc.), along with a text depth effect for readability against bright wallpapers.
-- **Glass Effects:** Heavy use of Tailwind's `backdrop-blur-md` (12px to 40px blurs), semi-transparent white backgrounds (`bg-white/10`), and subtle white borders (`border-white/10`) to create floating "glass" cards.
-- **Typography:** Relied on Google Fonts: *Poppins* (main interface), *Gloria Hallelujah* (handwritten styles), and *Silkscreen* (digital/mono aesthetics).
-- **Animations:** A rich set of custom keyframe animations including `.animate-fadeIn`, `.animate-pop-in-down`, `.animate-slideInRight`, and `.animate-pulse-glow` for buttery-smooth interaction feedback.
-- **Logo Design:** Features a vector "squircle" (rounded box) defined by a custom SVG `<path>`, filled with a `<pattern>` that utilizes a raw, high-resolution JPEG gradient/image embedded directly as a base64 string. This enforces the exact premium aesthetic inherently across all environments.
+Dimensions: 44px by 44px
 
----
+Border Radius: 14px (creates the Apple-style squircle, not a harsh square or perfect circle).
 
-## 🧰 Quick Tools Suite
+Display: flex, perfectly centered (align-items: center, justify-content: center).
 
-The crown jewel of Glassy was the **Quick Tools Panel**. This was an `absolute` positioned floating widget tray located at the bottom-right of the screen (`bottom-20 right-6`). It housed four interconnected mini-apps accessible via a horizontal tab bar.
+The Glass Shader:
 
-### 1. Focus Timer (Pomodoro)
-A productivity timer to keep users on task.
-- **Modes:** Focus (25m), Short Break (5m), Long Break (15m).
-- **Visuals:** A massive circular SVG progress indicator. The stroke dash offsets programmatically based on the percentage of time left. Turns red for Focus, green for breaks.
-- **Tracking:** Tally system tracking the user's completed Pomodoro sessions.
-- **Interactions:** Plays a local audio cue (`sounds/start.mp3`) when a timer starts.
-- **Safety:** Includes a glass modal intercepting accidental timer resets.
-- **Mini-Widget:** Ability to pop the timer down into a smaller, less intrusive widget representation.
+Base Fill: background: rgba(255, 255, 255, 0.04) (Ultra-low 4% opacity).
 
-### 2. NotePad
-A built-in markdown/text note-taking tool.
-- **Layout:** Displays notes in a masonry grid (`columnCount: 2`) to accommodate varying text lengths beautifully without gaps.
-- **CRUD Operations:** Users can create, read, update, and completely delete notes.
-- **Exporting:** Features highly requested export tooling. Users can encode a note into a Blob and trigger a download as a `.txt` file. There is also a "Download All" feature that collates every note into a single timestamped text dump.
-- **Clipboard:** Quick-copy icon on hover for instantaneous text grabbing.
+Edge Definition: border: 1px solid rgba(255, 255, 255, 0.08) (Subtle 8% inner glow).
 
-### 3. Tabs Manager
-A session management tool to help declutter the browser.
-- **Saving Sessions:** Grabs the array of currently open tabs by calling `chrome.runtime.sendMessage({type: "GET_TABS"})` to the background worker. Saves them locally as a named entity (e.g., "Work Group").
-- **Restoration:** Allows users to bulk-open an entire saved collection of URLs at once using `chrome.tabs.create`.
-- **Views:** 
-  - *Grid View:* Renders up to 12 mini circular favicons of the saved sites in a tight grid.
-  - *List View:* Renders a standard vertical list of site titles and domains.
+Refraction: backdrop-filter: blur(16px) (Heavy blur to distort the background).
 
-### 4. Extensions Manager
-An internal dashboard to police other installed chrome extensions.
-- **API Setup:** Utilizes `chrome.management.getAll()` and `setEnabled()` (requires the `management` permission).
-- **Views:** Tab-based filtering for "All", "Active", and "Off" extensions. Includes a live search bar.
-- **Interactivity:** One-click toggles swap extensions between enabled and disabled states. Disabled extensions visually dim out using a `grayscale` CSS filter.
-- **Safeguards:** 
-  - Prevents the user from accidentally disabling the Glassy extension itself, displaying the warning: *"Wait, you are using me to disable me? 😒"*.
-  - Detects if a user has more than 15 active extensions and throws a warning banner stating: *"Heavy extension load detected"*.
+Shadow: Soft ambient drop shadow to separate it from the wallpaper.
 
----
+3. The High-Fidelity Icon System
+Glassy explicitly avoids using generic, colorful web favicons because they break the monochrome theme and pixelate at different sizes.
 
-## ⚙️ Background Service Worker & APIs
+The 65% Inset Rule: Icons never touch the container edges. They are strictly sized to width: 65%; height: 65%; object-fit: contain;. This creates premium \"negative space.\"
 
-The `background.js` (Manifest V3 Service Worker) reveals deep system integrations that power the frontend widgets:
+The SVG Dictionary (Primary): Uses a hardcoded JS object containing raw, pristine SVG paths for top apps (YouTube, Gmail, ChatGPT, Notion, etc.).
 
-- **Timer State & Alarms:** The Pomodoro timer does not run on the frontend. It uses `chrome.alarms` to track sessions reliably in the background, syncing progress to `chrome.storage.local`.
-- **Offscreen Audio:** Since MV3 service workers cannot play audio, Glassy uses a dedicated `offscreen.html` document with the `AUDIO_PLAYBACK` reason to play the `sounds/end.mp3` chime when a timer alarm fires.
-- **Rich Notifications:** It pushes native system notifications when a focus block finishes, complete with action buttons (e.g., "Start Short Break") that trigger the next alarm directly from the notification.
-- **Context Menu Integration:** On installation, a "Save to Glassy Notes" option is injected into the browser's right-click context menu. Users can highlight any text on the web, right-click, and instantly save it as a new note in the NotePad widget.
-- **Daily Resets:** A midnight chron-job alarm (`dailyReset`) clears the daily Pomodoro tally.
-- **Manifest Permissions:** To achieve these integrations, the Manifest V3 requires `storage`, `tabs`, `topSites`, `notifications`, `alarms`, `contextMenus`, `management`, and `offscreen`.
-- **Web Accessible Resources:** Crucially, the `sounds/start.mp3`, `sounds/end.mp3` files and the `offscreen.html` must be explicitly declared as web accessible resources to bypass Chrome sandbox blocks.
+The evenodd Protocol: Complex logos (like ChatGPT) strictly use fill-rule=\"evenodd\" clip-rule=\"evenodd\" to prevent overlapping vector paths from merging into blobs.
 
----
+The 128px Fallback (Secondary): If an app isn't in the SVG dictionary, it fetches a high-res Google favicon (sz=128) and forces it into the theme using CSS: filter: brightness(0) invert(1) opacity(0.95); image-rendering: -webkit-optimize-contrast;.
 
-## 🚀 The Migration Goal (Glassy -> Acrylic)
+4. Motion & Interaction Design
+Animations mimic physical weight and momentum, moving away from basic linear fades.
 
-The transition from Glassy to Acrylic is fundamentally a **de-bloating and optimization exercise**. The original `newtab.js` artifact is an enormous 300KB+ compiled bundle containing `react`, `react-dom`, and `scheduler` overhead. Acrylic aims to achieve 100% feature and visual parity with Glassy, but entirely through **Vanilla JavaScript**. 
+The Entry Curve: Modals and panels use the \"Ease-Out-Expo\" cubic bezier curve: cubic-bezier(0.16, 1, 0.3, 1).
 
-This means stripping out the React engine, removing the massive 10,000+ line Tailwind CSS compilation stylesheet, and rewriting the Quick Tools logic using native DOM elements, `Object.assign` styling, and isolated CSS variables—all packaged in a pure zero-dependency Manifest V3 setup.
+The Scale-Fade: Elements don't just appear; they grow slightly into place.
+
+0% { opacity: 0; transform: scale(0.96) translateY(12px); }
+
+100% { opacity: 1; transform: scale(1) translateY(0); }
+
+Hardware Acceleration: Heavily utilizes will-change: transform, opacity; and strictly animates transforms, never margins or padding.
+
+5. Layout Architecture (The Grid Fix)
+Glassy achieves perfect \"end-to-end\" alignment in its modals (like the Quick Add Library) by abandoning Flexbox in favor of CSS Grid.
+
+The Dense Grid Layout: grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)) ensures tiles stretch perfectly to fill empty space without leaving ragged right edges.
+
+Tile Anatomy: Library tiles are vertical rectangles, keeping icon and text tightly packed (flex-direction: column, gap: 6px) with highly legible micro-typography (font-size: 0.7rem, font-weight: 500).
+
+6. Feature Ecosystem & Roadmap
+Based on Glassy's evolution (v1.0.0 to v1.4.0), a premium dashboard must include these distinct modules:
+
+Backgrounds 2.0: Support for high-res wallpapers, hover-to-play GIFs, and smooth crossfade transitions.
+
+Productivity Suite: * Notes: Rich text formatting (Bold, Italic) and, critically, Note Persistence (auto-saving drafts to local storage).
+
+Focus: Zen Mode (minimalist full-screen flip clock) and a Pomodoro timer.
+
+Extensions Manager: In-tab UI to toggle or remove other Chrome extensions using chrome.management.
+
+Smart Search: Central command bar querying Google, DuckDuckGo, and direct AI integrations (ChatGPT/Claude).
+
+7. Preferences & Micro-Interactions
+The settings menu is categorized and utilizes physical-feeling controls rather than default browser checkboxes.
+
+Categorized Menus: Settings are split logically (Display, Search, Privacy, Data).
+
+iOS-Style Toggles: Pure CSS sliding switches (width: 40px, height: 24px track) with a white circular thumb that translates along the X-axis upon checking.
+
+Text Depth Implementation: A specific toggle that applies a text-shadow globally (text-shadow: 0 2px 4px rgba(0,0,0,0.5)) to ensure clock and widget text remains readable against very bright or white wallpapers.
+
+Privacy Controls: Explicit toggles to enable/disable Search History.
+
+🚀 The \"Acrylic\" Advantage (How to beat Glassy)
+To make Acrylic superior, you must execute the above flawlessly, and then add features Glassy lacks:
+
+Dynamic Theming: Allow the glass tint (the 4% fill) to adapt automatically to the dominant color of the current wallpaper.
+
+Widget Fluidity: Implement a truly free-form drag-and-drop grid (like iOS home screens) rather than fixed zones.
+
+Deeper AI Integration: Allow users to highlight text in their Notes and trigger an inline AI summarization or grammar check directly in the new tab.

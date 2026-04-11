@@ -118,4 +118,4 @@
 - Middle-Left Dock (`#tools-fab` / ... oval): Triggers "Manage Quick Links" popover.
 - Bottom-Left Icon (`#focus-btn`, target/circles): Triggers "Zen Mode".
 - Bottom-Right Group (List Icon, `#settings-btn`): Triggers "Preferances" modal.
-- Bottom-Right Group (Grid Icon, `#grid-view-btn`): Triggers "Quick Tools" panel (Productivity/Notes/Tabs).
+- Bottom-Right Group (Grid Icon, `#grid-view-btn`): Triggers "Quick Tools" panel (Productivity/Notes/Tabs/Clipboard).
