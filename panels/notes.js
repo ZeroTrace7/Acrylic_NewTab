@@ -38,6 +38,22 @@ const STARTER_NOTE_CONTENT = `This is your personal space for quick thoughts and
 
 Feel free to edit or delete this note to get started!`;
 
+function mountAnimatedStage(builder) {
+  containerEl.innerHTML = '';
+
+  const stage = document.createElement('div');
+  stage.className = 'qt-note-stage';
+  containerEl.appendChild(stage);
+
+  builder(stage);
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      stage.classList.add('is-visible');
+    });
+  });
+}
+
 function textBtn(label, onclick, extraClass = '') {
   const button = document.createElement('button');
   button.type = 'button';
@@ -96,39 +112,39 @@ async function ensureStarterNote() {
 }
 
 function renderList() {
-  containerEl.innerHTML = '';
+  mountAnimatedStage((stage) => {
+    const header = document.createElement('div');
+    header.className = 'qt-flex-between qt-mb-sm';
 
-  const header = document.createElement('div');
-  header.className = 'qt-flex-between qt-mb-sm';
+    const title = document.createElement('h3');
+    title.textContent = 'My Notes';
+    title.className = 'qt-title';
+    header.appendChild(title);
 
-  const title = document.createElement('h3');
-  title.textContent = 'My Notes';
-  title.className = 'qt-title';
-  header.appendChild(title);
+    if (notes.length > 0) {
+      header.appendChild(textBtn('Download All', downloadAllNotes));
+    }
+    stage.appendChild(header);
 
-  if (notes.length > 0) {
-    header.appendChild(textBtn('Download All', downloadAllNotes));
-  }
-  containerEl.appendChild(header);
+    const trigger = document.createElement('div');
+    trigger.className = 'qt-trigger-btn';
+    trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`;
+    trigger.onclick = () => openEditor(null);
+    stage.appendChild(trigger);
 
-  const trigger = document.createElement('div');
-  trigger.className = 'qt-trigger-btn';
-  trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`;
-  trigger.onclick = () => openEditor(null);
-  containerEl.appendChild(trigger);
+    if (notes.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'qt-empty';
+      empty.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No notes yet</div>`;
+      stage.appendChild(empty);
+      return;
+    }
 
-  if (notes.length === 0) {
-    const empty = document.createElement('div');
-    empty.className = 'qt-empty';
-    empty.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No notes yet</div>`;
-    containerEl.appendChild(empty);
-    return;
-  }
-
-  const grid = document.createElement('div');
-  grid.className = 'qt-masonry qt-mt-md';
-  notes.forEach((note) => grid.appendChild(createNoteCard(note)));
-  containerEl.appendChild(grid);
+    const grid = document.createElement('div');
+    grid.className = 'qt-masonry qt-mt-md';
+    notes.forEach((note) => grid.appendChild(createNoteCard(note)));
+    stage.appendChild(grid);
+  });
 }
 
 function createNoteCard(note) {
@@ -181,77 +197,76 @@ function createNoteCard(note) {
 function openDetail(note) {
   view = 'detail';
   selectedNote = note;
-  containerEl.innerHTML = '';
+  mountAnimatedStage((stage) => {
+    const head = document.createElement('div');
+    head.className = 'qt-note-detail-head';
 
-  const head = document.createElement('div');
-  head.className = 'qt-note-detail-head';
+    const back = iconBtn({
+      title: 'Back to notes',
+      icon: NOTE_ICONS.back,
+      extraClass: 'is-ghost',
+      onclick: () => {
+        view = 'list';
+        renderList();
+      },
+    });
 
-  const back = iconBtn({
-    title: 'Back to notes',
-    icon: NOTE_ICONS.back,
-    extraClass: 'is-ghost',
-    onclick: () => {
-      view = 'list';
-      renderList();
-    },
+    const meta = document.createElement('div');
+    meta.className = 'qt-note-detail-meta';
+
+    const title = document.createElement('h3');
+    title.textContent = note.title;
+    title.className = 'qt-h3 qt-note-detail-title';
+
+    const date = document.createElement('div');
+    date.textContent = formatNoteDate(note.updatedAt);
+    date.className = 'qt-date qt-note-detail-date';
+
+    meta.append(title, date);
+
+    const actions = document.createElement('div');
+    actions.className = 'qt-note-detail-actions';
+    actions.append(
+      iconBtn({
+        title: 'Copy note',
+        icon: NOTE_ICONS.copy,
+        onclick: () => copyNoteText(note.content),
+      }),
+      iconBtn({
+        title: 'Edit note',
+        icon: NOTE_ICONS.edit,
+        onclick: () => openEditor(note),
+      }),
+      iconBtn({
+        title: 'Download note',
+        icon: NOTE_ICONS.download,
+        onclick: () => downloadNote(note),
+      }),
+      iconBtn({
+        title: 'Delete note',
+        icon: NOTE_ICONS.delete,
+        extraClass: 'is-danger',
+        onclick: () => deleteNote(note.id),
+      }),
+    );
+
+    head.append(back, meta, actions);
+
+    const divider = document.createElement('div');
+    divider.className = 'qt-divider qt-note-detail-divider';
+
+    const content = document.createElement('div');
+    content.textContent = note.content;
+    content.className = 'qt-note-content';
+
+    stage.append(head, divider, content);
   });
-
-  const meta = document.createElement('div');
-  meta.className = 'qt-note-detail-meta';
-
-  const title = document.createElement('h3');
-  title.textContent = note.title;
-  title.className = 'qt-h3 qt-note-detail-title';
-
-  const date = document.createElement('div');
-  date.textContent = formatNoteDate(note.updatedAt);
-  date.className = 'qt-date qt-note-detail-date';
-
-  meta.append(title, date);
-
-  const actions = document.createElement('div');
-  actions.className = 'qt-note-detail-actions';
-  actions.append(
-    iconBtn({
-      title: 'Copy note',
-      icon: NOTE_ICONS.copy,
-      onclick: () => copyNoteText(note.content),
-    }),
-    iconBtn({
-      title: 'Edit note',
-      icon: NOTE_ICONS.edit,
-      onclick: () => openEditor(note),
-    }),
-    iconBtn({
-      title: 'Download note',
-      icon: NOTE_ICONS.download,
-      onclick: () => downloadNote(note),
-    }),
-    iconBtn({
-      title: 'Delete note',
-      icon: NOTE_ICONS.delete,
-      extraClass: 'is-danger',
-      onclick: () => deleteNote(note.id),
-    }),
-  );
-
-  head.append(back, meta, actions);
-
-  const divider = document.createElement('div');
-  divider.className = 'qt-divider qt-note-detail-divider';
-
-  const content = document.createElement('div');
-  content.textContent = note.content;
-  content.className = 'qt-note-content';
-
-  containerEl.append(head, divider, content);
 }
 
 function openEditor(note = null) {
   const previousView = view;
   view = 'editor';
   editingNote = note;
-  containerEl.innerHTML = '';
 
   const goBack = () => {
     if (previousView === 'detail' && selectedNote) {
@@ -262,39 +277,41 @@ function openEditor(note = null) {
     renderList();
   };
 
-  const back = textBtn('← Back', goBack);
+  mountAnimatedStage((stage) => {
+    const back = textBtn('← Back', goBack);
 
-  const titleInput = document.createElement('input');
-  titleInput.type = 'text';
-  titleInput.placeholder = 'Title';
-  titleInput.className = 'qt-input-minimal';
-  if (note) titleInput.value = note.title;
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.placeholder = 'Title';
+    titleInput.className = 'qt-input-minimal';
+    if (note) titleInput.value = note.title;
 
-  const contentInput = document.createElement('textarea');
-  contentInput.placeholder = 'Write your note...';
-  contentInput.className = 'qt-textarea';
-  if (note) contentInput.value = note.content;
-  contentInput.addEventListener('input', () => {
-    contentInput.style.height = 'auto';
-    contentInput.style.height = `${contentInput.scrollHeight}px`;
+    const contentInput = document.createElement('textarea');
+    contentInput.placeholder = 'Write your note...';
+    contentInput.className = 'qt-textarea';
+    if (note) contentInput.value = note.content;
+    contentInput.addEventListener('input', () => {
+      contentInput.style.height = 'auto';
+      contentInput.style.height = `${contentInput.scrollHeight}px`;
+    });
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') goBack();
+    };
+    titleInput.addEventListener('keydown', handleEscape);
+    contentInput.addEventListener('keydown', handleEscape);
+
+    const actions = document.createElement('div');
+    actions.className = 'qt-flex qt-gap-sm';
+    actions.style.justifyContent = 'flex-end';
+    actions.style.marginTop = '12px';
+    actions.append(
+      textBtn('Cancel', goBack),
+      textBtn('Save', () => saveNote(titleInput.value, contentInput.value), 'qt-btn-primary'),
+    );
+
+    stage.append(back, titleInput, contentInput, actions);
+    setTimeout(() => titleInput.focus(), 50);
   });
-  const handleEscape = (event) => {
-    if (event.key === 'Escape') goBack();
-  };
-  titleInput.addEventListener('keydown', handleEscape);
-  contentInput.addEventListener('keydown', handleEscape);
-
-  const actions = document.createElement('div');
-  actions.className = 'qt-flex qt-gap-sm';
-  actions.style.justifyContent = 'flex-end';
-  actions.style.marginTop = '12px';
-  actions.append(
-    textBtn('Cancel', goBack),
-    textBtn('Save', () => saveNote(titleInput.value, contentInput.value), 'qt-btn-primary'),
-  );
-
-  containerEl.append(back, titleInput, contentInput, actions);
-  setTimeout(() => titleInput.focus(), 50);
 }
 
 async function saveNote(title, content) {

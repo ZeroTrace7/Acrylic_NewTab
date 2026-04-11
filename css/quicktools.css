@@ -688,6 +688,20 @@
   margin: 16px 0 0;
 }
 
+.qt-note-stage {
+  opacity: 0;
+  transform: translate3d(18px, 14px, 0) scale(0.986);
+  will-change: transform, opacity;
+  transition:
+    opacity 380ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 840ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qt-note-stage.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
 /* Note Content Detail */
 .qt-note-content {
   font-size: 0.85rem;

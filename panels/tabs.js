@@ -49,7 +49,7 @@ function renderAll() {
   const saveRow = document.createElement('div');
   saveRow.className = 'qt-flex qt-gap-sm qt-my-md';
   const nameIn = document.createElement('input');
-  nameIn.type = 'text'; nameIn.placeholder = 'Group name e.g. Work...'; nameIn.value = groupNameInput;
+  nameIn.type = 'text'; nameIn.placeholder = 'e.g., Work, Assignments, Side Hustle...'; nameIn.value = groupNameInput;
   nameIn.className = 'qt-input';
   nameIn.oninput = () => { groupNameInput = nameIn.value; saveBtn.disabled = !groupNameInput.trim(); };
   const saveBtn = document.createElement('button');
