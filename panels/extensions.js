@@ -6,22 +6,6 @@ let filterMode = 'all';
 let searchQuery = '';
 const busyIds = new Set();
 
-function getAccentHue(name) {
-  const value = Array.from(name || 'extension').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return value % 360;
-}
-
-function getMonogram(name) {
-  const words = String(name || '?')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (words.length === 0) return '?';
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return `${words[0][0] || ''}${words[1][0] || ''}`.toUpperCase();
-}
-
 function getIconUrl(item) {
   if (!Array.isArray(item.icons) || item.icons.length === 0) return '';
   const sorted = [...item.icons].sort((a, b) => (b.size || 0) - (a.size || 0));
@@ -71,7 +55,6 @@ function getVisibleExtensions() {
 function createIcon(item) {
   const iconWrap = document.createElement('div');
   iconWrap.className = 'qt-ext-icon';
-  iconWrap.style.setProperty('--ext-accent-h', String(getAccentHue(item.name)));
 
   if (item.iconUrl) {
     const img = document.createElement('img');
@@ -93,7 +76,7 @@ function createIcon(item) {
 function createFallbackIcon(item) {
   const fallback = document.createElement('span');
   fallback.className = 'qt-ext-fallback';
-  fallback.textContent = getMonogram(item.name);
+  fallback.textContent = (item.name || '?').trim().charAt(0).toUpperCase() || '?';
   return fallback;
 }
 
@@ -102,7 +85,6 @@ function createFilterButton(id, label) {
   btn.type = 'button';
   btn.className = `qt-filter-chip${filterMode === id ? ' is-active' : ''}`;
   btn.textContent = label;
-  btn.setAttribute('aria-pressed', String(filterMode === id));
   btn.onclick = () => {
     if (filterMode === id) return;
     filterMode = id;
@@ -176,15 +158,13 @@ function createToggleButton(item) {
   const isBusy = busyIds.has(item.id);
   const isLocked = item.isCurrent || !item.mayDisable;
   button.type = 'button';
-  button.className = `qt-ext-toggle${item.enabled ? ' is-on' : ' is-off'}${isBusy ? ' is-busy' : ''}${isLocked ? ' is-locked' : ''}`;
+  button.className = `qt-ext-toggle${item.enabled ? ' is-on' : ''}`;
   button.disabled = isBusy || isLocked;
-  button.setAttribute('role', 'switch');
-  button.setAttribute('aria-checked', String(item.enabled));
   button.innerHTML = `
-    <span class="qt-ext-toggle-copy">${isBusy ? 'Working' : isLocked ? (item.isCurrent ? 'Current' : 'Locked') : item.enabled ? 'On' : 'Off'}</span>
-    <span class="qt-ext-toggle-track" aria-hidden="true">
-      <span class="qt-ext-toggle-thumb"></span>
-    </span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2v10"></path>
+      <path d="M18.36 5.64a9 9 0 1 1-12.73 0"></path>
+    </svg>
   `;
 
   if (item.isCurrent) {
@@ -201,7 +181,7 @@ function createToggleButton(item) {
 
 function createExtensionRow(item) {
   const row = document.createElement('div');
-  row.className = `qt-ext-row${item.enabled ? '' : ' is-disabled'}${item.isCurrent ? ' is-current' : ''}`;
+  row.className = `qt-ext-row${item.enabled ? '' : ' is-disabled'}`;
 
   const left = document.createElement('div');
   left.className = 'qt-ext-main';
@@ -216,7 +196,6 @@ function createExtensionRow(item) {
   const name = document.createElement('div');
   name.className = 'qt-ext-name';
   name.textContent = item.name;
-  name.title = item.name;
   nameRow.appendChild(name);
 
   if (item.isCurrent) {
@@ -228,34 +207,12 @@ function createExtensionRow(item) {
 
   const sub = document.createElement('div');
   sub.className = 'qt-ext-sub';
-
-  const status = document.createElement('span');
-  status.className = `qt-ext-state${item.enabled ? ' is-on' : ' is-off'}${item.isCurrent ? ' is-current' : ''}`;
-  status.innerHTML = `<span class="qt-ext-state-dot" aria-hidden="true"></span><span>${item.isCurrent ? 'Current extension' : item.enabled ? 'Enabled' : 'Disabled'}</span>`;
-  sub.appendChild(status);
-
-  if (item.version) {
-    const version = document.createElement('span');
-    version.className = 'qt-ext-meta-chip';
-    version.textContent = `v${item.version}`;
-    sub.appendChild(version);
-  }
-
-  if (item.installType && item.installType !== 'normal') {
-    const installType = document.createElement('span');
-    installType.className = 'qt-ext-meta-chip';
-    installType.textContent = item.installType;
-    sub.appendChild(installType);
-  }
+  sub.textContent = getSubtitle(item);
 
   copy.append(nameRow, sub);
   left.appendChild(copy);
 
-  const actions = document.createElement('div');
-  actions.className = 'qt-ext-actions';
-  actions.appendChild(createToggleButton(item));
-
-  row.append(left, actions);
+  row.append(left, createToggleButton(item));
   return row;
 }
 

@@ -5,7 +5,7 @@ const TODAY = () => new Date().toISOString().split('T')[0];
 const MODE_DURATION = {
   pomodoro:   25 * 60,
   shortBreak:  5 * 60,
-  longBreak:  15 * 60,
+  longBreak:  60 * 60,
 };
 
 async function ensureOffscreen() {

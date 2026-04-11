@@ -6,7 +6,7 @@ let tickInterval = null;
 let state = null;
 let dailyCount = 0;
 
-const MODES = { pomodoro: 1500, shortBreak: 300, longBreak: 900 };
+const MODES = { pomodoro: 1500, shortBreak: 300, longBreak: 3600 };
 const CIRC = 263.9;
 
 function formatTime(s) {
