@@ -88,3 +88,30 @@ The CWS algorithm heavily rewards "Install Velocity".
 1.  **Do not link it publicly until approved.**
 2.  **Launch Day Blast:** Post the Web Store link simultaneously to Reddit (`r/chrome_extensions`, `r/productivity`), Product Hunt, and Twitter/X.
 3.  **Review Seeding:** Have beta testers install it and leave a 5-star review specifying *why* they like it. Early positive reviews signal the algorithm to push Acrylic up the Organic Search ladder.
+
+---
+
+## 7. Long-Term Growth & Maximum Reach Strategies
+
+If your goal is to continuously scale users over the months and years following your launch, you must implement optimization channels outside the native Chrome Web Store.
+
+### A. Cross-Browser Publishing (Zero Extra Code)
+Because Acrylic is built natively for Manifest V3, you do not need to restrict yourself to Chrome. You can instantly increase your total addressable market by 30% by publishing the exact same codebase to:
+*   **Microsoft Edge Add-ons Store:** Edge is built on Chromium and perfectly supports MV3. The Edge store is rapidly growing and has significantly less competition than Google Chrome, making it much easier to rank #1.
+*   **Firefox Add-ons (Mozilla AMo):** Firefox users represent a massive demographic of privacy-conscious power users. Since you are "Zero Telemetry" and "Local-First", the Firefox community will aggressively champion your product.
+
+### B. In-App Virality ("Share Your Setup")
+The biggest marketing hurdle is getting users to show off your product for you.
+*   **The Feature:** Build a "Take a Snapshot" or "Share Setup" button directly inside the Acrylic side-panel. This button should use an HTML Canvas function to take a beautiful, branded image of the user's current background, glass widgets, and custom layout.
+*   **Why it works:** When users design a beautiful "Aesthetic Desk Setup" or "Digital Workspace", they love posting it on Pinterest, TikTok, Twitter, and Reddit (`r/desktops`). By adding a subtle "Made with Acrylic" watermark to the exported image, you get free, highly visual marketing.
+
+### C. Programmatic SEO Landing Pages (pSEO)
+To capture people actively searching for alternatives to your competitors on Google (not just the Web Store), build a simple landing page website for Acrylic with dedicated comparison pages:
+*   `/momentum-dash-alternative`
+*   `/tabliss-alternative`
+*   `/bonjourr-alternative`
+These pages should feature a direct, honest breakdown of why Acrylic's "Local First, Free Forever" Glassmorphism architecture is superior to the bloated or paid competitors.
+
+### D. The Open-Source "Trust" Funnel
+Consider hosting the codebase (or an earlier "core" version of it) publicly on **GitHub**. 
+*   **Why:** Developers are naturally skeptical of extensions having access to their browser. By making the code readable on GitHub, you earn their ultimate trust. Furthermore, your GitHub repository acts as a secondary SEO channel, as many users search for "open source new tab extension github."
