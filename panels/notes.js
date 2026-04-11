@@ -19,6 +19,16 @@ const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
   hour12: true,
 });
+const NOTE_LIST_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+});
+const NOTE_LIST_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+});
 
 const NOTE_ICONS = {
   back: `<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
@@ -83,6 +93,11 @@ function iconBtn({ title, icon, onclick, extraClass = '' }) {
 
 function formatNoteDate(value) {
   return NOTE_DATE_FORMATTER.format(new Date(value));
+}
+
+function formatNoteListDate(value) {
+  const date = new Date(value);
+  return `${NOTE_LIST_DATE_FORMATTER.format(date)} · ${NOTE_LIST_TIME_FORMATTER.format(date)}`;
 }
 
 function createDetailOverflowMenu(note) {
@@ -242,20 +257,12 @@ function createNoteCard(note) {
   card.className = 'qt-card interactive qt-note-card';
   card.onclick = () => openDetail(note);
 
+  const head = document.createElement('div');
+  head.className = 'qt-note-card-head';
+
   const noteTitle = document.createElement('h4');
-  noteTitle.textContent = truncate(note.title, 28);
-  noteTitle.className = 'qt-card-title';
-
-  const preview = document.createElement('p');
-  preview.textContent = note.content;
-  preview.className = 'qt-card-body qt-note-card-body';
-
-  const bottom = document.createElement('div');
-  bottom.className = 'qt-flex-between qt-mt-sm';
-
-  const date = document.createElement('span');
-  date.textContent = formatNoteDate(note.updatedAt);
-  date.className = 'qt-date qt-note-card-date';
+  noteTitle.textContent = truncate(note.title, 56);
+  noteTitle.className = 'qt-card-title qt-note-card-title';
 
   const actions = document.createElement('div');
   actions.className = 'qt-card-actions qt-note-card-actions';
@@ -279,8 +286,21 @@ function createNoteCard(note) {
     }),
   );
 
-  bottom.append(date, actions);
-  card.append(noteTitle, preview, bottom);
+  head.append(noteTitle, actions);
+
+  const preview = document.createElement('p');
+  preview.textContent = note.content;
+  preview.className = 'qt-card-body qt-note-card-body';
+
+  const footer = document.createElement('div');
+  footer.className = 'qt-note-card-footer';
+
+  const date = document.createElement('span');
+  date.textContent = formatNoteListDate(note.updatedAt);
+  date.className = 'qt-date qt-note-card-date';
+
+  footer.appendChild(date);
+  card.append(head, preview, footer);
   return card;
 }
 
