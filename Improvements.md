@@ -84,6 +84,27 @@ Achieving sub-100ms time-to-interactive (TTI) is the defining technical challeng
 
 ---
 
+## 8. Strategy Verification: Why This Will Gain Users
+
+Implementing this specific feature set ensures that Acrylic captures the most vocal and influential demographic: power users, developers, and students.
+
+*   **Solving "Momentum Fatigue" (The Market Gap):** Currently, users are forced to choose between a heavy/bloated extension with great tools (Momentum) or a lightning-fast extension without advanced tools (Tabliss). Acrylic becomes the "Holy Grail" intersection: heavy productivity tools wrapped in a hyper-fast, zero-telemetry architecture.
+*   **High Retention (Solving Uninstalls):** The #1 reason users uninstall new tab extensions is the "flash" or "lag" when opening a new tab. By implementing Canvas-to-IndexedDB image caching and bypassing the service worker, Acrylic loads in under 100ms. Because it feels instantaneous, users won't uninstall it.
+*   **Viral Selling Points:** When marketing to communities like Reddit (`r/productivity`) or Product Hunt, pushing features like *"Zero Telemetry. 100% Offline Capable. No Accounts. No Paywalls"* turns regular users into brand champions.
+
+---
+
+## 9. The Innovator's Dilemma: Why Momentum & Others Haven't Done This
+
+If "Free Forever" and "Zero-Latency Local Storage" are so superior, why hasn't a massive company like Momentum simply pivoted to this architecture?
+
+1.  **Business Model Conflict:** Momentum generates massive revenue from its $40/year cloud sync subscriptions. If they made their application 100% offline and local-first (using IndexedDB natively without cloud backup), they would destroy their own recurring revenue stream.
+2.  **The Value of Telemetry:** Massive legacy extensions rely on gathering user behavioral data and analytics (telemetry) to drive marketing, secure corporate funding, or package data. A zero-telemetry architecture strips away this hidden revenue/growth stream.
+3.  **Technical Debt:** Momentum is built on an older, heavier tech stack (likely relying heavily on React or Vue and complex backend logic). Rewriting a massive application from the ground up to use pure Vanilla JS/ES Modules and Canvas image compression is incredibly expensive and risks breaking the workflow of their millions of legacy users.
+4.  **The Disruption Opportunity:** Acrylic, as a new and agile product, carries zero technical debt and no legacy revenue streams to protect. You can build natively for Manifest V3 and Chromium's latest APIs (like Snappy LevelDB compression) from day one. You can afford to give away premium features for free, leveraging "The Innovator's Dilemma" to disrupt their paid model entirely.
+
+---
+
 ### Conclusion
 
 By maintaining a relentless focus on **hyper-performance architecture, uncompromised local-first privacy, and ungated premium aesthetics**, Acrylic will dominate the New Tab market. Executing this strategic architecture guarantees a technically superior, visually unmatched product that directly captures the high-value power-user demographic abandoning legacy bloatware.

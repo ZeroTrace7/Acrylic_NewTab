@@ -7,6 +7,7 @@ let notes = [];
 let view = 'list';
 let selectedNote = null;
 let editingNote = null;
+let noteMenuCleanup = null;
 
 const STARTER_NOTE_SEEDED_KEY = 'notesStarterSeeded';
 const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -25,6 +26,7 @@ const NOTE_ICONS = {
   edit: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>`,
   download: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
   delete: `<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>`,
+  more: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.8" fill="currentColor" stroke="none"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"></circle><circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none"></circle></svg>`,
 };
 
 const STARTER_NOTE_TITLE = '👋 Welcome to Acrylic Notes!';
@@ -39,6 +41,11 @@ const STARTER_NOTE_CONTENT = `This is your personal space for quick thoughts and
 Feel free to edit or delete this note to get started!`;
 
 function mountAnimatedStage(builder) {
+  if (typeof noteMenuCleanup === 'function') {
+    noteMenuCleanup();
+    noteMenuCleanup = null;
+  }
+
   containerEl.innerHTML = '';
 
   const stage = document.createElement('div');
@@ -76,6 +83,89 @@ function iconBtn({ title, icon, onclick, extraClass = '' }) {
 
 function formatNoteDate(value) {
   return NOTE_DATE_FORMATTER.format(new Date(value));
+}
+
+function createDetailOverflowMenu(note) {
+  const shell = document.createElement('div');
+  shell.className = 'qt-note-menu';
+
+  const trigger = iconBtn({
+    title: 'More actions',
+    icon: NOTE_ICONS.more,
+    extraClass: 'qt-note-menu-trigger',
+    onclick: (event) => {
+      event.stopPropagation();
+      const willOpen = !shell.classList.contains('is-open');
+      if (willOpen) {
+        shell.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+        return;
+      }
+      closeMenu();
+    },
+  });
+  trigger.setAttribute('aria-haspopup', 'menu');
+  trigger.setAttribute('aria-expanded', 'false');
+
+  const menu = document.createElement('div');
+  menu.className = 'qt-note-menu-popover';
+  menu.setAttribute('role', 'menu');
+
+  const createMenuItem = ({ label, icon, action, extraClass = '' }) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `qt-note-menu-item ${extraClass}`.trim();
+    button.setAttribute('role', 'menuitem');
+    button.innerHTML = `${icon}<span>${label}</span>`;
+    button.onclick = () => {
+      closeMenu();
+      action();
+    };
+    return button;
+  };
+
+  menu.append(
+    createMenuItem({
+      label: 'Edit',
+      icon: NOTE_ICONS.edit,
+      action: () => openEditor(note),
+    }),
+    createMenuItem({
+      label: 'Download',
+      icon: NOTE_ICONS.download,
+      action: () => downloadNote(note),
+    }),
+    createMenuItem({
+      label: 'Delete',
+      icon: NOTE_ICONS.delete,
+      action: () => deleteNote(note.id),
+      extraClass: 'is-danger',
+    }),
+  );
+
+  function closeMenu() {
+    shell.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  const handlePointerDown = (event) => {
+    if (!shell.contains(event.target)) closeMenu();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') closeMenu();
+  };
+
+  document.addEventListener('pointerdown', handlePointerDown, true);
+  document.addEventListener('keydown', handleKeyDown);
+
+  noteMenuCleanup = () => {
+    document.removeEventListener('pointerdown', handlePointerDown, true);
+    document.removeEventListener('keydown', handleKeyDown);
+  };
+
+  shell.append(trigger, menu);
+  return shell;
 }
 
 async function copyNoteText(text) {
@@ -141,7 +231,7 @@ function renderList() {
     }
 
     const grid = document.createElement('div');
-    grid.className = 'qt-masonry qt-mt-md';
+    grid.className = 'qt-note-list qt-mt-md';
     notes.forEach((note) => grid.appendChild(createNoteCard(note)));
     stage.appendChild(grid);
   });
@@ -232,22 +322,7 @@ function openDetail(note) {
         icon: NOTE_ICONS.copy,
         onclick: () => copyNoteText(note.content),
       }),
-      iconBtn({
-        title: 'Edit note',
-        icon: NOTE_ICONS.edit,
-        onclick: () => openEditor(note),
-      }),
-      iconBtn({
-        title: 'Download note',
-        icon: NOTE_ICONS.download,
-        onclick: () => downloadNote(note),
-      }),
-      iconBtn({
-        title: 'Delete note',
-        icon: NOTE_ICONS.delete,
-        extraClass: 'is-danger',
-        onclick: () => deleteNote(note.id),
-      }),
+      createDetailOverflowMenu(note),
     );
 
     head.append(back, meta, actions);
