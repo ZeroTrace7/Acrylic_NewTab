@@ -36,7 +36,8 @@
     "alarms",
     "contextMenus",
     "offscreen",
-    "bookmarks"
+    "bookmarks",
+    "management"
   ],
 
   "content_security_policy": {

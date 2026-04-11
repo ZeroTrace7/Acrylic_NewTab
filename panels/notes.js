@@ -8,189 +8,380 @@ let view = 'list';
 let selectedNote = null;
 let editingNote = null;
 
-function btn(label, onclick, extraClass = '') {
-  const b = document.createElement('button');
-  b.textContent = label;
-  b.className = `qt-btn ${extraClass}`.trim();
-  b.onclick = onclick;
-  return b;
+const STARTER_NOTE_SEEDED_KEY = 'notesStarterSeeded';
+const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+});
+
+const NOTE_ICONS = {
+  back: `<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>`,
+  copy: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
+  edit: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>`,
+  download: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
+  delete: `<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>`,
+};
+
+const STARTER_NOTE_TITLE = '👋 Welcome to Acrylic Notes!';
+const STARTER_NOTE_CONTENT = `This is your personal space for quick thoughts and ideas.
+
+⭐ Pro Tips:
+
+• Web Clipper: Right-click any text on the web and select "Save to Acrylic Notes" to save it here instantly.
+• Actions: You can Edit, Copy, or Download any note using the menu options.
+• Privacy: Your notes are stored 100% locally on your device.
+
+Feel free to edit or delete this note to get started!`;
+
+function textBtn(label, onclick, extraClass = '') {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = label;
+  button.className = `qt-btn ${extraClass}`.trim();
+  button.onclick = onclick;
+  return button;
+}
+
+function iconBtn({ title, icon, onclick, extraClass = '' }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `qt-note-action ${extraClass}`.trim();
+  button.ariaLabel = title;
+  button.title = title;
+  button.innerHTML = icon;
+  button.onclick = onclick;
+  return button;
+}
+
+function formatNoteDate(value) {
+  return NOTE_DATE_FORMATTER.format(new Date(value));
+}
+
+async function copyNoteText(text) {
+  const copied = await copyToClipboard(text);
+  if (copied) {
+    toast.info('Copied!');
+    return;
+  }
+  toast.error('Could not copy note');
+}
+
+async function ensureStarterNote() {
+  const seeded = await Store.get(STARTER_NOTE_SEEDED_KEY, false);
+
+  if (notes.length > 0) {
+    if (!seeded) await Store.set(STARTER_NOTE_SEEDED_KEY, true);
+    return;
+  }
+
+  if (seeded) return;
+
+  const now = new Date().toISOString();
+  const starterNote = {
+    id: generateId(),
+    title: STARTER_NOTE_TITLE,
+    content: STARTER_NOTE_CONTENT,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  await Store.saveNote(starterNote);
+  await Store.set(STARTER_NOTE_SEEDED_KEY, true);
+  notes = [starterNote];
 }
 
 function renderList() {
   containerEl.innerHTML = '';
-  // Header
-  const hdr = document.createElement('div');
-  hdr.className = 'qt-flex-between qt-mb-sm';
-  const h3 = document.createElement('h3');
-  h3.textContent = 'My Notes';
-  h3.className = 'qt-title';
-  hdr.appendChild(h3);
-  if (notes.length > 0) hdr.appendChild(btn('Download All', downloadAllNotes));
-  containerEl.appendChild(hdr);
 
-  // New note trigger
+  const header = document.createElement('div');
+  header.className = 'qt-flex-between qt-mb-sm';
+
+  const title = document.createElement('h3');
+  title.textContent = 'My Notes';
+  title.className = 'qt-title';
+  header.appendChild(title);
+
+  if (notes.length > 0) {
+    header.appendChild(textBtn('Download All', downloadAllNotes));
+  }
+  containerEl.appendChild(header);
+
   const trigger = document.createElement('div');
   trigger.className = 'qt-trigger-btn';
-  trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`;
+  trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`;
   trigger.onclick = () => openEditor(null);
   containerEl.appendChild(trigger);
 
   if (notes.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'qt-empty';
-    empty.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div>No notes yet</div>`;
+    empty.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No notes yet</div>`;
     containerEl.appendChild(empty);
     return;
   }
 
   const grid = document.createElement('div');
   grid.className = 'qt-masonry qt-mt-md';
-  notes.forEach(n => grid.appendChild(createNoteCard(n)));
+  notes.forEach((note) => grid.appendChild(createNoteCard(note)));
   containerEl.appendChild(grid);
 }
 
 function createNoteCard(note) {
   const card = document.createElement('div');
-  card.className = 'qt-card interactive';
+  card.className = 'qt-card interactive qt-note-card';
   card.onclick = () => openDetail(note);
 
-  const h4 = document.createElement('h4');
-  h4.textContent = truncate(note.title, 28);
-  h4.className = 'qt-card-title';
-  const p = document.createElement('p');
-  p.textContent = note.content;
-  p.className = 'qt-card-body';
+  const noteTitle = document.createElement('h4');
+  noteTitle.textContent = truncate(note.title, 28);
+  noteTitle.className = 'qt-card-title';
+
+  const preview = document.createElement('p');
+  preview.textContent = note.content;
+  preview.className = 'qt-card-body qt-note-card-body';
 
   const bottom = document.createElement('div');
   bottom.className = 'qt-flex-between qt-mt-sm';
+
   const date = document.createElement('span');
-  date.textContent = new Date(note.updatedAt).toLocaleDateString();
-  date.className = 'qt-date';
+  date.textContent = formatNoteDate(note.updatedAt);
+  date.className = 'qt-date qt-note-card-date';
 
-  const acts = document.createElement('div');
-  acts.className = 'qt-card-actions';
-  acts.style.right = '12px';
-  acts.style.bottom = '12px';
-  acts.style.background = 'var(--glass-bg)';
-  acts.style.paddingLeft = '8px';
-  
-  const copyBtn = btn('📋', (e) => { e.stopPropagation(); copyToClipboard(note.content).then(() => toast.info('Copied!')); }, 'qt-btn-ghost');
-  const delBtn = btn('🗑', (e) => { e.stopPropagation(); deleteNote(note.id); }, 'qt-btn-ghost');
-  acts.append(copyBtn, delBtn);
-  bottom.append(date, acts);
+  const actions = document.createElement('div');
+  actions.className = 'qt-card-actions qt-note-card-actions';
+  actions.append(
+    iconBtn({
+      title: 'Copy note',
+      icon: NOTE_ICONS.copy,
+      onclick: async (event) => {
+        event.stopPropagation();
+        await copyNoteText(note.content);
+      },
+    }),
+    iconBtn({
+      title: 'Delete note',
+      icon: NOTE_ICONS.delete,
+      extraClass: 'is-danger',
+      onclick: async (event) => {
+        event.stopPropagation();
+        await deleteNote(note.id);
+      },
+    }),
+  );
 
-  card.append(h4, p, bottom);
+  bottom.append(date, actions);
+  card.append(noteTitle, preview, bottom);
   return card;
 }
 
 function openDetail(note) {
-  view = 'detail'; selectedNote = note;
+  view = 'detail';
+  selectedNote = note;
   containerEl.innerHTML = '';
 
-  const back = btn('← Back', () => { view = 'list'; renderList(); });
+  const head = document.createElement('div');
+  head.className = 'qt-note-detail-head';
+
+  const back = iconBtn({
+    title: 'Back to notes',
+    icon: NOTE_ICONS.back,
+    extraClass: 'is-ghost',
+    onclick: () => {
+      view = 'list';
+      renderList();
+    },
+  });
+
+  const meta = document.createElement('div');
+  meta.className = 'qt-note-detail-meta';
+
   const title = document.createElement('h3');
   title.textContent = note.title;
-  title.className = 'qt-h3';
+  title.className = 'qt-h3 qt-note-detail-title';
+
   const date = document.createElement('div');
-  date.textContent = 'Updated ' + new Date(note.updatedAt).toLocaleString();
-  date.className = 'qt-date qt-mb-md';
+  date.textContent = formatNoteDate(note.updatedAt);
+  date.className = 'qt-date qt-note-detail-date';
+
+  meta.append(title, date);
 
   const actions = document.createElement('div');
-  actions.className = 'qt-flex qt-gap-sm qt-mb-md';
+  actions.className = 'qt-note-detail-actions';
   actions.append(
-    btn('Copy', () => copyToClipboard(note.content).then(() => toast.info('Copied!'))),
-    btn('Edit', () => openEditor(note)),
-    btn('Download', () => downloadNote(note)),
-    btn('Delete', () => deleteNote(note.id), 'qt-btn-ghost'),
+    iconBtn({
+      title: 'Copy note',
+      icon: NOTE_ICONS.copy,
+      onclick: () => copyNoteText(note.content),
+    }),
+    iconBtn({
+      title: 'Edit note',
+      icon: NOTE_ICONS.edit,
+      onclick: () => openEditor(note),
+    }),
+    iconBtn({
+      title: 'Download note',
+      icon: NOTE_ICONS.download,
+      onclick: () => downloadNote(note),
+    }),
+    iconBtn({
+      title: 'Delete note',
+      icon: NOTE_ICONS.delete,
+      extraClass: 'is-danger',
+      onclick: () => deleteNote(note.id),
+    }),
   );
+
+  head.append(back, meta, actions);
+
+  const divider = document.createElement('div');
+  divider.className = 'qt-divider qt-note-detail-divider';
 
   const content = document.createElement('div');
   content.textContent = note.content;
   content.className = 'qt-note-content';
 
-  containerEl.append(back, title, date, actions, content);
+  containerEl.append(head, divider, content);
 }
 
 function openEditor(note = null) {
-  const prevView = view;
-  view = 'editor'; editingNote = note;
+  const previousView = view;
+  view = 'editor';
+  editingNote = note;
   containerEl.innerHTML = '';
 
-  const goBack = () => { if (prevView === 'detail' && selectedNote) openDetail(selectedNote); else { view = 'list'; renderList(); } };
-  const back = btn('← Back', goBack);
+  const goBack = () => {
+    if (previousView === 'detail' && selectedNote) {
+      openDetail(selectedNote);
+      return;
+    }
+    view = 'list';
+    renderList();
+  };
 
-  const titleIn = document.createElement('input');
-  titleIn.type = 'text'; titleIn.placeholder = 'Title';
-  titleIn.className = 'qt-input-minimal';
-  if (note) titleIn.value = note.title;
+  const back = textBtn('← Back', goBack);
 
-  const contentIn = document.createElement('textarea');
-  contentIn.placeholder = 'Write your note...';
-  contentIn.className = 'qt-textarea';
-  if (note) contentIn.value = note.content;
-  contentIn.addEventListener('input', () => { contentIn.style.height = 'auto'; contentIn.style.height = contentIn.scrollHeight + 'px'; });
+  const titleInput = document.createElement('input');
+  titleInput.type = 'text';
+  titleInput.placeholder = 'Title';
+  titleInput.className = 'qt-input-minimal';
+  if (note) titleInput.value = note.title;
 
-  const bar = document.createElement('div');
-  bar.className = 'qt-flex qt-gap-sm';
-  bar.style.justifyContent = 'flex-end';
-  bar.style.marginTop = '12px';
-  bar.append(
-    btn('Cancel', goBack),
-    btn('Save', () => saveNote(titleIn.value, contentIn.value), 'qt-btn-primary'),
+  const contentInput = document.createElement('textarea');
+  contentInput.placeholder = 'Write your note...';
+  contentInput.className = 'qt-textarea';
+  if (note) contentInput.value = note.content;
+  contentInput.addEventListener('input', () => {
+    contentInput.style.height = 'auto';
+    contentInput.style.height = `${contentInput.scrollHeight}px`;
+  });
+  const handleEscape = (event) => {
+    if (event.key === 'Escape') goBack();
+  };
+  titleInput.addEventListener('keydown', handleEscape);
+  contentInput.addEventListener('keydown', handleEscape);
+
+  const actions = document.createElement('div');
+  actions.className = 'qt-flex qt-gap-sm';
+  actions.style.justifyContent = 'flex-end';
+  actions.style.marginTop = '12px';
+  actions.append(
+    textBtn('Cancel', goBack),
+    textBtn('Save', () => saveNote(titleInput.value, contentInput.value), 'qt-btn-primary'),
   );
 
-  containerEl.append(back, titleIn, contentIn, bar);
-  containerEl.addEventListener('keydown', (e) => { if (e.key === 'Escape') goBack(); });
-  setTimeout(() => titleIn.focus(), 50);
+  containerEl.append(back, titleInput, contentInput, actions);
+  setTimeout(() => titleInput.focus(), 50);
 }
 
 async function saveNote(title, content) {
-  if (!content.trim()) { toast.error('Note cannot be empty'); return; }
+  if (!content.trim()) {
+    toast.error('Note cannot be empty');
+    return;
+  }
+
   try {
     if (editingNote) {
-      const updated = { ...editingNote, title: title.trim() || 'Untitled', content: content.trim(), updatedAt: new Date().toISOString() };
+      const updated = {
+        ...editingNote,
+        title: title.trim() || 'Untitled',
+        content: content.trim(),
+        updatedAt: new Date().toISOString(),
+      };
       await Store.saveNote(updated);
-      const idx = notes.findIndex(n => n.id === updated.id);
-      if (idx >= 0) notes[idx] = updated;
+      const index = notes.findIndex((note) => note.id === updated.id);
+      if (index >= 0) notes[index] = updated;
+      selectedNote = updated;
       toast.success('Note saved!');
     } else {
-      const n = { id: generateId(), title: title.trim() || 'Untitled', content: content.trim(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-      await Store.saveNote(n);
-      notes.unshift(n);
+      const created = {
+        id: generateId(),
+        title: title.trim() || 'Untitled',
+        content: content.trim(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      await Store.saveNote(created);
+      notes.unshift(created);
+      selectedNote = created;
       toast.success('Note created!');
     }
-  } catch { toast.error('Failed to save note'); }
-  view = 'list'; editingNote = null;
+  } catch {
+    toast.error('Failed to save note');
+  }
+
+  view = 'list';
+  editingNote = null;
+  notes.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   renderList();
 }
 
 async function deleteNote(id) {
   try {
     await Store.deleteNote(id);
-    notes = notes.filter(n => n.id !== id);
+    notes = notes.filter((note) => note.id !== id);
+    if (selectedNote?.id === id) selectedNote = null;
     toast.info('Note deleted');
-  } catch { toast.error('Failed to delete note'); }
-  if (view === 'detail') view = 'list';
+  } catch {
+    toast.error('Failed to delete note');
+  }
+
+  view = 'list';
   renderList();
 }
 
 function downloadNote(note) {
-  downloadTextFile(note.title + '.txt', 'Title: ' + note.title + '\n\n' + note.content + '\n\nLast Updated: ' + new Date(note.updatedAt).toLocaleString());
+  downloadTextFile(
+    `${note.title}.txt`,
+    `Title: ${note.title}\n\n${note.content}\n\nLast Updated: ${formatNoteDate(note.updatedAt)}`,
+  );
 }
 
 function downloadAllNotes() {
-  const combined = notes.map(n => 'Title: ' + n.title + '\n\n' + n.content + '\n\nLast Updated: ' + new Date(n.updatedAt).toLocaleString()).join('\n\n=====\n\n');
-  downloadTextFile('my-notes-' + new Date().toISOString().split('T')[0] + '.txt', combined);
+  const combined = notes
+    .map((note) => `Title: ${note.title}\n\n${note.content}\n\nLast Updated: ${formatNoteDate(note.updatedAt)}`)
+    .join('\n\n=====\n\n');
+
+  downloadTextFile(`my-notes-${new Date().toISOString().split('T')[0]}.txt`, combined);
 }
 
 export async function initNotes(container) {
   containerEl = container;
+  view = 'list';
+  selectedNote = null;
+  editingNote = null;
+
   try {
     notes = await Store.getAllNotes();
+    await ensureStarterNote();
     notes.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  } catch { notes = []; toast.error('Failed to load notes'); }
+  } catch {
+    notes = [];
+    toast.error('Failed to load notes');
+  }
+
   renderList();
 }
-
-
-

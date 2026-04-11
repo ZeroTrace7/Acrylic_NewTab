@@ -32,35 +32,41 @@ function render() {
   
   containerEl.style.display = 'flex';
   containerEl.style.flexDirection = 'column';
-  containerEl.style.height = '100%';
+  containerEl.style.justifyContent = 'space-between';
+  containerEl.style.minHeight = '100%';
+  containerEl.style.boxSizing = 'border-box';
+  containerEl.style.gap = '18px';
 
   // 1. Daily Stats at top
   const statsDiv = document.createElement('div');
   statsDiv.className = 'qt-title';
   statsDiv.style.textAlign = 'left';
-  statsDiv.style.marginBottom = '16px';
   statsDiv.style.display = 'flex';
   statsDiv.style.alignItems = 'center';
-  statsDiv.style.gap = '8px';
-  statsDiv.innerHTML = `<span style="font-size:1.1rem">🍅</span> <span>${dailyCount}</span>`;
+  statsDiv.style.gap = '4px';
+  statsDiv.style.flexShrink = '0';
+  statsDiv.innerHTML = `<span style="font-size:1.0rem">🍅</span> <span style="font-size:1.0rem; font-weight:600; display:inline-block; transform:translateY(2px);">${dailyCount}</span>`;
   containerEl.appendChild(statsDiv);
 
   // Middle group wrapper (absorbs available space to push modeRow down safely)
   const middleGroup = document.createElement('div');
-  middleGroup.style.flex = '1';
+  middleGroup.style.flex = '1 1 auto';
+  middleGroup.style.minHeight = '0';
   middleGroup.style.display = 'flex';
   middleGroup.style.flexDirection = 'column';
   middleGroup.style.alignItems = 'center';
   middleGroup.style.justifyContent = 'center';
+  middleGroup.style.gap = '16px';
 
   // 2. Circular Timer SVG
   const timerWrapper = document.createElement('div');
   timerWrapper.className = 'qt-flex-center';
   timerWrapper.style.position = 'relative'; // Anchor for absolute text overlay
-  timerWrapper.style.minHeight = '180px';
+  timerWrapper.style.width = '100%';
+  timerWrapper.style.minHeight = '172px';
   timerWrapper.innerHTML = `
     <!-- The Ring -->
-    <svg width="200" height="200" viewBox="0 0 100 100" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+    <svg width="188" height="188" viewBox="0 0 100 100" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
       <circle cx="50" cy="50" r="44" fill="none" stroke="var(--glass-subtle)" stroke-width="4"/>
       <circle id="pomo-ring" cx="50" cy="50" r="44" fill="none" stroke="${getModeColor()}" stroke-width="4"
         stroke-linecap="round" transform="rotate(-90 50 50)"
@@ -78,7 +84,6 @@ function render() {
   // 3. Controls Row directly under timer
   const controlsRow = document.createElement('div');
   controlsRow.className = 'qt-flex-center qt-gap-md';
-  controlsRow.style.marginTop = '16px';
 
   const toggleBtn = document.createElement('button');
   toggleBtn.className = 'qt-icon-btn';
@@ -109,8 +114,9 @@ function render() {
   // 4. Mode Selection Row at the very bottom
   const modeRow = document.createElement('div');
   modeRow.className = 'qt-flex qt-gap-sm';
-  modeRow.style.marginTop = '24px';
-  modeRow.style.paddingTop = '16px';
+  modeRow.style.marginTop = '0';
+  modeRow.style.paddingTop = '4px';
+  modeRow.style.flexShrink = '0';
   ['pomodoro', 'shortBreak', 'longBreak'].forEach(m => {
     const active = state.mode === m;
     const label = m === 'pomodoro' ? 'Pomodoro' : m === 'shortBreak' ? 'Short Break' : 'Long Break';

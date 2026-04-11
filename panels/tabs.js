@@ -60,7 +60,7 @@ function renderAll() {
   saveRow.append(nameIn, saveBtn);
 
   const tabList = document.createElement('div');
-  tabList.style.cssText = 'max-height:160px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--glass-border) transparent;';
+  tabList.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
   if (openTabs.length === 0) {
     tabList.innerHTML = `<div class="qt-empty">No tabs open</div>`;
   } else {

@@ -15,7 +15,7 @@ Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - Ne
 - Bottom-right Preferances + grid buttons
 - Premium entry animation (sub-800ms, staggered)
 - Multiple themes (midnight, deep-blue, aurora, rose-noir, jet, espresso, slate, forest)
-- Pomodoro, Notes, Tabs, Clipboard panels
+- Pomodoro, Notes, Tabs, Extensions panels
 - Wallpaper support
 - Grain texture overlay
 - Onboarding flow
