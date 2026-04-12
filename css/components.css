@@ -964,9 +964,9 @@
   -webkit-backdrop-filter: blur(0);
   animation: none;
   transition:
-    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
-    backdrop-filter 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    -webkit-backdrop-filter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 680ms cubic-bezier(0.16, 1, 0.3, 1),
+    -webkit-backdrop-filter 680ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.settings-overlay .modal-box.settings-box {
@@ -982,9 +982,9 @@
   border-right: 0;
   animation: none;
   transition:
-    opacity 320ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 720ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 640ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.settings-overlay.is-open {
