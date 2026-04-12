@@ -79,8 +79,7 @@ export const del = <T, K extends Key<T>>(
   key: K,
 ): void => {
   if ("listeners" in db) {
-    // TODO: This is here because of the interaction with def data, consider changing
-    db.cache.delete(key);
+    db.cache.set(key, undefined);
     db.listeners.forEach((listener) => listener([key, undefined]));
   } else {
     db.cache.set(key, undefined);

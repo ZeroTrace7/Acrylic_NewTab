@@ -39,7 +39,7 @@ test("database listen", () => {
   const fn = jest.fn();
   DB.listen(db, fn);
   DB.put(db, "test", "test");
-  expect(fn).toBeCalledWith(["test", "test"]);
+  expect(fn).toHaveBeenCalledWith(["test", "test"]);
 });
 
 test("database listen unsubscribe", () => {
@@ -48,7 +48,7 @@ test("database listen unsubscribe", () => {
   const unsub = DB.listen(db, fn);
   unsub();
   DB.put(db, "test", "test");
-  expect(fn).not.toBeCalled();
+  expect(fn).not.toHaveBeenCalled();
 });
 
 test("database default data", () => {
@@ -105,4 +105,11 @@ test("database atomic prefix search duplicate", () => {
     expect(result).toHaveLength(1);
     expect(result).toContainEqual(["test", "atomic"]);
   });
+});
+
+test("database delete with default data", () => {
+  const db = DB.init({ test: "default_value" });
+  expect(DB.get(db, "test")).toBe("default_value");
+  DB.del(db, "test");
+  expect(DB.get(db, "test")).toBeUndefined();
 });
