@@ -314,7 +314,8 @@
 /* Extensions Manager */
 .qt-ext-toolbar {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -362,7 +363,7 @@
 }
 
 .qt-filter-group {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px;
@@ -372,7 +373,10 @@
 }
 
 .qt-filter-chip {
-  min-width: 54px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   height: 32px;
   padding: 0 12px;
   border-radius: 10px;
