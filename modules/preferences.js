@@ -3,42 +3,48 @@ import { DOM } from './dom.js';
 import { toast } from './toast.js';
 
 const LAYOUT_KEYS = Object.freeze({
-  'left-dock': {
+  dock: {
+    selector: '#left-dock .ql-pill',
     xKey: 'sidebarX',
     yKey: 'sidebarY',
     xVar: '--sidebar-offset-x',
     yVar: '--sidebar-offset-y',
     label: 'Dock',
   },
-  'clock-zone': {
+  clock: {
+    selector: '#clock-zone .clock-wrapper',
     xKey: 'clockX',
     yKey: 'clockY',
     xVar: '--clock-offset-x',
     yVar: '--clock-offset-y',
     label: 'Time',
   },
-  'middle-zone': {
+  center: {
+    selector: '#center-stack',
     xKey: 'centerX',
     yKey: 'centerY',
     xVar: '--center-offset-x',
     yVar: '--center-offset-y',
     label: 'Search',
   },
-  'quicklinks-zone': {
+  quicklinks: {
+    selector: '#bottom-links-grid',
     xKey: 'quicklinksX',
     yKey: 'quicklinksY',
     xVar: '--quicklinks-offset-x',
     yVar: '--quicklinks-offset-y',
     label: 'Quick Links',
   },
-  'top-bar': {
+  tasks: {
+    selector: '#tasks-btn',
     xKey: 'tasksX',
     yKey: 'tasksY',
     xVar: '--tasks-offset-x',
     yVar: '--tasks-offset-y',
     label: 'Tasks',
   },
-  'bottom-left-controls': {
+  zen: {
+    selector: '#focus-btn',
     xKey: 'zenX',
     yKey: 'zenY',
     xVar: '--zen-offset-x',
@@ -256,11 +262,18 @@ function syncPreferenceEffects() {
 }
 
 function bindLayoutTargets() {
-  Object.entries(LAYOUT_KEYS).forEach(([id, config]) => {
-    const el = document.getElementById(id);
+  document.querySelectorAll('.layout-edit-target[data-layout-edit-target]').forEach((el) => {
+    el.classList.remove('layout-edit-target');
+    el.removeAttribute('data-layout-edit-target');
+    el.removeAttribute('data-layout-label');
+    el.removeAttribute('title');
+  });
+
+  Object.entries(LAYOUT_KEYS).forEach(([key, config]) => {
+    const el = document.querySelector(config.selector);
     if (!(el instanceof HTMLElement)) return;
     el.classList.add('layout-edit-target');
-    el.dataset.layoutEditTarget = id;
+    el.dataset.layoutEditTarget = key;
     el.dataset.layoutLabel = `Drag ${config.label}`;
     el.title = `Drag ${config.label} to reposition`;
   });

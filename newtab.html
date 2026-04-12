@@ -67,34 +67,36 @@
 
     <!-- Middle Zone — greeting + search -->
     <section id="middle-zone">
-      <div id="greeting-text" class="clock-greeting anim-hidden anim-greeting"></div>
+      <div id="center-stack">
+        <div id="greeting-text" class="clock-greeting anim-hidden anim-greeting"></div>
 
-      <section id="search-section" class="search-section">
-        <div id="search-wrapper" class="search-wrapper glass anim-hidden anim-search">
-          <div id="engine-btn" class="search-engine-btn glass-subtle" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-            <img id="engine-icon" src="icons/icon16.png" alt="Browser default">
-            <svg class="engine-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+        <section id="search-section" class="search-section">
+          <div id="search-wrapper" class="search-wrapper glass anim-hidden anim-search">
+            <div id="engine-btn" class="search-engine-btn glass-subtle" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+              <img id="engine-icon" src="icons/icon16.png" alt="Browser default">
+              <svg class="engine-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <input
+              id="search-input"
+              class="search-input"
+              type="text"
+              placeholder="Search anything..."
+              autocomplete="off"
+              spellcheck="false"
+            >
+            <button id="search-submit" class="search-submit glass-subtle" aria-label="Search">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+            <div id="engine-picker" class="engine-picker"></div>
+            <div id="search-history-panel" class="search-history-panel" aria-hidden="true"></div>
           </div>
-          <input
-            id="search-input"
-            class="search-input"
-            type="text"
-            placeholder="Search anything..."
-            autocomplete="off"
-            spellcheck="false"
-          >
-          <button id="search-submit" class="search-submit glass-subtle" aria-label="Search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
-          <div id="engine-picker" class="engine-picker"></div>
-          <div id="search-history-panel" class="search-history-panel" aria-hidden="true"></div>
-        </div>
-      </section>
+        </section>
+      </div>
     </section>
 
     <!-- Quick Links Zone -->
