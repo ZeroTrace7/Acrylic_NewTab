@@ -311,11 +311,159 @@
   background: var(--glass-subtle);
 }
 
+.qt-tab-toolbar {
+  margin-bottom: 12px;
+}
+
+.qt-tab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qt-tab-row {
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.qt-tab-row:hover,
+.qt-tab-row:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  outline: none;
+}
+
+.qt-tab-row.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(96, 165, 250, 0.22);
+}
+
+.qt-tab-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qt-tab-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.qt-tab-title-row,
+.qt-tab-meta-row {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qt-tab-title {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-ui), sans-serif;
+}
+
+.qt-tab-meta-row {
+  margin-top: 2px;
+}
+
+.qt-tab-meta {
+  min-width: 0;
+  flex: 1;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qt-tab-state,
+.qt-tab-badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.qt-tab-state {
+  color: rgba(191, 219, 254, 0.96);
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.16);
+}
+
+.qt-tab-badge {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qt-tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+  transform: translateX(4px);
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 180ms ease;
+}
+
+.qt-tab-row:hover .qt-tab-actions,
+.qt-tab-row:focus-within .qt-tab-actions {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.qt-tab-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(148, 163, 184, 0.88);
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.qt-tab-close svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  fill: none;
+}
+
+.qt-tab-close:hover,
+.qt-tab-close:focus-visible {
+  color: rgba(248, 250, 252, 0.98);
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.2);
+  outline: none;
+}
+
 /* Extensions Manager */
 .qt-ext-toolbar {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -326,8 +474,8 @@
   height: 40px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 8px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -363,7 +511,7 @@
 }
 
 .qt-filter-group {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px;
@@ -373,12 +521,9 @@
 }
 
 .qt-filter-chip {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  min-width: 48px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 8px;
   border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;

@@ -109,7 +109,7 @@ function createSearchRow() {
   const input = document.createElement('input');
   input.type = 'search';
   input.className = 'qt-search-input';
-  input.placeholder = 'Search...';
+  input.placeholder = 'Search';
   input.value = searchQuery;
   input.spellcheck = false;
   input.autocomplete = 'off';
