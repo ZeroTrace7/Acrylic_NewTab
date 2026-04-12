@@ -9,6 +9,38 @@ let dailyCount = 0;
 const MODES = { pomodoro: 1500, shortBreak: 300, longBreak: 3600 };
 const CIRC = 263.9;
 
+function normalizeTimerState(nextState) {
+  if (!nextState || typeof nextState !== 'object') {
+    return { mode: 'pomodoro', isRunning: false, timeLeft: MODES.pomodoro, endTime: 0 };
+  }
+
+  const mode = nextState.mode in MODES ? nextState.mode : 'pomodoro';
+  const isRunning = nextState.isRunning === true;
+  const endTime = Number.isFinite(nextState.endTime) ? nextState.endTime : 0;
+  const fullDuration = MODES[mode];
+
+  let timeLeft = Number.isFinite(nextState.timeLeft) ? nextState.timeLeft : fullDuration;
+  if (!isRunning && endTime === 0 && timeLeft !== fullDuration) {
+    timeLeft = fullDuration;
+  }
+
+  return { mode, isRunning, timeLeft, endTime };
+}
+
+async function syncNormalizedState() {
+  const normalized = normalizeTimerState(state);
+  const changed =
+    normalized.mode !== state.mode ||
+    normalized.isRunning !== state.isRunning ||
+    normalized.timeLeft !== state.timeLeft ||
+    normalized.endTime !== state.endTime;
+
+  state = normalized;
+  if (changed) {
+    await Store.setTimerState(normalized);
+  }
+}
+
 function formatTime(s) {
   return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 }
@@ -189,6 +221,7 @@ function resetTimer() {
 export async function initPomodoro(container) {
   containerEl = container;
   state = await Store.getTimerState();
+  await syncNormalizedState();
   const stats = await Store.getDailyStats();
   dailyCount = stats.count || 0;
 
@@ -200,11 +233,13 @@ export async function initPomodoro(container) {
 
   const unsubStore = Store.onChange((changes) => {
     if ('timerState' in changes) {
-      state = changes.timerState;
+      state = normalizeTimerState(changes.timerState);
       clearInterval(tickInterval);
       if (state.isRunning) {
         state.timeLeft = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
         startLocalTick();
+      } else if (changes.timerState?.timeLeft !== state.timeLeft || changes.timerState?.mode !== state.mode) {
+        Store.setTimerState(state).catch(() => {});
       }
       render();
     }
