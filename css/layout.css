@@ -12,6 +12,10 @@
   --quicklinks-offset-y: 0px;
   --sidebar-offset-x: 0px;
   --sidebar-offset-y: 0px;
+  --tasks-offset-x: 0px;
+  --tasks-offset-y: 0px;
+  --zen-offset-x: 0px;
+  --zen-offset-y: 0px;
   --settings-drawer-width: min(440px, 100vw);
 }
 
@@ -118,6 +122,8 @@
   display: flex;
   align-items: center;
   z-index: 20;
+  transform: translate3d(var(--tasks-offset-x), var(--tasks-offset-y), 0);
+  will-change: transform;
 }
 
 #tools-fab {
@@ -148,6 +154,8 @@
 .corner-controls.bottom-left {
   bottom: 24px;
   left: 24px;
+  transform: translate3d(var(--zen-offset-x), var(--zen-offset-y), 0);
+  will-change: transform;
 }
 
 .corner-controls.bottom-right {

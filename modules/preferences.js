@@ -31,6 +31,20 @@ const LAYOUT_KEYS = Object.freeze({
     yVar: '--quicklinks-offset-y',
     label: 'Quick Links',
   },
+  'top-bar': {
+    xKey: 'tasksX',
+    yKey: 'tasksY',
+    xVar: '--tasks-offset-x',
+    yVar: '--tasks-offset-y',
+    label: 'Tasks',
+  },
+  'bottom-left-controls': {
+    xKey: 'zenX',
+    yKey: 'zenY',
+    xVar: '--zen-offset-x',
+    yVar: '--zen-offset-y',
+    label: 'Zen',
+  },
 });
 
 const DASHBOARD_FONTS = Object.freeze({
@@ -39,6 +53,8 @@ const DASHBOARD_FONTS = Object.freeze({
   gloria: "'Gloria Hallelujah', cursive",
   silkscreen: "'Silkscreen', monospace",
 });
+
+const LAYOUT_EDGE_PADDING = 12;
 
 export const DEFAULT_LAYOUT_OFFSETS = Object.freeze({
   clockX: 0,
@@ -49,6 +65,10 @@ export const DEFAULT_LAYOUT_OFFSETS = Object.freeze({
   quicklinksY: 0,
   sidebarX: 0,
   sidebarY: 0,
+  tasksX: 0,
+  tasksY: 0,
+  zenX: 0,
+  zenY: 0,
 });
 
 const preferenceState = {
@@ -268,12 +288,18 @@ function handleLayoutPointerDown(event) {
     startY: event.clientY,
     startOffsetX: preferenceState.layoutOffsets[config.xKey],
     startOffsetY: preferenceState.layoutOffsets[config.yKey],
-    minDeltaX: 16 - rect.left,
-    maxDeltaX: window.innerWidth - 16 - rect.right,
-    minDeltaY: 16 - rect.top,
-    maxDeltaY: window.innerHeight - 16 - rect.bottom,
+    minDeltaX: LAYOUT_EDGE_PADDING - rect.left,
+    maxDeltaX: window.innerWidth - LAYOUT_EDGE_PADDING - rect.right,
+    minDeltaY: LAYOUT_EDGE_PADDING - rect.top,
+    maxDeltaY: window.innerHeight - LAYOUT_EDGE_PADDING - rect.bottom,
     didMove: false,
   };
+
+  try {
+    target.setPointerCapture(event.pointerId);
+  } catch {
+    // Some non-primary/browser-generated pointer events cannot be captured.
+  }
 
   target.classList.add('is-layout-dragging');
   document.body?.classList.add('is-layout-dragging');
@@ -306,6 +332,9 @@ function handleLayoutPointerUp(event) {
   if (!activeLayoutDrag) return;
   if (!(event instanceof PointerEvent)) return;
   if (event.pointerId !== activeLayoutDrag.pointerId) return;
+  try {
+    activeLayoutDrag.target.releasePointerCapture(event.pointerId);
+  } catch {}
   event.preventDefault();
   stopLayoutDrag({ persist: true });
   announceLayoutEditor('Position saved.');
