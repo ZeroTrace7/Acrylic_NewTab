@@ -14,7 +14,6 @@ let settingsOpen = false;
 
 function debugStylesheetBinding() {
   const loadedStylesheets = [...document.styleSheets].map((s) => s.href);
-  console.log('Loaded stylesheets:', loadedStylesheets);
 
   const hasNewtabCss = loadedStylesheets.some(
     (href) => typeof href === 'string' && href.includes('newtab.css')
@@ -30,8 +29,6 @@ body.test-force-bg {
     document.head.appendChild(style);
     document.body.classList.add('test-force-bg');
   }
-
-  console.info('[Acrylic] DevTools Network: enable "Disable cache" while debugging CSS.');
 }
 
 function armEntryAnimation() {
