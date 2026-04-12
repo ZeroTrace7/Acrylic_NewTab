@@ -28,16 +28,64 @@ export async function getForecast(
   loader.pop();
 
   // Process results
-  // TODO: validate response
+  if (
+    !body ||
+    typeof body !== "object" ||
+    !body.hourly ||
+    typeof body.hourly !== "object" ||
+    !Array.isArray(body.hourly.time) ||
+    !Array.isArray(body.hourly.temperature_2m) ||
+    !Array.isArray(body.hourly.apparent_temperature) ||
+    !Array.isArray(body.hourly.relativehumidity_2m) ||
+    !Array.isArray(body.hourly.weathercode)
+  ) {
+    console.warn("Weather API returned an invalid response structure", body);
+    return undefined;
+  }
+
+  const { time, temperature_2m, apparent_temperature, relativehumidity_2m, weathercode } = body.hourly;
+
+  const validConditions = [];
+  const length = Math.min(
+    time.length,
+    temperature_2m.length,
+    apparent_temperature.length,
+    relativehumidity_2m.length,
+    weathercode.length
+  );
+
+  for (let i = 0; i < length; i++) {
+    const t = time[i];
+    const temp = temperature_2m[i];
+    const appTemp = apparent_temperature[i];
+    const humidity = relativehumidity_2m[i];
+    const code = weathercode[i];
+
+    if (
+      typeof t === "number" &&
+      typeof temp === "number" &&
+      typeof appTemp === "number" &&
+      typeof humidity === "number" &&
+      typeof code === "number"
+    ) {
+      validConditions.push({
+        timestamp: t * 1000, // convert to ms
+        temperature: temp,
+        apparentTemperature: appTemp,
+        humidity: humidity,
+        weatherCode: code,
+      });
+    }
+  }
+
+  if (validConditions.length === 0) {
+    console.warn("Weather API response contained no valid data rows");
+    return undefined;
+  }
+
   return {
     timestamp: Date.now(),
-    conditions: body.hourly.time.map((time: number, i: number) => ({
-      timestamp: time * 1000, // convert to ms
-      temperature: body.hourly.temperature_2m[i],
-      apparentTemperature: body.hourly.apparent_temperature[i],
-      humidity: body.hourly.relativehumidity_2m[i],
-      weatherCode: body.hourly.weathercode[i],
-    })),
+    conditions: validConditions,
   };
 }
 
