@@ -35,8 +35,6 @@ export const get = <T, K extends Key<T>>(db: Snapshot<T>, key: K): T[K] => {
   if (db.parent) return get(db.parent, key);
   // @ts-ignore
   return undefined;
-  // TODO: consider throwing, may require tombstones to work correctly
-  // throw new NotFoundError(key);
 };
 
 /**
@@ -79,8 +77,7 @@ export const del = <T, K extends Key<T>>(
   key: K,
 ): void => {
   if ("listeners" in db) {
-    // TODO: This is here because of the interaction with def data, consider changing
-    db.cache.delete(key);
+    db.cache.set(key, undefined);
     db.listeners.forEach((listener) => listener([key, undefined]));
   } else {
     db.cache.set(key, undefined);
