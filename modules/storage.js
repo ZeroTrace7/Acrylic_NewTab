@@ -16,6 +16,7 @@ export const Prefs = {
     searchEngine:    'browser',
     searchHistory:   true,
     clockFormat:     '12h',
+    dashboardFont:   'gloria',
     textDepth:       true,
     editLayoutMode:  false,
     showClock:       true,
@@ -45,6 +46,7 @@ export const Prefs = {
     const result = await chrome.storage.sync.get(null);
     const merged = { ...this.defaults, ...result };
     merged.clockFormat = normalizeClockFormat(merged.clockFormat);
+    merged.dashboardFont = normalizeDashboardFont(merged.dashboardFont);
     return merged;
   },
 
@@ -54,6 +56,10 @@ export const Prefs = {
       await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
       return;
     }
+    if (key === 'dashboardFont') {
+      await chrome.storage.sync.set({ [key]: normalizeDashboardFont(value) });
+      return;
+    }
     await chrome.storage.sync.set({ [key]: value });
   },
 
@@ -61,6 +67,7 @@ export const Prefs = {
   async setMany(obj) {
     const next = { ...obj };
     if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
+    if ('dashboardFont' in next) next.dashboardFont = normalizeDashboardFont(next.dashboardFont);
     await chrome.storage.sync.set(next);
   },
 
@@ -80,6 +87,10 @@ export const Prefs = {
 
 function normalizeClockFormat(value) {
   return value === '24h' ? '24h' : '12h';
+}
+
+function normalizeDashboardFont(value) {
+  return ['system', 'poppins', 'gloria', 'silkscreen'].includes(value) ? value : 'gloria';
 }
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────

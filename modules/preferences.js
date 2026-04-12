@@ -33,6 +33,13 @@ const LAYOUT_KEYS = Object.freeze({
   },
 });
 
+const DASHBOARD_FONTS = Object.freeze({
+  system: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  poppins: "'Poppins', sans-serif",
+  gloria: "'Gloria Hallelujah', cursive",
+  silkscreen: "'Silkscreen', monospace",
+});
+
 export const DEFAULT_LAYOUT_OFFSETS = Object.freeze({
   clockX: 0,
   clockY: 0,
@@ -49,12 +56,15 @@ const preferenceState = {
   editLayoutMode: false,
   showClock: true,
   showGreeting: true,
+  dashboardFont: 'gloria',
   layoutOffsets: { ...DEFAULT_LAYOUT_OFFSETS },
 };
 
 let prefsBound = false;
 let layoutBindingsBound = false;
 let activeLayoutDrag = null;
+let layoutEditorHud = null;
+let layoutEditorHudTimer = 0;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -92,6 +102,94 @@ function applyWidgetVisibility() {
   if (DOM.greeting) DOM.greeting.hidden = !preferenceState.showGreeting;
 }
 
+function announceLayoutEditor(message) {
+  const live = layoutEditorHud?.querySelector('[data-layout-editor-live]');
+  if (live) live.textContent = message;
+}
+
+function createLayoutEditorButton(label, className, onclick) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = className;
+  button.textContent = label;
+  button.addEventListener('click', onclick);
+  return button;
+}
+
+function ensureLayoutEditorHud() {
+  if (layoutEditorHud) return;
+  if (layoutEditorHudTimer) {
+    clearTimeout(layoutEditorHudTimer);
+    layoutEditorHudTimer = 0;
+  }
+
+  const hud = document.createElement('div');
+  hud.className = 'layout-editor-hud';
+  hud.setAttribute('role', 'toolbar');
+  hud.setAttribute('aria-label', 'Layout editor');
+
+  const copy = document.createElement('div');
+  copy.className = 'layout-editor-copy';
+
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'layout-editor-eyebrow';
+  eyebrow.textContent = 'Layout editor';
+
+  const title = document.createElement('strong');
+  title.textContent = 'Drag highlighted areas';
+
+  const hint = document.createElement('span');
+  hint.className = 'layout-editor-hint';
+  hint.textContent = 'Esc exits. Reset restores defaults.';
+
+  const live = document.createElement('span');
+  live.className = 'layout-editor-live';
+  live.dataset.layoutEditorLive = 'true';
+  live.setAttribute('aria-live', 'polite');
+
+  copy.append(eyebrow, title, hint, live);
+
+  const actions = document.createElement('div');
+  actions.className = 'layout-editor-actions';
+  actions.append(
+    createLayoutEditorButton('Reset', 'layout-editor-action', async () => {
+      await resetLayoutOffsets({ persist: true, announce: false });
+      announceLayoutEditor('Layout reset.');
+    }),
+    createLayoutEditorButton('Done', 'layout-editor-action layout-editor-action-primary', async () => {
+      await setLayoutEditMode(false, { persist: true, announce: false });
+      toast.success('Layout saved.');
+    })
+  );
+
+  hud.append(copy, actions);
+  document.body.appendChild(hud);
+  layoutEditorHud = hud;
+  requestAnimationFrame(() => hud.classList.add('is-visible'));
+}
+
+function removeLayoutEditorHud() {
+  if (!layoutEditorHud) return;
+  if (layoutEditorHudTimer) {
+    clearTimeout(layoutEditorHudTimer);
+    layoutEditorHudTimer = 0;
+  }
+
+  const hud = layoutEditorHud;
+  layoutEditorHud = null;
+  hud.classList.remove('is-visible');
+  layoutEditorHudTimer = setTimeout(() => {
+    layoutEditorHudTimer = 0;
+    hud.remove();
+  }, 260);
+}
+
+function applyDashboardFont(fontId) {
+  const next = DASHBOARD_FONTS[fontId] ? fontId : 'gloria';
+  preferenceState.dashboardFont = next;
+  document.documentElement.style.setProperty('--dashboard-font-family', DASHBOARD_FONTS[next]);
+}
+
 function stopLayoutDrag({ persist = false } = {}) {
   if (!activeLayoutDrag) return;
 
@@ -110,6 +208,11 @@ function stopLayoutDrag({ persist = false } = {}) {
 function applyLayoutEditMode(enabled) {
   preferenceState.editLayoutMode = Boolean(enabled);
   document.body?.classList.toggle('is-layout-editing', preferenceState.editLayoutMode);
+  if (preferenceState.editLayoutMode) {
+    ensureLayoutEditorHud();
+  } else {
+    removeLayoutEditorHud();
+  }
   if (!preferenceState.editLayoutMode) {
     stopLayoutDrag({ persist: false });
   }
@@ -119,6 +222,7 @@ function updatePreferenceState(changes) {
   if ('textDepth' in changes) preferenceState.textDepth = changes.textDepth !== false;
   if ('showClock' in changes) preferenceState.showClock = changes.showClock !== false;
   if ('showGreeting' in changes) preferenceState.showGreeting = changes.showGreeting !== false;
+  if ('dashboardFont' in changes) preferenceState.dashboardFont = DASHBOARD_FONTS[changes.dashboardFont] ? changes.dashboardFont : 'gloria';
   if ('layoutOffsets' in changes) preferenceState.layoutOffsets = normalizeLayoutOffsets(changes.layoutOffsets);
   if ('editLayoutMode' in changes) preferenceState.editLayoutMode = changes.editLayoutMode === true;
 }
@@ -126,6 +230,7 @@ function updatePreferenceState(changes) {
 function syncPreferenceEffects() {
   applyTextDepth(preferenceState.textDepth);
   applyWidgetVisibility();
+  applyDashboardFont(preferenceState.dashboardFont);
   applyLayoutOffsets(preferenceState.layoutOffsets);
   applyLayoutEditMode(preferenceState.editLayoutMode);
 }
@@ -136,7 +241,8 @@ function bindLayoutTargets() {
     if (!(el instanceof HTMLElement)) return;
     el.classList.add('layout-edit-target');
     el.dataset.layoutEditTarget = id;
-    el.dataset.layoutLabel = config.label;
+    el.dataset.layoutLabel = `Drag ${config.label}`;
+    el.title = `Drag ${config.label} to reposition`;
   });
 }
 
@@ -173,6 +279,7 @@ function handleLayoutPointerDown(event) {
   document.body?.classList.add('is-layout-dragging');
   event.preventDefault();
   event.stopPropagation();
+  announceLayoutEditor(`Moving ${config.label}.`);
 }
 
 function handleLayoutPointerMove(event) {
@@ -201,6 +308,15 @@ function handleLayoutPointerUp(event) {
   if (event.pointerId !== activeLayoutDrag.pointerId) return;
   event.preventDefault();
   stopLayoutDrag({ persist: true });
+  announceLayoutEditor('Position saved.');
+}
+
+function handleLayoutEditorKeydown(event) {
+  if (!preferenceState.editLayoutMode || event.key !== 'Escape') return;
+  const activeTag = document.activeElement?.tagName;
+  if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+  event.preventDefault();
+  setLayoutEditMode(false, { persist: true, announce: false });
 }
 
 function ensureLayoutBindings() {
@@ -211,6 +327,7 @@ function ensureLayoutBindings() {
   document.addEventListener('pointermove', handleLayoutPointerMove, true);
   document.addEventListener('pointerup', handleLayoutPointerUp, true);
   document.addEventListener('pointercancel', handleLayoutPointerUp, true);
+  document.addEventListener('keydown', handleLayoutEditorKeydown, true);
 }
 
 export async function setLayoutEditMode(enabled, { persist = true, announce = false } = {}) {
@@ -225,9 +342,19 @@ export async function setLayoutEditMode(enabled, { persist = true, announce = fa
   if (announce) {
     toast.info(
       next
-        ? 'Layout unlocked. Close Preferances and drag the dock, time, search, or quick links.'
-        : 'Layout locked.'
+        ? 'Layout editor ready. Drag highlighted areas, then press Done.'
+        : 'Layout saved.'
     );
+  }
+}
+
+export async function setTextDepth(enabled, { persist = true } = {}) {
+  const next = enabled !== false;
+  preferenceState.textDepth = next;
+  applyTextDepth(next);
+
+  if (persist) {
+    await Prefs.set('textDepth', next);
   }
 }
 

@@ -5,7 +5,7 @@ import { isValidUrl } from '../modules/utils.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
 import { DOM } from '../modules/dom.js';
-import { resetLayoutOffsets, setLayoutEditMode } from '../modules/preferences.js';
+import { resetLayoutOffsets, setLayoutEditMode, setTextDepth } from '../modules/preferences.js';
 
 let modalEl = null;
 let prefs = {};
@@ -18,6 +18,12 @@ let closeModalTimer = 0;
 
 const SETTINGS_OPEN_CLASS = 'is-settings-open';
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
+const FONT_OPTIONS = [
+  { id: 'system', label: 'System', family: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+  { id: 'poppins', label: 'Poppins', family: "'Poppins', sans-serif" },
+  { id: 'gloria', label: 'Gloria Hallelujah', family: "'Gloria Hallelujah', cursive" },
+  { id: 'silkscreen', label: 'Silkscreen', family: "'Silkscreen', monospace" },
+];
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
@@ -177,7 +183,36 @@ function buildModal() {
   renderThemes();
   sec2.appendChild(grid);
 
-  // Section 3 — Display
+  // Section 3 — Font
+  const secFont = document.createElement('div');
+  secFont.className = 'settings-card';
+  secFont.appendChild(sectionLabel('Font'));
+  const fontGrid = document.createElement('div');
+  fontGrid.className = 'settings-font-grid';
+  const renderFonts = () => {
+    fontGrid.innerHTML = '';
+    const activeFont = FONT_OPTIONS.some((font) => font.id === prefs.dashboardFont) ? prefs.dashboardFont : 'gloria';
+    FONT_OPTIONS.forEach((font) => {
+      const btn = document.createElement('button');
+      const active = activeFont === font.id;
+      btn.type = 'button';
+      btn.className = `settings-font-option${active ? ' is-active' : ''}`;
+      btn.textContent = font.label;
+      btn.style.fontFamily = font.family;
+      btn.setAttribute('aria-pressed', String(active));
+      btn.setAttribute('aria-label', `Use ${font.label} for time, date, and greeting`);
+      btn.onclick = async () => {
+        prefs.dashboardFont = font.id;
+        await Prefs.set('dashboardFont', font.id);
+        renderFonts();
+      };
+      fontGrid.appendChild(btn);
+    });
+  };
+  renderFonts();
+  secFont.appendChild(fontGrid);
+
+  // Section 4 — Display
   const sec3 = document.createElement('div');
   sec3.className = 'settings-card';
   sec3.appendChild(sectionLabel('Display'));
@@ -191,7 +226,7 @@ function buildModal() {
         prefs.textDepth !== false,
         async () => {
           prefs.textDepth = prefs.textDepth === false;
-          await Prefs.set('textDepth', prefs.textDepth);
+          await setTextDepth(prefs.textDepth, { persist: true });
           renderDisplay();
         }
       ),
@@ -207,13 +242,16 @@ function buildModal() {
       ),
       toggleRow(
         'Edit layout',
-        'Unlock the dashboard to reposition the dock, time, search, and quick links',
+        'Open a drag editor for the dock, time, search, and quick links',
         prefs.editLayoutMode === true,
         async () => {
           const next = prefs.editLayoutMode !== true;
           prefs.editLayoutMode = next;
-          await setLayoutEditMode(next, { persist: true, announce: true });
+          await setLayoutEditMode(next, { persist: true, announce: false });
           renderDisplay();
+          if (next) {
+            setTimeout(closeSettings, 180);
+          }
         }
       ),
       actionRow(
@@ -229,7 +267,7 @@ function buildModal() {
   renderDisplay();
   sec3.appendChild(displayRows);
 
-  // Section 4 — Widgets
+  // Section 5 — Widgets
   const sec4 = document.createElement('div');
   sec4.className = 'settings-card';
   sec4.appendChild(sectionLabel('Widgets'));
@@ -262,7 +300,7 @@ function buildModal() {
   renderWidgets();
   sec4.appendChild(widgetRows);
 
-  // Section 5 — Wallpaper
+  // Section 6 — Wallpaper
   const sec5 = document.createElement('div');
   sec5.className = 'settings-card';
   sec5.appendChild(sectionLabel('Wallpaper'));
@@ -302,7 +340,7 @@ function buildModal() {
   rebuildWpControls();
   sec5.appendChild(wpControls);
 
-  // Section 6 — Clock
+  // Section 7 — Clock
   const sec6 = document.createElement('div');
   sec6.className = 'settings-card';
   sec6.appendChild(sectionLabel('Clock'));
@@ -316,7 +354,7 @@ function buildModal() {
   };
   renderClock();
 
-  // Section 7 — Quick Links
+  // Section 8 — Quick Links
   const sec7 = document.createElement('div');
   sec7.className = 'settings-card';
   sec7.appendChild(sectionLabel('Quick Links'));
@@ -340,7 +378,7 @@ function buildModal() {
   footer.textContent = 'Acrylic v1.0.0 — Preferances sync across devices';
   footer.className = 'settings-footer-note';
 
-  box.append(header, sec1, sec2, sec3, sec4, sec5, sec6, sec7, footer);
+  box.append(header, sec1, sec2, secFont, sec3, sec4, sec5, sec6, sec7, footer);
   overlay.appendChild(box);
   return overlay;
 }
