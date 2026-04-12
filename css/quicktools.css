@@ -361,9 +361,14 @@
   gap: 6px;
 }
 
+.qt-tab-title-row {
+  justify-content: flex-start;
+}
+
 .qt-tab-title {
   min-width: 0;
-  flex: 1;
+  flex: 0 1 auto;
+  max-width: 100%;
   margin: 0;
   font-size: 0.78rem;
   font-weight: 500;

@@ -285,6 +285,13 @@ function createTabRow(tab) {
 
   titleRow.appendChild(title);
 
+  if (tab.active) {
+    const active = document.createElement('span');
+    active.className = 'qt-tab-state';
+    active.textContent = 'Current';
+    titleRow.appendChild(active);
+  }
+
   if (tab.pinned) {
     const pinned = document.createElement('span');
     pinned.className = 'qt-tab-badge';
@@ -299,13 +306,6 @@ function createTabRow(tab) {
   domain.textContent = getTabDomain(tab);
   domain.className = 'qt-muted qt-tab-meta';
   metaRow.appendChild(domain);
-
-  if (tab.active) {
-    const active = document.createElement('span');
-    active.className = 'qt-tab-state';
-    active.textContent = 'Current';
-    metaRow.appendChild(active);
-  }
 
   info.append(titleRow, metaRow);
   main.append(faviconImg(tab.favIconUrl), info);
