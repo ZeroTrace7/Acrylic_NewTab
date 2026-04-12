@@ -101,8 +101,9 @@ export function getFaviconFallbackUrl(url) {
 
 /** Truncates a string to maxLength characters, appending "…" if it exceeds the limit. */
 export function truncate(str, maxLength = 20) {
-  if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength) + '…';
+  const chars = [...str];
+  if (chars.length <= maxLength) return str;
+  return chars.slice(0, maxLength).join('') + '…';
 }
 
 /** Copies text to the clipboard, resolving to true on success or false on failure. */

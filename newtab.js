@@ -60,10 +60,8 @@ async function initApp() {
 
     // Step 2 — Onboarding check
     const onboardingDone = await Prefs.get('onboardingDone');
-    console.log('[Acrylic] onboardingDone:', onboardingDone);
     if (!onboardingDone) {
       const { initOnboarding } = await import('./onboarding/onboarding.js');
-      console.log('[Acrylic] Launching onboarding...');
       await initOnboarding();
     }
 
