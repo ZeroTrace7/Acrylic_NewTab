@@ -242,7 +242,7 @@ function buildModal() {
       ),
       toggleRow(
         'Edit layout',
-        'Open a drag editor for the dock, time, search, and quick links',
+        'Open a drag editor for widgets and corner controls',
         prefs.editLayoutMode === true,
         async () => {
           const next = prefs.editLayoutMode !== true;

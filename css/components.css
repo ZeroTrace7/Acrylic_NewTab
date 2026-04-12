@@ -1287,6 +1287,14 @@
   position: relative;
   cursor: grab;
   touch-action: none;
+  --layout-edit-frame-inset: -12px;
+  --layout-edit-frame-radius: 8px;
+  --layout-edit-frame-left: var(--layout-edit-frame-inset);
+  --layout-edit-frame-right: var(--layout-edit-frame-inset);
+  --layout-edit-frame-top: var(--layout-edit-frame-inset);
+  --layout-edit-frame-bottom: var(--layout-edit-frame-inset);
+  --layout-edit-frame-width: auto;
+  --layout-edit-frame-height: auto;
 }
 
 #app-body.is-layout-editing .layout-edit-target::after {
@@ -1312,11 +1320,67 @@
   white-space: nowrap;
 }
 
+#app-body.is-layout-editing #top-bar.layout-edit-target::after {
+  top: calc(100% + 8px);
+}
+
+#app-body.is-layout-editing #bottom-left-controls.layout-edit-target::after {
+  top: -30px;
+}
+
+#app-body.is-layout-editing #middle-zone.layout-edit-target {
+  --layout-edit-frame-width: min(540px, calc(100vw - 48px));
+  --layout-edit-frame-height: calc(100% + 36px);
+  --layout-edit-frame-left: 50%;
+  --layout-edit-frame-top: -18px;
+  --layout-edit-frame-right: auto;
+  --layout-edit-frame-bottom: auto;
+}
+
+#app-body.is-layout-editing #middle-zone.layout-edit-target::before {
+  transform: translateX(-50%);
+}
+
+#app-body.is-layout-editing #clock-zone.layout-edit-target {
+  --layout-edit-frame-width: calc(100% + 52px);
+  --layout-edit-frame-height: calc(100% + 32px);
+  --layout-edit-frame-left: 50%;
+  --layout-edit-frame-top: -16px;
+  --layout-edit-frame-right: auto;
+  --layout-edit-frame-bottom: auto;
+}
+
+#app-body.is-layout-editing #clock-zone.layout-edit-target::before {
+  transform: translateX(-50%);
+}
+
+#app-body.is-layout-editing #quicklinks-zone.layout-edit-target {
+  --layout-edit-frame-width: calc(100% + 32px);
+  --layout-edit-frame-height: calc(100% + 28px);
+  --layout-edit-frame-left: 50%;
+  --layout-edit-frame-top: -14px;
+  --layout-edit-frame-right: auto;
+  --layout-edit-frame-bottom: auto;
+}
+
+#app-body.is-layout-editing #quicklinks-zone.layout-edit-target::before {
+  transform: translateX(-50%);
+}
+
+#app-body.is-layout-editing :is(#top-bar, #bottom-left-controls).layout-edit-target {
+  --layout-edit-frame-inset: -10px;
+}
+
 #app-body.is-layout-editing .layout-edit-target::before {
   content: '';
   position: absolute;
-  inset: -12px;
-  border-radius: 8px;
+  left: var(--layout-edit-frame-left);
+  right: var(--layout-edit-frame-right);
+  top: var(--layout-edit-frame-top);
+  bottom: var(--layout-edit-frame-bottom);
+  width: var(--layout-edit-frame-width);
+  height: var(--layout-edit-frame-height);
+  border-radius: var(--layout-edit-frame-radius);
   border: 1px solid rgba(147, 197, 253, 0.34);
   background:
     linear-gradient(135deg, rgba(147, 197, 253, 0.10), rgba(34, 197, 94, 0.05)),

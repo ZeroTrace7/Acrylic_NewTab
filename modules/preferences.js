@@ -156,7 +156,7 @@ function ensureLayoutEditorHud() {
   eyebrow.textContent = 'Layout editor';
 
   const title = document.createElement('strong');
-  title.textContent = 'Drag highlighted areas';
+  title.textContent = 'Drag highlighted controls';
 
   const hint = document.createElement('span');
   hint.className = 'layout-editor-hint';
