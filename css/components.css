@@ -970,9 +970,10 @@
 }
 
 .modal-overlay.settings-overlay .modal-box.settings-box {
-  width: min(420px, 100vw);
+  width: var(--settings-drawer-width);
   height: 100vh;
   max-height: 100vh;
+  padding: 36px 18px 24px;
   opacity: 0;
   transform: translateX(100%);
   filter: blur(3px);

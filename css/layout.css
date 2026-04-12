@@ -12,6 +12,7 @@
   --quicklinks-offset-y: 0px;
   --sidebar-offset-x: 0px;
   --sidebar-offset-y: 0px;
+  --settings-drawer-width: min(440px, 100vw);
 }
 
 .layout-root {
@@ -161,6 +162,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+#app-body.is-settings-open #bottom-right-controls {
+  transform: translateX(calc(-1 * var(--settings-drawer-width)));
 }
 
 #bottom-right-controls .bottom-right-divider {

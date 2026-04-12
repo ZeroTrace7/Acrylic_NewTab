@@ -16,6 +16,7 @@ let openModalRaf = 0;
 let openModalRaf2 = 0;
 let closeModalTimer = 0;
 
+const SETTINGS_OPEN_CLASS = 'is-settings-open';
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
@@ -370,6 +371,7 @@ async function openSettings(callback) {
     openModalRaf2 = requestAnimationFrame(() => {
       openModalRaf2 = 0;
       if (!modalEl) return;
+      document.body?.classList.add(SETTINGS_OPEN_CLASS);
       modalEl.classList.add('is-open');
       modalEl.setAttribute('aria-hidden', 'false');
     });
@@ -404,6 +406,7 @@ function closeSettings() {
   if (closeModalTimer) return;
 
   const closingModal = modalEl;
+  document.body?.classList.remove(SETTINGS_OPEN_CLASS);
   closingModal.classList.remove('is-open');
   closingModal.setAttribute('aria-hidden', 'true');
   closeModalTimer = setTimeout(() => {
