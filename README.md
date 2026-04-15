@@ -64,7 +64,3 @@ Quick Links now use three distinct presentation modes tuned for the Acrylic UI i
 - Manifest V3 Chrome Extension
 - Pure ES modules (no bundler)
 - `chrome.storage.sync` for preferences, `chrome.storage.local` for app data
-
-## Important Architectural Note
-
-Acrylic is strictly local-first and intentionally avoids third-party APIs for core features like wallpapers (e.g., Unsplash). The system allows users to use their own image URLs or YouTube links. Adding external APIs would require API keys (privacy concern), introduce network dependency on new tab open (latency), and add failure points, directly contradicting Acrylic's privacy and performance pillars. Do not attempt to add or implement Unsplash integrations.
