@@ -17,16 +17,14 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
-let youtubeWallpaperToken = '';
-let youtubeWallpaperVideoId = '';
 let youtubeWallpaperFrame = null;
-let youtubeWallpaperBridgeBound = false;
+let youtubeWallpaperMonitor = null;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
-const YOUTUBE_WALLPAPER_BRIDGE_SOURCE = 'acrylic-youtube-wallpaper';
-const YOUTUBE_WALLPAPER_HOST_SOURCE = 'acrylic-youtube-wallpaper-host';
-const YOUTUBE_WALLPAPER_SANDBOX_URL = chrome.runtime.getURL('wallpaper/youtube-player.html');
+const YOUTUBE_PLAYER_STATE_PLAYING = 1;
+const YOUTUBE_PRE_END_FADE_SECONDS = 1.5;
+const YOUTUBE_MONITOR_INTERVAL_MS = 250;
 
 function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
@@ -87,6 +85,26 @@ function getYouTubeVideoId(url) {
   return YOUTUBE_ID_RE.test(candidate) ? candidate : '';
 }
 
+function buildYouTubeEmbedUrl(videoId) {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: '1',
+    controls: '0',
+    disablekb: '1',
+    fs: '0',
+    iv_load_policy: '3',
+    loop: '1',
+    modestbranding: '1',
+    playsinline: '1',
+    playlist: videoId,
+    rel: '0',
+    enablejsapi: '1',
+    origin: `chrome-extension://${chrome.runtime.id}`,
+  });
+
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
 function getImageLoadError() {
   return new Error('That link did not load as an image');
 }
@@ -142,7 +160,7 @@ async function resolveWallpaperSource(rawUrl) {
     return {
       type: 'youtube',
       url,
-      videoId: youtubeId,
+      embedUrl: buildYouTubeEmbedUrl(youtubeId),
     };
   }
 
@@ -164,80 +182,148 @@ function getWallpaperLayer() {
   return document.getElementById('bg-layer');
 }
 
-function ensureYouTubeWallpaperBridge() {
-  if (youtubeWallpaperBridgeBound) return;
+function getYouTubeFadeMask(container) {
+  return container?.querySelector?.('.video-fade-mask') || null;
+}
 
-  window.addEventListener('message', (event) => {
-    const data = event.data;
-    if (!data || data.source !== YOUTUBE_WALLPAPER_BRIDGE_SOURCE) return;
-    if (!youtubeWallpaperFrame || event.source !== youtubeWallpaperFrame.contentWindow) return;
-    if (!data.token || data.token !== youtubeWallpaperToken) return;
+function setYouTubeWallpaperPlaying(container, isPlaying) {
+  const mask = getYouTubeFadeMask(container);
+  if (!mask) return;
+  mask.classList.toggle('is-playing', isPlaying);
+}
 
-    switch (data.type) {
-      case 'bridge-ready':
-        postYouTubeWallpaperMessage({
-          type: 'init',
-          token: youtubeWallpaperToken,
-          videoId: youtubeWallpaperVideoId,
-          extensionOrigin: `chrome-extension://${chrome.runtime.id}`,
-        });
-        break;
-      case 'playing':
-        youtubeWallpaperFrame.classList.add('is-playing');
-        break;
-      case 'cued':
-      case 'unstarted':
-        youtubeWallpaperFrame.classList.remove('is-playing');
-        break;
-      case 'error':
-        youtubeWallpaperFrame.classList.remove('is-playing');
-        reportBackgroundError(`YouTube wallpaper playback failed (code ${data.code || 'unknown'})`, data);
-        break;
-      default:
-        break;
+function parseYouTubePlayerMessage(data) {
+  if (!data) return null;
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
     }
-  });
-
-  youtubeWallpaperBridgeBound = true;
+  }
+  return typeof data === 'object' ? data : null;
 }
 
-function postYouTubeWallpaperMessage(payload) {
-  youtubeWallpaperFrame?.contentWindow?.postMessage({
-    source: YOUTUBE_WALLPAPER_HOST_SOURCE,
-    ...payload,
-  }, '*');
+function isYouTubePlayerOrigin(origin) {
+  return origin === 'https://www.youtube.com'
+    || origin === 'https://youtube.com'
+    || origin === 'https://www.youtube-nocookie.com'
+    || origin === 'https://youtube-nocookie.com';
 }
 
-function resetYouTubeWallpaperState() {
-  youtubeWallpaperToken = '';
-  youtubeWallpaperVideoId = '';
-  youtubeWallpaperFrame = null;
+function stopYouTubeWallpaperMonitor() {
+  if (!youtubeWallpaperMonitor) return;
+  window.removeEventListener('message', youtubeWallpaperMonitor.handleMessage);
+  clearInterval(youtubeWallpaperMonitor.pollTimer);
+  clearTimeout(youtubeWallpaperMonitor.revealFallbackTimer);
+  youtubeWallpaperMonitor = null;
+}
+
+function startYouTubeWallpaperMonitor(frame, container) {
+  stopYouTubeWallpaperMonitor();
+
+  if (!(frame instanceof HTMLIFrameElement) || !(container instanceof HTMLElement)) return;
+
+  const playerOrigin = (() => {
+    try {
+      return new URL(frame.src).origin;
+    } catch {
+      return 'https://www.youtube.com';
+    }
+  })();
+
+  const postPlayerMessage = (payload) => {
+    if (youtubeWallpaperFrame !== frame) return;
+    try {
+      frame.contentWindow?.postMessage(JSON.stringify({
+        id: frame.id,
+        ...payload,
+      }), playerOrigin);
+    } catch {
+      // Ignore transient postMessage failures while the iframe is reloading.
+    }
+  };
+
+  const beginListening = () => {
+    postPlayerMessage({ event: 'listening' });
+    postPlayerMessage({ event: 'command', func: 'addEventListener', args: ['onStateChange'] });
+    postPlayerMessage({ event: 'command', func: 'getCurrentTime', args: [] });
+    postPlayerMessage({ event: 'command', func: 'getDuration', args: [] });
+  };
+
+  const monitor = {
+    container,
+    frame,
+    nearEndHidden: false,
+    pollTimer: 0,
+    revealFallbackTimer: 0,
+    handleMessage: null,
+  };
+
+  monitor.handleMessage = (event) => {
+    if (event.source !== frame.contentWindow || !isYouTubePlayerOrigin(event.origin)) return;
+
+    const message = parseYouTubePlayerMessage(event.data);
+    if (!message) return;
+
+    if (message.event === 'onStateChange') {
+      if (message.info === YOUTUBE_PLAYER_STATE_PLAYING) {
+        clearTimeout(monitor.revealFallbackTimer);
+        monitor.nearEndHidden = false;
+        setYouTubeWallpaperPlaying(container, true);
+      }
+      return;
+    }
+
+    if (message.event !== 'infoDelivery' || !message.info) return;
+
+    if (Number(message.info.playerState) === YOUTUBE_PLAYER_STATE_PLAYING) {
+      clearTimeout(monitor.revealFallbackTimer);
+      if (monitor.nearEndHidden) {
+        monitor.nearEndHidden = false;
+      }
+      setYouTubeWallpaperPlaying(container, true);
+    }
+
+    const duration = Number(message.info.duration);
+    const currentTime = Number(message.info.currentTime);
+    if (!Number.isFinite(duration) || !Number.isFinite(currentTime) || duration <= YOUTUBE_PRE_END_FADE_SECONDS) return;
+
+    if (currentTime >= duration - YOUTUBE_PRE_END_FADE_SECONDS) {
+      if (!monitor.nearEndHidden) {
+        monitor.nearEndHidden = true;
+        setYouTubeWallpaperPlaying(container, false);
+      }
+    }
+  };
+
+  window.addEventListener('message', monitor.handleMessage);
+  monitor.pollTimer = window.setInterval(beginListening, YOUTUBE_MONITOR_INTERVAL_MS);
+  monitor.revealFallbackTimer = window.setTimeout(() => {
+    if (youtubeWallpaperMonitor !== monitor) return;
+    setYouTubeWallpaperPlaying(container, true);
+  }, 4000);
+  youtubeWallpaperMonitor = monitor;
+
+  beginListening();
 }
 
 function clearWallpaperMedia() {
-  if (youtubeWallpaperFrame) {
-    postYouTubeWallpaperMessage({ type: 'destroy', token: youtubeWallpaperToken });
-  }
-  resetYouTubeWallpaperState();
+  stopYouTubeWallpaperMonitor();
+  youtubeWallpaperFrame = null;
   getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
 }
 
-function createWallpaperYouTubeShell(videoId) {
-  ensureYouTubeWallpaperBridge();
-
-  const token = `yt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-  youtubeWallpaperToken = token;
-  youtubeWallpaperVideoId = videoId;
-
+function createWallpaperYouTubeShell(embedUrl) {
   const container = document.createElement('div');
   container.className = 'youtube-wallpaper-container';
   container.dataset.wallpaperMedia = 'true';
 
   const frame = document.createElement('iframe');
   frame.id = 'youtube-bg-iframe';
-  frame.className = 'wallpaper-media youtube-wallpaper-frame';
-  frame.src = YOUTUBE_WALLPAPER_SANDBOX_URL;
-  frame.title = 'YouTube wallpaper player';
+  frame.className = 'wallpaper-media wallpaper-media-youtube';
+  frame.src = embedUrl;
+  frame.title = 'YouTube wallpaper';
   frame.tabIndex = -1;
   frame.loading = 'eager';
   frame.allow = 'autoplay; encrypted-media; picture-in-picture';
@@ -246,17 +332,12 @@ function createWallpaperYouTubeShell(videoId) {
   frame.setAttribute('aria-hidden', 'true');
   youtubeWallpaperFrame = frame;
   frame.addEventListener('load', () => {
-    if (youtubeWallpaperFrame !== frame || youtubeWallpaperToken !== token) return;
-    postYouTubeWallpaperMessage({
-      type: 'init',
-      token,
-      videoId,
-      extensionOrigin: `chrome-extension://${chrome.runtime.id}`,
-    });
+    if (youtubeWallpaperFrame !== frame) return;
+    startYouTubeWallpaperMonitor(frame, container);
   }, { once: true });
 
   const mask = document.createElement('div');
-  mask.className = 'acrylic-video-mask';
+  mask.className = 'video-fade-mask';
   mask.setAttribute('aria-hidden', 'true');
 
   container.append(frame, mask);
@@ -281,7 +362,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
 
   const layer = getWallpaperLayer();
   if (layer && source.type === 'youtube') {
-    layer.appendChild(createWallpaperYouTubeShell(source.videoId));
+    layer.appendChild(createWallpaperYouTubeShell(source.embedUrl));
   }
 
   if (body) body.classList.add('has-wallpaper');

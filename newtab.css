@@ -213,23 +213,26 @@ button:disabled {
 }
 
 #youtube-bg-iframe {
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-  width: 100vw;
-  height: 100vh;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, 177.7778vh);
+  height: max(56.25vw, 100vh);
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
-#youtube-bg-iframe.is-playing {
-  opacity: 1;
-}
-
-.acrylic-video-mask {
+.video-fade-mask {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.3);
+  background: #000;
+  opacity: 1;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.video-fade-mask.is-playing {
+  opacity: 0.3;
 }
 
 #bg-overlay {

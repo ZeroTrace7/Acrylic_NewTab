@@ -200,6 +200,32 @@ function getLinkById(id) {
     || null;
 }
 
+function renderFallbackIcon(iconEl, link) {
+  if (!iconEl) return;
+  iconEl.innerHTML = '';
+
+  const iconKey = resolveIconKey(link);
+  if (iconKey && MONO_ICONS[iconKey]) {
+    const iconData = MONO_ICONS[iconKey];
+    if (typeof iconData === 'string') {
+      iconEl.innerHTML = iconData;
+    } else if (iconData && iconData.path) {
+      const vb = iconData.viewBox || '0 0 24 24';
+      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white"><path d="${iconData.path}"/></svg>`;
+    }
+    const svgEl = iconEl.querySelector('svg');
+    if (svgEl) svgEl.style.cssText = 'width:22px;height:22px;opacity:0.9;';
+    return;
+  }
+
+  const domain = getNormalizedDomain(link?.url || '');
+  const letter = (link?.title || domain || '?').charAt(0).toUpperCase();
+  const fallbackSpan = document.createElement('span');
+  fallbackSpan.className = 'mono-text-fallback';
+  fallbackSpan.textContent = letter;
+  iconEl.appendChild(fallbackSpan);
+}
+
 function isRenderableTopSite(site) {
   if (!site?.url) return false;
   try {
@@ -262,7 +288,7 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
         triedFallback = true;
         img.src = fallbackUrl;
       } else {
-        img.style.display = 'none';
+        renderFallbackIcon(iconEl, link);
       }
     };
     iconEl.appendChild(img);
@@ -285,7 +311,6 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
 
   const domain = getNormalizedDomain(link?.url || '');
   if (!domain) return;
-  const letter = (link?.title || domain || '?').charAt(0).toUpperCase();
 
   const primaryUrl = getFaviconUrl(link?.url || '');
   const fallbackUrl = getFaviconFallbackUrl(link?.url || '');
@@ -303,11 +328,7 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
       triedFallback = true;
       img.src = fallbackUrl;
     } else {
-      img.remove();
-      const fallbackSpan = document.createElement('span');
-      fallbackSpan.className = 'mono-text-fallback';
-      fallbackSpan.textContent = letter;
-      iconEl.appendChild(fallbackSpan);
+      renderFallbackIcon(iconEl, link);
     }
   };
   iconEl.appendChild(img);

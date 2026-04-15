@@ -31,7 +31,7 @@ async function syncYouTubeEmbedRefererRule() {
         },
         condition: {
           initiatorDomains: [chrome.runtime.id],
-          requestDomains: ['www.youtube.com'],
+          requestDomains: ['youtube.com', 'www.youtube.com', 'youtube-nocookie.com', 'www.youtube-nocookie.com'],
           resourceTypes: ['sub_frame'],
         },
       },

@@ -84,19 +84,19 @@ export function sanitizeUrl(url) {
   return 'https://' + trimmed;
 }
 
-/** Returns an icon.horse favicon service URL for the given domain, or empty string if domain is invalid. */
+/** Returns a high-resolution Google favicon URL for the given domain, or empty string if domain is invalid. */
 export function getFaviconUrl(url) {
+  const domain = getDomain(url);
+  if (!domain) return '';
+  return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(sanitizeUrl(url))}&size=128`;
+}
+
+/** Returns an alternate favicon service URL for the given domain. */
+export function getFaviconFallbackUrl(url) {
   let domain = getDomain(url);
   if (!domain) return '';
   domain = domain.replace(/^www\./, '');
   return `https://icon.horse/icon/${domain}`;
-}
-
-/** Returns a Google favicon service URL which guarantees an image response (either real icon or generic globe). */
-export function getFaviconFallbackUrl(url) {
-  const domain = getDomain(url);
-  if (!domain) return '';
-  return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(sanitizeUrl(url))}&size=128`;
 }
 
 /** Truncates a string to maxLength characters, appending "…" if it exceeds the limit. */
