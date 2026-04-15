@@ -132,6 +132,242 @@ function slider(label, value, min, max, step, unit, oninput) {
   return wrap;
 }
 
+// ── About & Support helpers ─────────────────────────────
+
+const CHANGELOG = [
+  { icon: '🎨', text: 'Glassmorphism 2.0 UI — 8 premium themes' },
+  { icon: '⏱️', text: 'Pomodoro Timer with ambient sounds' },
+  { icon: '📝', text: 'Notes panel with rich text support' },
+  { icon: '🔗', text: 'Quick Links with drag-to-reorder' },
+  { icon: '✅', text: 'Smart To-Do list with scribble strike' },
+  { icon: '🗂️', text: 'Tabs manager with live sync' },
+  { icon: '📋', text: 'Clipboard history — last 20 items' },
+  { icon: '🔍', text: 'Search history with instant filter' },
+  { icon: '🖼️', text: 'Wallpaper support — image URL + YouTube' },
+  { icon: '🎛️', text: 'Layout editor — drag any widget' },
+  { icon: '🧩', text: 'Extensions manager panel' },
+  { icon: '✨', text: 'Onboarding flow for new users' },
+];
+
+function openWhatsNew() {
+  const overlay = document.createElement('div');
+  overlay.className = 'whats-new-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', "What's New in Acrylic");
+
+  const box = document.createElement('div');
+  box.className = 'whats-new-box';
+  box.onclick = (e) => e.stopPropagation();
+
+  const hdr = document.createElement('div');
+  hdr.className = 'whats-new-header';
+
+  const htitle = document.createElement('div');
+  htitle.className = 'whats-new-title';
+  htitle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex-shrink:0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>What's New`;
+
+  const hbadge = document.createElement('div');
+  hbadge.className = 'whats-new-version';
+  hbadge.textContent = 'v1.0.0 — Initial Release';
+
+  const hclose = document.createElement('button');
+  hclose.type = 'button';
+  hclose.className = 'whats-new-close';
+  hclose.setAttribute('aria-label', 'Close');
+  hclose.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+
+  hdr.append(htitle, hbadge, hclose);
+
+  const list = document.createElement('div');
+  list.className = 'whats-new-list';
+  CHANGELOG.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'whats-new-item';
+    const em = document.createElement('span');
+    em.className = 'whats-new-item-icon';
+    em.textContent = item.icon;
+    em.setAttribute('aria-hidden', 'true');
+    const txt = document.createElement('span');
+    txt.className = 'whats-new-item-text';
+    txt.textContent = item.text;
+    row.append(em, txt);
+    list.appendChild(row);
+  });
+
+  box.append(hdr, list);
+  overlay.appendChild(box);
+
+  const dismiss = () => {
+    overlay.classList.remove('is-open');
+    overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+    document.removeEventListener('keydown', wnKeyHandler);
+  };
+  const wnKeyHandler = (e) => { if (e.key === 'Escape') dismiss(); };
+  overlay.addEventListener('click', dismiss);
+  hclose.addEventListener('click', (e) => { e.stopPropagation(); dismiss(); });
+  document.addEventListener('keydown', wnKeyHandler);
+
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('is-open')));
+}
+
+async function exportData() {
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(null),
+    chrome.storage.local.get(null),
+  ]);
+  const payload = JSON.stringify({
+    _meta: { app: 'Acrylic', version: '1.0.0', exportedAt: new Date().toISOString() },
+    preferences: syncData,
+    localData,
+  }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `acrylic-backup-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function mkAboutIcon(svgInner, colorClass) {
+  const wrap = document.createElement('div');
+  wrap.className = `about-card-icon ${colorClass}`;
+  wrap.innerHTML = svgInner;
+  wrap.setAttribute('aria-hidden', 'true');
+  return wrap;
+}
+
+function buildAboutSection() {
+  const sec = document.createElement('div');
+  sec.className = 'settings-card';
+  sec.appendChild(sectionLabel('About & Support'));
+
+  const grid = document.createElement('div');
+  grid.className = 'about-grid';
+
+  // ── Rate Acrylic (feature card) ─────────────────────────
+  const rateCard = document.createElement('button');
+  rateCard.type = 'button';
+  rateCard.className = 'about-card about-card-feature';
+  rateCard.setAttribute('aria-label', 'Rate Acrylic on the Chrome Web Store');
+  rateCard.onclick = () => {
+    // TODO: replace '#' with Chrome Web Store URL when Acrylic is published
+    window.open('#', '_blank', 'noopener');
+  };
+  const rateIcon = document.createElement('div');
+  rateIcon.className = 'about-card-feature-icon';
+  rateIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  const rateTitle = document.createElement('div');
+  rateTitle.className = 'about-card-feature-title';
+  rateTitle.textContent = 'Rate Acrylic';
+  const rateDesc = document.createElement('div');
+  rateDesc.className = 'about-card-feature-desc';
+  rateDesc.textContent = 'Loving Acrylic? Leave a review!';
+  rateCard.append(rateIcon, rateTitle, rateDesc);
+
+  // ── Right column (What's New + Report Bug) ──────────────
+  const rightCol = document.createElement('div');
+  rightCol.className = 'about-col-right';
+
+  const wnCard = document.createElement('button');
+  wnCard.type = 'button';
+  wnCard.className = 'about-card about-card-sm';
+  wnCard.setAttribute('aria-label', "See what's new in Acrylic");
+  wnCard.onclick = openWhatsNew;
+  const wnIcon = mkAboutIcon(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`, 'about-icon-amber');
+  const wnCopy = document.createElement('div');
+  const wnTitle = document.createElement('div'); wnTitle.className = 'about-card-sm-title'; wnTitle.textContent = "What's New";
+  const wnDesc = document.createElement('div'); wnDesc.className = 'about-card-sm-desc'; wnDesc.textContent = 'Latest features & fixes';
+  wnCopy.append(wnTitle, wnDesc);
+  wnCard.append(wnIcon, wnCopy);
+
+  const bugCard = document.createElement('button');
+  bugCard.type = 'button';
+  bugCard.className = 'about-card about-card-sm';
+  bugCard.setAttribute('aria-label', 'Report a bug on GitHub');
+  bugCard.onclick = () => window.open('https://github.com/ZeroTrace7/Acrylic_NewTab/issues/new', '_blank', 'noopener');
+  const bugIcon = mkAboutIcon(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`, 'about-icon-muted');
+  const bugCopy = document.createElement('div');
+  const bugTitle = document.createElement('div'); bugTitle.className = 'about-card-sm-title'; bugTitle.textContent = 'Report Bug';
+  const bugDesc = document.createElement('div'); bugDesc.className = 'about-card-sm-desc'; bugDesc.textContent = 'Create a GitHub issue';
+  bugCopy.append(bugTitle, bugDesc);
+  bugCard.append(bugIcon, bugCopy);
+
+  rightCol.append(wnCard, bugCard);
+
+  // ── Export Your Data (full width) ───────────────────────
+  const exportCard = document.createElement('button');
+  exportCard.type = 'button';
+  exportCard.className = 'about-card about-card-full';
+  exportCard.setAttribute('aria-label', 'Export your Acrylic data as JSON');
+  const exportIcon = mkAboutIcon(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`, 'about-icon-blue');
+  const exportCopy = document.createElement('div');
+  const exportTitleEl = document.createElement('div'); exportTitleEl.className = 'about-card-sm-title'; exportTitleEl.textContent = 'Export Your Data';
+  const exportDescEl = document.createElement('div'); exportDescEl.className = 'about-card-sm-desc'; exportDescEl.textContent = 'Download backup as JSON';
+  exportCopy.append(exportTitleEl, exportDescEl);
+  exportCard.append(exportIcon, exportCopy);
+  exportCard.onclick = async () => {
+    if (exportCard.disabled) return;
+    exportCard.disabled = true;
+    exportTitleEl.textContent = 'Exporting…';
+    try {
+      await exportData();
+      exportTitleEl.textContent = 'Downloaded! ✓';
+      setTimeout(() => { exportTitleEl.textContent = 'Export Your Data'; exportCard.disabled = false; }, 2200);
+    } catch {
+      exportTitleEl.textContent = 'Export Your Data';
+      exportCard.disabled = false;
+    }
+  };
+
+  grid.append(rateCard, rightCol, exportCard);
+  sec.appendChild(grid);
+  return sec;
+}
+
+function buildAboutFooter() {
+  const footer = document.createElement('div');
+  footer.className = 'about-footer-strip';
+
+  const meta = document.createElement('span');
+  meta.className = 'about-footer-meta';
+  meta.textContent = 'Acrylic v1.0.0 · Built by Shreyash Gupta';
+
+  const socials = document.createElement('div');
+  socials.className = 'about-footer-socials';
+
+  const mkSocial = (href, label, svgInner) => {
+    const a = document.createElement('a');
+    a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
+    a.className = 'about-social-btn';
+    a.setAttribute('aria-label', label);
+    a.innerHTML = svgInner;
+    return a;
+  };
+
+  socials.append(
+    mkSocial(
+      'https://github.com/ZeroTrace7/Acrylic_NewTab', 'Acrylic on GitHub',
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    ),
+    mkSocial(
+      'https://github.com/ZeroTrace7', 'GitHub profile',
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
+    ),
+    mkSocial(
+      'https://www.linkedin.com/in/shreyashgupta55', 'LinkedIn profile',
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>`,
+    ),
+  );
+
+  footer.append(meta, socials);
+  return footer;
+}
+
 function buildModal() {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay settings-overlay';
@@ -484,12 +720,13 @@ function buildModal() {
   qlHint.setAttribute('style', 'font-size:0.75rem;color:var(--text-secondary);margin-top:2px;');
   sec7.appendChild(qlHint);
 
-  // Footer
-  const footer = document.createElement('div');
-  footer.textContent = 'Acrylic v1.0.0 — Preferences sync across devices';
-  footer.className = 'settings-footer-note';
+  // Section 9 — About & Support
+  const sec8 = buildAboutSection();
 
-  box.append(header, sec1, sec2, sec5, secFont, sec3, sec4, sec6, sec7, footer);
+  // Footer
+  const footer = buildAboutFooter();
+
+  box.append(header, sec1, sec2, sec5, secFont, sec3, sec4, sec6, sec7, sec8, footer);
   overlay.appendChild(box);
   return overlay;
 }
