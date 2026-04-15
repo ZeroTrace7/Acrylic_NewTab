@@ -364,7 +364,7 @@ function buildModal() {
   const wpRow = document.createElement('div');
   wpRow.setAttribute('style', 'display:flex;gap:8px;');
   const wpIn = document.createElement('input');
-  wpIn.type = 'text'; wpIn.placeholder = 'Paste an image URL (Unsplash, etc.)'; wpIn.value = prefs.wallpaperUrl || '';
+  wpIn.type = 'text'; wpIn.placeholder = 'Paste image, video, or YouTube URL'; wpIn.value = prefs.wallpaperUrl || '';
   wpIn.setAttribute('style', 'flex:1;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;');
   const applyBtn = document.createElement('button');
   applyBtn.textContent = 'Apply';

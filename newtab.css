@@ -183,6 +183,7 @@ button:disabled {
   position: fixed;
   inset: 0;
   z-index: -3;
+  overflow: hidden;
   background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
@@ -191,6 +192,27 @@ button:disabled {
   transition:
     background-image var(--dur-slow) var(--ease-glass),
     filter var(--dur-mid) var(--ease-glass);
+}
+
+.wallpaper-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+
+.wallpaper-media-video {
+  object-fit: cover;
+}
+
+.wallpaper-media-youtube {
+  top: 50%;
+  left: 50%;
+  width: max(100vw, 177.7778vh);
+  height: max(56.25vw, 100vh);
+  transform: translate(-50%, -50%);
 }
 
 #bg-overlay {

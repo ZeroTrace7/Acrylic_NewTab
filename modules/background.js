@@ -19,6 +19,8 @@ let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
+const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+const VIDEO_EXT_RE = /\.(mp4|webm|ogv|ogg|mov|m4v)(?:[?#].*)?$/i;
 
 function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
@@ -55,6 +57,54 @@ function normalizeWallpaperUrl(value) {
   }
 
   return parsed.href;
+}
+
+function getYouTubeVideoId(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return '';
+  }
+
+  const hostname = parsed.hostname.replace(/^www\./i, '').toLowerCase();
+  let candidate = '';
+
+  if (hostname === 'youtu.be') {
+    candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
+  } else if (hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'music.youtube.com' || hostname === 'youtube-nocookie.com') {
+    if (parsed.pathname === '/watch') {
+      candidate = parsed.searchParams.get('v') || '';
+    } else {
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      if (['embed', 'shorts', 'live'].includes(parts[0])) {
+        candidate = parts[1] || '';
+      }
+    }
+  }
+
+  return YOUTUBE_ID_RE.test(candidate) ? candidate : '';
+}
+
+function buildYouTubeEmbedUrl(videoId) {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: '1',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    disablekb: '1',
+    fs: '0',
+    iv_load_policy: '3',
+    playsinline: '1',
+    rel: '0',
+  });
+
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+}
+
+function isLikelyVideoUrl(url) {
+  return VIDEO_EXT_RE.test(url);
 }
 
 function getImageLoadError() {
@@ -104,34 +154,150 @@ function validateWallpaperImage(url) {
   });
 }
 
+function validateWallpaperVideo(url) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    let settled = false;
+
+    const finish = (callback, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      video.onloadedmetadata = null;
+      video.onerror = null;
+      video.removeAttribute('src');
+      video.load();
+      callback(value);
+    };
+
+    const timeoutId = setTimeout(() => {
+      finish(reject, new Error('Wallpaper video took too long to load'));
+    }, WALLPAPER_LOAD_TIMEOUT_MS);
+
+    video.preload = 'metadata';
+    video.muted = true;
+    video.playsInline = true;
+    video.onloadedmetadata = () => {
+      if (video.videoWidth > 0 && video.videoHeight > 0) {
+        finish(resolve, url);
+        return;
+      }
+      finish(reject, new Error('That link did not load as a video'));
+    };
+    video.onerror = () => finish(reject, new Error('That link did not load as a video'));
+    video.src = url;
+    video.load();
+  });
+}
+
+async function resolveWallpaperSource(rawUrl) {
+  const url = normalizeWallpaperUrl(rawUrl);
+  const youtubeId = getYouTubeVideoId(url);
+
+  if (youtubeId) {
+    return {
+      type: 'youtube',
+      url,
+      embedUrl: buildYouTubeEmbedUrl(youtubeId),
+    };
+  }
+
+  if (isLikelyVideoUrl(url)) {
+    await validateWallpaperVideo(url);
+    return { type: 'video', url };
+  }
+
+  try {
+    await validateWallpaperImage(url);
+    return { type: 'image', url };
+  } catch (imageError) {
+    try {
+      await validateWallpaperVideo(url);
+      return { type: 'video', url };
+    } catch {
+      throw new Error('Use a direct image URL, direct video URL, or YouTube video link');
+    }
+  }
+}
+
 function applyWallpaperAppearance(blur = 0, darken = 0.45) {
   const root = document.documentElement.style;
   root.setProperty('--bg-blur-amount', `${Number.isFinite(blur) ? blur : 0}px`);
   root.setProperty('--bg-darken', Number.isFinite(darken) ? darken : 0.45);
 }
 
-function applyWallpaperToDom(url, blur = 0, darken = 0.45) {
+function getWallpaperLayer() {
+  return document.getElementById('bg-layer');
+}
+
+function clearWallpaperMedia() {
+  getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
+}
+
+function createWallpaperVideo(url) {
+  const video = document.createElement('video');
+  video.className = 'wallpaper-media wallpaper-media-video';
+  video.dataset.wallpaperMedia = 'true';
+  video.src = url;
+  video.autoplay = true;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'auto';
+  video.setAttribute('aria-hidden', 'true');
+  video.addEventListener('canplay', () => {
+    video.play().catch(() => {});
+  }, { once: true });
+  return video;
+}
+
+function createWallpaperYouTubeFrame(embedUrl) {
+  const frame = document.createElement('iframe');
+  frame.className = 'wallpaper-media wallpaper-media-youtube';
+  frame.dataset.wallpaperMedia = 'true';
+  frame.src = embedUrl;
+  frame.title = 'YouTube wallpaper';
+  frame.tabIndex = -1;
+  frame.allow = 'autoplay; encrypted-media; picture-in-picture';
+  frame.referrerPolicy = 'strict-origin-when-cross-origin';
+  frame.setAttribute('aria-hidden', 'true');
+  return frame;
+}
+
+function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
   const root = document.documentElement.style;
   const body = getBodyEl();
-  if (!url) {
+  if (!source) {
+    clearWallpaperMedia();
     root.setProperty('--bg-image', 'none');
     if (body) body.classList.remove('has-wallpaper');
     currentWallpaperUrl = '';
     applyTheme(currentTheme);
     return;
   }
-  root.setProperty('--bg-image', `url(${JSON.stringify(url)})`);
+
+  clearWallpaperMedia();
+  root.setProperty('--bg-image', source.type === 'image' ? `url(${JSON.stringify(source.url)})` : 'none');
   applyWallpaperAppearance(blur, darken);
+
+  const layer = getWallpaperLayer();
+  if (layer && source.type === 'video') {
+    layer.appendChild(createWallpaperVideo(source.url));
+  }
+  if (layer && source.type === 'youtube') {
+    layer.appendChild(createWallpaperYouTubeFrame(source.embedUrl));
+  }
+
   if (body) body.classList.add('has-wallpaper');
-  currentWallpaperUrl = url;
+  currentWallpaperUrl = source.url;
 }
 
 async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.45, { persist = false, silent = false } = {}) {
-  const url = normalizeWallpaperUrl(rawUrl);
   const requestId = ++wallpaperRequestId;
+  let source;
 
   try {
-    await validateWallpaperImage(url);
+    source = await resolveWallpaperSource(rawUrl);
   } catch (err) {
     if (requestId === wallpaperRequestId && !silent) {
       toast.error(err?.message || 'Wallpaper failed to load');
@@ -143,13 +309,13 @@ async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.45, { persist 
     throw new Error('Wallpaper request was superseded');
   }
 
-  applyWallpaperToDom(url, blur, darken);
+  applyWallpaperSourceToDom(source, blur, darken);
 
   if (persist) {
-    await Prefs.setMany({ wallpaperUrl: url, wallpaperBlur: blur, wallpaperDarken: darken });
+    await Prefs.setMany({ wallpaperUrl: source.url, wallpaperBlur: blur, wallpaperDarken: darken });
   }
 
-  return url;
+  return source.url;
 }
 
 function applyGrain(opacity) {
@@ -182,7 +348,7 @@ export async function initBackground() {
       if (changes.wallpaperUrl) {
         loadAndApplyWallpaper(changes.wallpaperUrl, blur, darken, { silent: false }).catch(() => {});
       } else {
-        applyWallpaperToDom('');
+        applyWallpaperSourceToDom(null);
       }
     }
     if ('wallpaperBlur' in changes) applyBlur(changes.wallpaperBlur);
@@ -203,7 +369,7 @@ export async function setWallpaper(url, blur = 0, darken = 0.45) {
 
 export function clearWallpaper() {
   wallpaperRequestId++;
-  applyWallpaperToDom('');
+  applyWallpaperSourceToDom(null);
   Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 });
 }
 

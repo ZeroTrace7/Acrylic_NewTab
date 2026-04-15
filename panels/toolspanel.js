@@ -190,7 +190,13 @@ function openPanel(callback) {
   panelEl = buildPanel();
   (mount || document.body).appendChild(panelEl);
   panelEl.classList.remove('is-open');
-  panelEl.querySelector('#panel-content').innerHTML = '';
+  const panelContent = panelEl.querySelector('#panel-content');
+  if (!(panelContent instanceof HTMLElement)) {
+    toast.error('Failed to initialize tools panel');
+    closePanel();
+    return;
+  }
+  panelContent.innerHTML = '';
   currentStageEl = null;
   tabSwitchToken++;
 
@@ -209,7 +215,13 @@ function openPanel(callback) {
       });
     });
   });
-  panelEl.querySelector('#panel-close-btn').onclick = closePanel;
+  const panelCloseBtn = panelEl.querySelector('#panel-close-btn');
+  if (!(panelCloseBtn instanceof HTMLButtonElement)) {
+    toast.error('Failed to initialize tools panel');
+    closePanel();
+    return;
+  }
+  panelCloseBtn.onclick = closePanel;
   handleDocumentMouseDown = (e) => {
     const quickToolsBtn = DOM.quickToolsBtn;
     const fab = DOM.toolsFab;

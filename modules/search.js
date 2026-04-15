@@ -22,6 +22,15 @@ let pickerFocusTimer = 0;
 let searchHistoryEnabled = true;
 let searchHistoryItems = [];
 
+function handleSearchError(error) {
+  console.error('Search failed:', error);
+  toast.error('Search failed. Please try again.');
+}
+
+function triggerSearch(query) {
+  void performSearch(query).catch(handleSearchError);
+}
+
 function getHistoryPanel() {
   return DOM.searchHistoryPanel;
 }
@@ -58,9 +67,13 @@ function renderHistoryPanel(filterText = '') {
   header.querySelector('.search-history-clear')?.addEventListener('click', async (event) => {
     event.preventDefault();
     event.stopPropagation();
-    searchHistoryItems = [];
-    await Store.setSearchHistory([]);
-    closeHistoryPanel();
+    try {
+      searchHistoryItems = [];
+      await Store.setSearchHistory([]);
+      closeHistoryPanel();
+    } catch (error) {
+      handleSearchError(error);
+    }
   });
 
   panel.appendChild(header);
@@ -96,9 +109,9 @@ function renderHistoryPanel(filterText = '') {
     copy.append(query, meta);
 
     button.append(icon, copy);
-    button.addEventListener('click', async () => {
+    button.addEventListener('click', () => {
       if (DOM.searchInput) DOM.searchInput.value = item;
-      await performSearch(item);
+      triggerSearch(item);
     });
     panel.appendChild(button);
   });
@@ -391,7 +404,7 @@ export async function initSearch() {
 
   if (input) {
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') performSearch(input.value);
+      if (e.key === 'Enter') triggerSearch(input.value);
       if (e.key === 'Escape') closeHistoryPanel();
       if (e.key === 'ArrowDown' && getHistoryPanel()?.classList.contains('is-open')) {
         const firstSuggestion = getHistoryPanel()?.querySelector('.search-history-item');
@@ -422,7 +435,7 @@ export async function initSearch() {
   }
 
   if (submit) {
-    submit.addEventListener('click', () => performSearch(input?.value || ''));
+    submit.addEventListener('click', () => triggerSearch(input?.value || ''));
   }
 
   document.addEventListener('click', (e) => {
