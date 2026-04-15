@@ -124,9 +124,15 @@ function applyTextDepth(enabled) {
   document.body?.classList.toggle('text-depth-disabled', !enabled);
 }
 
+function setElementHidden(element, hidden) {
+  if (!(element instanceof HTMLElement)) return;
+  element.hidden = hidden;
+  element.setAttribute('aria-hidden', String(hidden));
+}
+
 function applyWidgetVisibility() {
-  if (DOM.clockZone) DOM.clockZone.hidden = !preferenceState.showClock;
-  if (DOM.greeting) DOM.greeting.hidden = !preferenceState.showGreeting;
+  setElementHidden(DOM.clockZone, !preferenceState.showClock);
+  setElementHidden(DOM.greeting, !preferenceState.showGreeting);
 }
 
 function announceLayoutEditor(message) {
