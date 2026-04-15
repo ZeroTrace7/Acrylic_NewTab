@@ -80,6 +80,21 @@
   display: none !important;
 }
 
+.widget-visibility-target {
+  transition:
+    opacity 560ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 560ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+
+.widget-visibility-target.is-widget-hidden {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0) scale(0.985);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
 /* ────────────────────────────────────────────────────────────
    SECTION 2 — Reset & Basee
    ──────────────────────────────────────────────────────────── */

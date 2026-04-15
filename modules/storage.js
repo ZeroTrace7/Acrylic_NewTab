@@ -21,6 +21,12 @@ export const Prefs = {
     editLayoutMode:  false,
     showClock:       true,
     showGreeting:    true,
+    showSearchBar:   true,
+    showQuickLinks:  true,
+    showMostVisited: true,
+    showToDoList:    true,
+    showQuickTools:  true,
+    showZenButton:   true,
     layoutOffsets: {
       clockX:      0,
       clockY:      0,

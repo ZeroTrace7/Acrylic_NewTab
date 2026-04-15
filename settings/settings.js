@@ -15,6 +15,7 @@ let themeChangedHandler = null;
 let openModalRaf = 0;
 let openModalRaf2 = 0;
 let closeModalTimer = 0;
+let widgetsExpanded = false;
 
 const SETTINGS_OPEN_CLASS = 'is-settings-open';
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
@@ -66,6 +67,18 @@ function toggleRow(label, description, on, onclick) {
     copy.appendChild(desc);
   }
   row.append(copy, toggle(on, onclick, label));
+  return row;
+}
+
+function compactToggleRow(label, on, onclick) {
+  const row = document.createElement('div');
+  row.className = 'settings-widget-compact-row';
+
+  const title = document.createElement('div');
+  title.className = 'settings-widget-compact-title';
+  title.textContent = label;
+
+  row.append(title, toggle(on, onclick, label));
   return row;
 }
 
@@ -274,28 +287,58 @@ function buildModal() {
   const widgetRows = document.createElement('div');
   const renderWidgets = () => {
     widgetRows.innerHTML = '';
-    widgetRows.append(
-      toggleRow(
-        'Time',
-        'Show or hide the clock and date block',
-        prefs.showClock !== false,
-        async () => {
-          prefs.showClock = prefs.showClock === false;
-          await Prefs.set('showClock', prefs.showClock);
-          renderWidgets();
-        }
-      ),
-      toggleRow(
-        'Greeting',
-        'Show or hide the greeting above the search bar',
-        prefs.showGreeting !== false,
-        async () => {
-          prefs.showGreeting = prefs.showGreeting === false;
-          await Prefs.set('showGreeting', prefs.showGreeting);
-          renderWidgets();
-        }
-      )
-    );
+    const primaryWidgetOptions = [
+      ['showClock', 'Time', 'Show or hide the clock and date block'],
+      ['showGreeting', 'Greeting', 'Show or hide the greeting above the search bar'],
+    ];
+
+    const secondaryWidgetOptions = [
+      ['showSearchBar', 'Search Bar'],
+      ['showQuickLinks', 'Quick Links'],
+      ['showMostVisited', 'Most Visited'],
+      ['showToDoList', 'To-Do List'],
+      ['showQuickTools', 'Quick Tools'],
+      ['showZenButton', 'Zen Mode Button'],
+    ];
+
+    const toggleWidget = async (key) => {
+      prefs[key] = prefs[key] === false;
+      await Prefs.set(key, prefs[key]);
+      renderWidgets();
+    };
+
+    primaryWidgetOptions.forEach(([key, label, description]) => {
+      widgetRows.appendChild(toggleRow(label, description, prefs[key] !== false, async () => {
+        await toggleWidget(key);
+      }));
+    });
+
+    const disclosure = document.createElement('button');
+    disclosure.type = 'button';
+    disclosure.className = 'settings-widget-disclosure';
+    disclosure.setAttribute('aria-expanded', String(widgetsExpanded));
+    disclosure.innerHTML = `
+      <span>${widgetsExpanded ? 'Show fewer widgets' : 'Show more widgets'}</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    `;
+    disclosure.addEventListener('click', () => {
+      widgetsExpanded = !widgetsExpanded;
+      renderWidgets();
+    });
+    widgetRows.appendChild(disclosure);
+
+    if (!widgetsExpanded) return;
+
+    const expandedRows = document.createElement('div');
+    expandedRows.className = 'settings-widget-expanded';
+    secondaryWidgetOptions.forEach(([key, label]) => {
+      expandedRows.appendChild(compactToggleRow(label, prefs[key] !== false, async () => {
+        await toggleWidget(key);
+      }));
+    });
+    widgetRows.appendChild(expandedRows);
   };
   renderWidgets();
   sec4.appendChild(widgetRows);

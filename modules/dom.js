@@ -27,6 +27,10 @@ export const DOM = {
     return document.getElementById('search-section');
   },
 
+  get topBar() {
+    return document.getElementById('top-bar');
+  },
+
   get searchSubmit() {
     return document.getElementById('search-submit');
   },
@@ -105,6 +109,14 @@ export const DOM = {
 
   get rightPanel() {
     return document.getElementById('right-panel');
+  },
+
+  get bottomLeftControls() {
+    return document.getElementById('bottom-left-controls');
+  },
+
+  get bottomRightDivider() {
+    return document.querySelector('#bottom-right-controls .bottom-right-divider');
   },
 
   get toolsPanelMount() {

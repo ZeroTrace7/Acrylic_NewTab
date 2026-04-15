@@ -61,6 +61,7 @@ const DASHBOARD_FONTS = Object.freeze({
 });
 
 const LAYOUT_EDGE_PADDING = 12;
+const WIDGET_TRANSITION_MS = 560;
 
 export const DEFAULT_LAYOUT_OFFSETS = Object.freeze({
   clockX: 0,
@@ -82,6 +83,12 @@ const preferenceState = {
   editLayoutMode: false,
   showClock: true,
   showGreeting: true,
+  showSearchBar: true,
+  showQuickLinks: true,
+  showMostVisited: true,
+  showToDoList: true,
+  showQuickTools: true,
+  showZenButton: true,
   dashboardFont: 'gloria',
   layoutOffsets: { ...DEFAULT_LAYOUT_OFFSETS },
 };
@@ -92,6 +99,7 @@ let activeLayoutDrag = null;
 let layoutEditorHud = null;
 let layoutEditorHudTimer = 0;
 let activeHudDrag = null;
+const widgetVisibilityTimers = new WeakMap();
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -124,15 +132,120 @@ function applyTextDepth(enabled) {
   document.body?.classList.toggle('text-depth-disabled', !enabled);
 }
 
-function setElementHidden(element, hidden) {
+function clearWidgetVisibilityTimer(element) {
   if (!(element instanceof HTMLElement)) return;
-  element.hidden = hidden;
-  element.setAttribute('aria-hidden', String(hidden));
+  const timer = widgetVisibilityTimers.get(element);
+  if (!timer) return;
+  clearTimeout(timer);
+  widgetVisibilityTimers.delete(element);
 }
 
-function applyWidgetVisibility() {
-  setElementHidden(DOM.clockZone, !preferenceState.showClock);
-  setElementHidden(DOM.greeting, !preferenceState.showGreeting);
+function prepareWidgetElement(element) {
+  if (!(element instanceof HTMLElement)) return;
+  element.classList.add('widget-visibility-target');
+}
+
+function setElementVisibility(element, visible, { immediate = false } = {}) {
+  if (!(element instanceof HTMLElement)) return;
+
+  prepareWidgetElement(element);
+  clearWidgetVisibilityTimer(element);
+
+  if (visible) {
+    element.hidden = false;
+    element.setAttribute('aria-hidden', 'false');
+
+    if (immediate) {
+      element.classList.remove('is-widget-hidden');
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      if (!element.isConnected) return;
+      element.classList.remove('is-widget-hidden');
+    });
+    return;
+  }
+
+  element.setAttribute('aria-hidden', 'true');
+
+  if (immediate) {
+    element.classList.add('is-widget-hidden');
+    element.hidden = true;
+    return;
+  }
+
+  element.classList.add('is-widget-hidden');
+  const timer = window.setTimeout(() => {
+    if (element.classList.contains('is-widget-hidden')) {
+      element.hidden = true;
+    }
+    widgetVisibilityTimers.delete(element);
+  }, WIDGET_TRANSITION_MS);
+  widgetVisibilityTimers.set(element, timer);
+}
+
+function closeTasksLauncher() {
+  const button = DOM.tasksBtn;
+  if (button?.getAttribute('aria-expanded') === 'true') {
+    button.click();
+  }
+}
+
+function closeQuickToolsLauncher() {
+  const button = DOM.quickToolsBtn;
+  if (button?.getAttribute('aria-expanded') === 'true' || button?.classList.contains('active')) {
+    button.click();
+  }
+}
+
+function closeQuickLinksManagePanel() {
+  const button = DOM.toolsFab;
+  if (button?.getAttribute('aria-expanded') === 'true' || button?.classList.contains('is-manage-open')) {
+    button.click();
+  }
+}
+
+const WIDGET_VISIBILITY_CONFIG = Object.freeze({
+  showClock: {
+    elements: () => [DOM.clockZone],
+  },
+  showGreeting: {
+    elements: () => [DOM.greeting],
+  },
+  showSearchBar: {
+    elements: () => [DOM.searchSection],
+  },
+  showQuickLinks: {
+    elements: () => [DOM.leftDock],
+    beforeHide: closeQuickLinksManagePanel,
+  },
+  showMostVisited: {
+    elements: () => [DOM.quicklinksZone],
+  },
+  showToDoList: {
+    elements: () => [DOM.topBar],
+    beforeHide: closeTasksLauncher,
+  },
+  showQuickTools: {
+    elements: () => [DOM.quickToolsBtn, DOM.bottomRightDivider],
+    beforeHide: closeQuickToolsLauncher,
+  },
+  showZenButton: {
+    elements: () => [DOM.bottomLeftControls],
+  },
+});
+
+function applyWidgetVisibility({ immediate = false } = {}) {
+  Object.entries(WIDGET_VISIBILITY_CONFIG).forEach(([key, config]) => {
+    const visible = preferenceState[key] !== false;
+    if (!visible) {
+      config.beforeHide?.();
+    }
+    config.elements().forEach((element) => {
+      setElementVisibility(element, visible, { immediate });
+    });
+  });
 }
 
 function announceLayoutEditor(message) {
@@ -282,14 +395,20 @@ function updatePreferenceState(changes) {
   if ('textDepth' in changes) preferenceState.textDepth = changes.textDepth !== false;
   if ('showClock' in changes) preferenceState.showClock = changes.showClock !== false;
   if ('showGreeting' in changes) preferenceState.showGreeting = changes.showGreeting !== false;
+  if ('showSearchBar' in changes) preferenceState.showSearchBar = changes.showSearchBar !== false;
+  if ('showQuickLinks' in changes) preferenceState.showQuickLinks = changes.showQuickLinks !== false;
+  if ('showMostVisited' in changes) preferenceState.showMostVisited = changes.showMostVisited !== false;
+  if ('showToDoList' in changes) preferenceState.showToDoList = changes.showToDoList !== false;
+  if ('showQuickTools' in changes) preferenceState.showQuickTools = changes.showQuickTools !== false;
+  if ('showZenButton' in changes) preferenceState.showZenButton = changes.showZenButton !== false;
   if ('dashboardFont' in changes) preferenceState.dashboardFont = DASHBOARD_FONTS[changes.dashboardFont] ? changes.dashboardFont : 'gloria';
   if ('layoutOffsets' in changes) preferenceState.layoutOffsets = normalizeLayoutOffsets(changes.layoutOffsets);
   if ('editLayoutMode' in changes) preferenceState.editLayoutMode = changes.editLayoutMode === true;
 }
 
-function syncPreferenceEffects() {
+function syncPreferenceEffects({ immediate = false } = {}) {
   applyTextDepth(preferenceState.textDepth);
-  applyWidgetVisibility();
+  applyWidgetVisibility({ immediate });
   applyDashboardFont(preferenceState.dashboardFont);
   applyLayoutOffsets(preferenceState.layoutOffsets);
   applyLayoutEditMode(preferenceState.editLayoutMode);
@@ -508,7 +627,7 @@ export async function resetLayoutOffsets({ persist = true, announce = true } = {
 export async function initPreferences() {
   const prefs = await Prefs.getAll();
   updatePreferenceState(prefs);
-  syncPreferenceEffects();
+  syncPreferenceEffects({ immediate: true });
   ensureLayoutBindings();
 
   if (prefsBound) return;
