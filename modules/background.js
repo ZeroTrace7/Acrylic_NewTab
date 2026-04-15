@@ -17,9 +17,16 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
+let youtubeWallpaperToken = '';
+let youtubeWallpaperVideoId = '';
+let youtubeWallpaperFrame = null;
+let youtubeWallpaperBridgeBound = false;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+const YOUTUBE_WALLPAPER_BRIDGE_SOURCE = 'acrylic-youtube-wallpaper';
+const YOUTUBE_WALLPAPER_HOST_SOURCE = 'acrylic-youtube-wallpaper-host';
+const YOUTUBE_WALLPAPER_SANDBOX_URL = chrome.runtime.getURL('wallpaper/youtube-player.html');
 
 function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
@@ -41,14 +48,14 @@ function applyTheme(themeId) {
 
 function normalizeWallpaperUrl(value) {
   const raw = String(value || '').trim();
-  if (!raw) throw new Error('Please enter an image URL');
+  if (!raw) throw new Error('Please enter an image or YouTube URL');
 
   const withProtocol = /^[a-z][a-z\d+.-]*:/i.test(raw) ? raw : `https://${raw}`;
   let parsed;
   try {
     parsed = new URL(withProtocol);
   } catch {
-    throw new Error('Please enter a valid image URL');
+    throw new Error('Please enter a valid image or YouTube URL');
   }
 
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
@@ -78,25 +85,6 @@ function getYouTubeVideoId(url) {
   }
 
   return YOUTUBE_ID_RE.test(candidate) ? candidate : '';
-}
-
-function buildYouTubeEmbedUrl(videoId) {
-  const params = new URLSearchParams({
-    autoplay: '1',
-    mute: '1',
-    loop: '1',
-    playlist: videoId,
-    controls: '0',
-    disablekb: '1',
-    fs: '0',
-    iv_load_policy: '3',
-    playsinline: '1',
-    rel: '0',
-    enablejsapi: '1',
-    origin: `chrome-extension://${chrome.runtime.id}`,
-  });
-
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 function getImageLoadError() {
@@ -154,7 +142,7 @@ async function resolveWallpaperSource(rawUrl) {
     return {
       type: 'youtube',
       url,
-      embedUrl: buildYouTubeEmbedUrl(youtubeId),
+      videoId: youtubeId,
     };
   }
 
@@ -176,23 +164,103 @@ function getWallpaperLayer() {
   return document.getElementById('bg-layer');
 }
 
+function ensureYouTubeWallpaperBridge() {
+  if (youtubeWallpaperBridgeBound) return;
+
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+    if (!data || data.source !== YOUTUBE_WALLPAPER_BRIDGE_SOURCE) return;
+    if (!youtubeWallpaperFrame || event.source !== youtubeWallpaperFrame.contentWindow) return;
+    if (!data.token || data.token !== youtubeWallpaperToken) return;
+
+    switch (data.type) {
+      case 'bridge-ready':
+        postYouTubeWallpaperMessage({
+          type: 'init',
+          token: youtubeWallpaperToken,
+          videoId: youtubeWallpaperVideoId,
+          extensionOrigin: `chrome-extension://${chrome.runtime.id}`,
+        });
+        break;
+      case 'playing':
+        youtubeWallpaperFrame.classList.add('is-playing');
+        break;
+      case 'cued':
+      case 'unstarted':
+        youtubeWallpaperFrame.classList.remove('is-playing');
+        break;
+      case 'error':
+        youtubeWallpaperFrame.classList.remove('is-playing');
+        reportBackgroundError(`YouTube wallpaper playback failed (code ${data.code || 'unknown'})`, data);
+        break;
+      default:
+        break;
+    }
+  });
+
+  youtubeWallpaperBridgeBound = true;
+}
+
+function postYouTubeWallpaperMessage(payload) {
+  youtubeWallpaperFrame?.contentWindow?.postMessage({
+    source: YOUTUBE_WALLPAPER_HOST_SOURCE,
+    ...payload,
+  }, '*');
+}
+
+function resetYouTubeWallpaperState() {
+  youtubeWallpaperToken = '';
+  youtubeWallpaperVideoId = '';
+  youtubeWallpaperFrame = null;
+}
+
 function clearWallpaperMedia() {
+  if (youtubeWallpaperFrame) {
+    postYouTubeWallpaperMessage({ type: 'destroy', token: youtubeWallpaperToken });
+  }
+  resetYouTubeWallpaperState();
   getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
 }
 
-function createWallpaperYouTubeFrame(embedUrl) {
+function createWallpaperYouTubeShell(videoId) {
+  ensureYouTubeWallpaperBridge();
+
+  const token = `yt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  youtubeWallpaperToken = token;
+  youtubeWallpaperVideoId = videoId;
+
+  const container = document.createElement('div');
+  container.className = 'youtube-wallpaper-container';
+  container.dataset.wallpaperMedia = 'true';
+
   const frame = document.createElement('iframe');
-  frame.className = 'wallpaper-media wallpaper-media-youtube';
-  frame.dataset.wallpaperMedia = 'true';
-  frame.src = embedUrl;
-  frame.title = 'YouTube wallpaper';
+  frame.id = 'youtube-bg-iframe';
+  frame.className = 'wallpaper-media youtube-wallpaper-frame';
+  frame.src = YOUTUBE_WALLPAPER_SANDBOX_URL;
+  frame.title = 'YouTube wallpaper player';
   frame.tabIndex = -1;
   frame.loading = 'eager';
   frame.allow = 'autoplay; encrypted-media; picture-in-picture';
   frame.referrerPolicy = 'strict-origin-when-cross-origin';
   frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
-  return frame;
+  youtubeWallpaperFrame = frame;
+  frame.addEventListener('load', () => {
+    if (youtubeWallpaperFrame !== frame || youtubeWallpaperToken !== token) return;
+    postYouTubeWallpaperMessage({
+      type: 'init',
+      token,
+      videoId,
+      extensionOrigin: `chrome-extension://${chrome.runtime.id}`,
+    });
+  }, { once: true });
+
+  const mask = document.createElement('div');
+  mask.className = 'acrylic-video-mask';
+  mask.setAttribute('aria-hidden', 'true');
+
+  container.append(frame, mask);
+  return container;
 }
 
 function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
@@ -213,7 +281,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
 
   const layer = getWallpaperLayer();
   if (layer && source.type === 'youtube') {
-    layer.appendChild(createWallpaperYouTubeFrame(source.embedUrl));
+    layer.appendChild(createWallpaperYouTubeShell(source.videoId));
   }
 
   if (body) body.classList.add('has-wallpaper');
