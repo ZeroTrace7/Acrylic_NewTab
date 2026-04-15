@@ -108,7 +108,15 @@ async function initApp() {
       syncToolsState();
     });
 
-    // Step 7 — Keyboard shortcuts
+    // Step 7.5 — Zen Mode (simple toggle)
+    const zenBtn = DOM.zenModeBtn;
+    zenBtn?.addEventListener('click', () => {
+      // Don't toggle zen if the layout editor is active (button is being dragged)
+      if (document.body.classList.contains('is-layout-editing')) return;
+      document.body.classList.toggle('zen-mode-active');
+    });
+
+    // Step 8 — Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       const tag = document.activeElement?.tagName;
       if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
@@ -116,6 +124,10 @@ async function initApp() {
         DOM.searchInput?.focus();
       }
       if (e.key === 'Escape') {
+        if (document.body.classList.contains('zen-mode-active')) {
+          document.body.classList.remove('zen-mode-active');
+          return;
+        }
         document.activeElement?.blur();
       }
     });
