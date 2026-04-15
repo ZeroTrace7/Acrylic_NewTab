@@ -319,7 +319,10 @@ function buildModal() {
     disclosure.className = 'settings-widget-disclosure';
     disclosure.setAttribute('aria-expanded', String(widgetsExpanded));
     disclosure.innerHTML = `
-      <span>${widgetsExpanded ? 'Show fewer widgets' : 'Show more widgets'}</span>
+      <span class="settings-widget-disclosure-copy">
+        <span class="settings-widget-disclosure-label">${widgetsExpanded ? 'Fewer widgets' : 'More widgets'}</span>
+        <span class="settings-widget-disclosure-meta">${secondaryWidgetOptions.length} controls</span>
+      </span>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
