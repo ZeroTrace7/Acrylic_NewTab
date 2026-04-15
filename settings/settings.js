@@ -444,7 +444,7 @@ function buildModal() {
   qlTrack.setAttribute('role', 'listbox');
   qlTrack.setAttribute('aria-label', 'Number of top quick links');
 
-  const QL_VALUES = [4, 5, 6, 7, 8, 9, 10];
+  const QL_VALUES = [4, 5, 6, 7, 8, 9];
   let qlSegments = [];
 
   const updateSegments = () => {

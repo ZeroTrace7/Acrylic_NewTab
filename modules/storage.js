@@ -112,7 +112,7 @@ function normalizeDashboardFont(value) {
 function normalizeQuickLinksMax(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 6;
-  return Math.min(10, Math.max(4, Math.round(numeric)));
+  return Math.min(9, Math.max(4, Math.round(numeric)));
 }
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────
