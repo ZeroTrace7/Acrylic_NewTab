@@ -201,7 +201,7 @@ chrome.notifications.onButtonClicked.addListener((notifId, btnIndex) => {
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
-    console.log('Acrylic extension installed');
+
     await syncYouTubeEmbedRefererRule();
     await chrome.storage.local.set({
       timerState: { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 },

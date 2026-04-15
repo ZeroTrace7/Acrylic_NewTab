@@ -50,16 +50,5 @@
 
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' http: https: data: blob:; frame-src 'self' https://youtube.com https://www.youtube.com https://youtube-nocookie.com https://www.youtube-nocookie.com"
-  },
-
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "sounds/start.mp3",
-        "sounds/end.mp3",
-        "offscreen.html"
-      ],
-      "matches": ["<all_urls>"]
-    }
-  ]
+  }
 }

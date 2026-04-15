@@ -1028,15 +1028,7 @@ function handleManageEscape(event) {
   }
 }
 
-function buildManagePanel() {
-  const panel = document.createElement('aside');
-  panel.id = 'manage-links-panel';
-  panel.className = 'manage-links-panel';
-  panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-label', 'Manage quick links');
-  panel.setAttribute('aria-hidden', 'true');
-  panel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
-
+function buildManagePanelHeader() {
   const header = document.createElement('div');
   header.className = 'manage-links-header';
 
@@ -1066,12 +1058,18 @@ function buildManagePanel() {
   `;
   closeBtn.addEventListener('click', closeManagePanel);
   header.append(title, closeBtn);
+  return header;
+}
 
+function buildManagePanelAddedSection() {
+  const fragment = document.createDocumentFragment();
+  
   manageAddedGridEl = document.createElement('div');
   manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
   manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:2px 0 0 0;';
   manageAddedGridEl.style.marginBottom = '0';
   manageAddedGridEl.style.paddingBottom = '0';
+  
   manageAddedEmptyEl = document.createElement('p');
   manageAddedEmptyEl.className = 'manage-links-empty';
   manageAddedEmptyEl.textContent = 'No links added yet.';
@@ -1084,7 +1082,7 @@ function buildManagePanel() {
     margin: 2px 0 0 0;
     text-align: center;
   `;
-
+  
   const divider1 = document.createElement('div');
   divider1.className = 'manage-links-divider';
   divider1.style.cssText = `
@@ -1096,6 +1094,13 @@ function buildManagePanel() {
     flex-shrink: 0;
   `;
 
+  fragment.append(manageAddedGridEl, manageAddedEmptyEl, divider1);
+  return fragment;
+}
+
+function buildManagePanelAddForm() {
+  const fragment = document.createDocumentFragment();
+  
   const addLabel = document.createElement('p');
   addLabel.className = 'manage-links-section-title';
   addLabel.textContent = 'Add New Link';
@@ -1108,9 +1113,8 @@ function buildManagePanel() {
     color: rgba(255,255,255,0.78);
     text-transform: none;
     margin-bottom: 6px;
+    margin-top: 0;
   `;
-  addLabel.style.marginTop = '0';
-  addLabel.style.marginBottom = '6px';
 
   manageUrlInputEl = document.createElement('input');
   manageUrlInputEl.type = 'url';
@@ -1210,6 +1214,7 @@ function buildManagePanel() {
   manageNameInputEl.addEventListener('blur', () => {
     manageNameInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
   });
+
   const nameWrap = document.createElement('div');
   nameWrap.className = 'manage-input-wrap';
   nameWrap.style.cssText = `
@@ -1244,6 +1249,28 @@ function buildManagePanel() {
   `;
   nameWrap.append(nameIcon, manageNameInputEl);
 
+  fragment.append(addLabel, urlWrap, nameWrap);
+  return fragment;
+}
+
+function buildManagePanelLibrary() {
+  manageLibraryGridEl = document.createElement('div');
+  manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
+  manageLibraryGridEl.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+    max-height: 204px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    justify-items: center;
+    padding: 2px 4px 6px 0;
+  `;
+  return manageLibraryGridEl;
+}
+
+function buildManagePanelSubmitButton() {
   const addBtn = document.createElement('button');
   addBtn.type = 'button';
   addBtn.className = 'manage-links-submit';
@@ -1269,29 +1296,24 @@ function buildManagePanel() {
     addBtn.style.background = 'rgba(59,130,246,0.85)';
   });
   addBtn.addEventListener('click', () => addCustomLinkFromPanel());
+  return addBtn;
+}
 
-  manageLibraryGridEl = document.createElement('div');
-  manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
-  manageLibraryGridEl.style.cssText = `
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
-    width: 100%;
-    max-height: 204px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    justify-items: center;
-    padding: 2px 4px 6px 0;
-  `;
+function buildManagePanel() {
+  const panel = document.createElement('aside');
+  panel.id = 'manage-links-panel';
+  panel.className = 'manage-links-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', 'Manage quick links');
+  panel.setAttribute('aria-hidden', 'true');
+  panel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
 
-  panel.appendChild(header);
-  panel.appendChild(manageAddedGridEl);
-  panel.appendChild(divider1);
-  panel.appendChild(addLabel);
-  panel.appendChild(urlWrap);
-  panel.appendChild(nameWrap);
-  panel.appendChild(manageLibraryGridEl);
-  panel.appendChild(addBtn);
+  panel.appendChild(buildManagePanelHeader());
+  panel.appendChild(buildManagePanelAddedSection());
+  panel.appendChild(buildManagePanelAddForm());
+  panel.appendChild(buildManagePanelLibrary());
+  panel.appendChild(buildManagePanelSubmitButton());
+
   return panel;
 }
 
