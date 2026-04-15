@@ -1,4 +1,4 @@
-import { Store } from './storage.js';
+import { Prefs, Store } from './storage.js';
 import { generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
@@ -6,7 +6,7 @@ import { bus } from './event-bus.js';
 
 let links = [];
 let topSiteLinks = [];
-const TOP_SITE_LIMIT = 6;
+let topSiteLimit = 6;
 const QUICK_LIBRARY = [
   { key: 'gmail', label: 'Gmail', url: 'https://mail.google.com' },
   { key: 'youtube', label: 'YouTube', url: 'https://youtube.com' },
@@ -1313,7 +1313,7 @@ function renderLinks() {
   document.getElementById('ql-more-btn')?.remove();
 
   const appLinks = links.filter((linkData) => linkData.isApp);
-  const bottomLinks = topSiteLinks.slice(0, TOP_SITE_LIMIT);
+  const bottomLinks = topSiteLinks.slice(0, topSiteLimit);
 
   syncGrid(sidebarGrid, appLinks, true, false);
   syncGrid(bottomGrid, bottomLinks, false, true);
@@ -1734,6 +1734,7 @@ export async function initQuickLinks() {
   }
   const stored = await Store.getLinks();
   links = migrateStoredLinks(stored);
+  topSiteLimit = await Prefs.get('quickLinksMax');
   if (!Array.isArray(stored) || stored.length !== links.length) {
     await Store.setLinks(links);
   }
@@ -1774,6 +1775,12 @@ export async function initQuickLinks() {
     const incoming = event.detail?.links;
     if (!Array.isArray(incoming) || event.detail?.source === 'quicklinks') return;
     links = incoming.filter((link) => link?.isApp === true);
+    renderLinks();
+  });
+
+  Prefs.onChange((changes) => {
+    if (changes.quickLinksMax === undefined) return;
+    topSiteLimit = Number.isFinite(changes.quickLinksMax) ? changes.quickLinksMax : 6;
     renderLinks();
   });
 }

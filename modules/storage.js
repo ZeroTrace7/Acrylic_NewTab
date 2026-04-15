@@ -57,6 +57,7 @@ export const Prefs = {
     const merged = { ...this.defaults, ...result };
     merged.clockFormat = normalizeClockFormat(merged.clockFormat);
     merged.dashboardFont = normalizeDashboardFont(merged.dashboardFont);
+    merged.quickLinksMax = normalizeQuickLinksMax(merged.quickLinksMax);
     return merged;
   },
 
@@ -70,6 +71,10 @@ export const Prefs = {
       await chrome.storage.sync.set({ [key]: normalizeDashboardFont(value) });
       return;
     }
+    if (key === 'quickLinksMax') {
+      await chrome.storage.sync.set({ [key]: normalizeQuickLinksMax(value) });
+      return;
+    }
     await chrome.storage.sync.set({ [key]: value });
   },
 
@@ -78,6 +83,7 @@ export const Prefs = {
     const next = { ...obj };
     if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
     if ('dashboardFont' in next) next.dashboardFont = normalizeDashboardFont(next.dashboardFont);
+    if ('quickLinksMax' in next) next.quickLinksMax = normalizeQuickLinksMax(next.quickLinksMax);
     await chrome.storage.sync.set(next);
   },
 
@@ -101,6 +107,12 @@ function normalizeClockFormat(value) {
 
 function normalizeDashboardFont(value) {
   return ['system', 'poppins', 'gloria', 'silkscreen'].includes(value) ? value : 'gloria';
+}
+
+function normalizeQuickLinksMax(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 6;
+  return Math.min(10, Math.max(4, Math.round(numeric)));
 }
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────

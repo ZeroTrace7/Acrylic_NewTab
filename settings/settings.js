@@ -436,13 +436,25 @@ function buildModal() {
   const qlLbl = document.createElement('span');
   qlLbl.textContent = 'Top links';
   qlLbl.setAttribute('style', 'font-size:0.85rem;color:var(--text-primary);');
-  const qlValue = document.createElement('span');
-  qlValue.textContent = '6';
-  qlValue.setAttribute('style', 'min-width:70px;padding:6px 10px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:8px;color:var(--text-primary);font-size:0.9rem;text-align:center;');
+  const qlValue = document.createElement('select');
+  qlValue.ariaLabel = 'Number of top links to show';
+  qlValue.setAttribute('style', 'min-width:84px;padding:8px 12px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:10px;color:var(--text-primary);font-size:0.88rem;text-align:center;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;');
+  [4, 5, 6, 7, 8, 9, 10].forEach((count) => {
+    const option = document.createElement('option');
+    option.value = String(count);
+    option.textContent = String(count);
+    option.selected = count === (prefs.quickLinksMax || 6);
+    qlValue.appendChild(option);
+  });
+  qlValue.addEventListener('change', async () => {
+    const next = Number(qlValue.value) || 6;
+    prefs.quickLinksMax = next;
+    await Prefs.set('quickLinksMax', next);
+  });
   qlRow.append(qlLbl, qlValue);
   sec7.appendChild(qlRow);
   const qlHint = document.createElement('div');
-  qlHint.textContent = 'Shows your top 6 browser sites automatically.';
+  qlHint.textContent = 'Choose how many top browser sites Acrylic shows automatically.';
   qlHint.setAttribute('style', 'margin-top:8px;font-size:0.75rem;color:var(--text-secondary);');
   sec7.appendChild(qlHint);
 
