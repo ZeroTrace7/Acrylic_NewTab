@@ -312,6 +312,7 @@ function buildModal() {
         await toggleWidget(key);
       }));
     });
+    widgetRows.lastElementChild?.classList.add('settings-widget-primary-last');
 
     const disclosure = document.createElement('button');
     disclosure.type = 'button';
