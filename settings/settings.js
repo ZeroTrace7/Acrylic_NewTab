@@ -1,7 +1,6 @@
 import { Prefs } from '../modules/storage.js';
-import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes } from '../modules/background.js';
+import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
-import { isValidUrl } from '../modules/utils.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
 import { DOM } from '../modules/dom.js';
@@ -285,6 +284,18 @@ function buildModal() {
   sec4.className = 'settings-card';
   sec4.appendChild(sectionLabel('Widgets'));
   const widgetRows = document.createElement('div');
+  let expandedRows = null;
+  let disclosure = null;
+  const setWidgetsExpanded = (expanded) => {
+    widgetsExpanded = expanded;
+    if (!expandedRows || !disclosure) return;
+    expandedRows.classList.toggle('is-open', widgetsExpanded);
+    expandedRows.setAttribute('aria-hidden', String(!widgetsExpanded));
+    disclosure.classList.toggle('is-open', widgetsExpanded);
+    disclosure.setAttribute('aria-expanded', String(widgetsExpanded));
+    const label = disclosure.querySelector('.settings-widget-disclosure-label');
+    if (label) label.textContent = widgetsExpanded ? 'Fewer widgets' : 'More widgets';
+  };
   const renderWidgets = () => {
     widgetRows.innerHTML = '';
     const primaryWidgetOptions = [
@@ -314,13 +325,13 @@ function buildModal() {
     });
     widgetRows.lastElementChild?.classList.add('settings-widget-primary-last');
 
-    const disclosure = document.createElement('button');
+    disclosure = document.createElement('button');
     disclosure.type = 'button';
     disclosure.className = 'settings-widget-disclosure';
-    disclosure.setAttribute('aria-expanded', String(widgetsExpanded));
+    disclosure.setAttribute('aria-expanded', 'false');
     disclosure.innerHTML = `
       <span class="settings-widget-disclosure-copy">
-        <span class="settings-widget-disclosure-label">${widgetsExpanded ? 'Fewer widgets' : 'More widgets'}</span>
+        <span class="settings-widget-disclosure-label">More widgets</span>
         <span class="settings-widget-disclosure-meta">${secondaryWidgetOptions.length} controls</span>
       </span>
       <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -328,21 +339,20 @@ function buildModal() {
       </svg>
     `;
     disclosure.addEventListener('click', () => {
-      widgetsExpanded = !widgetsExpanded;
-      renderWidgets();
+      setWidgetsExpanded(!widgetsExpanded);
     });
     widgetRows.appendChild(disclosure);
 
-    if (!widgetsExpanded) return;
-
-    const expandedRows = document.createElement('div');
+    expandedRows = document.createElement('div');
     expandedRows.className = 'settings-widget-expanded';
+    expandedRows.setAttribute('aria-hidden', 'true');
     secondaryWidgetOptions.forEach(([key, label]) => {
       expandedRows.appendChild(compactToggleRow(label, prefs[key] !== false, async () => {
         await toggleWidget(key);
       }));
     });
     widgetRows.appendChild(expandedRows);
+    setWidgetsExpanded(widgetsExpanded);
   };
   renderWidgets();
   sec4.appendChild(widgetRows);
@@ -360,12 +370,28 @@ function buildModal() {
   applyBtn.textContent = 'Apply';
   applyBtn.ariaLabel = 'Apply wallpaper URL';
   applyBtn.setAttribute('style', 'padding:10px 16px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--accent-blue);color:var(--accent-blue);font-size:0.85rem;font-weight:500;cursor:pointer;');
-  applyBtn.onclick = () => {
+  applyBtn.onclick = async () => {
     const url = wpIn.value.trim();
-    if (!url || !isValidUrl(url)) { toast.error('Please enter a valid URL'); return; }
-    setWallpaper(url, prefs.wallpaperBlur, prefs.wallpaperDarken);
-    prefs.wallpaperUrl = url;
-    rebuildWpControls();
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Checking...';
+    applyBtn.style.cursor = 'progress';
+    applyBtn.style.opacity = '0.72';
+    try {
+      const appliedUrl = await setWallpaper(url, prefs.wallpaperBlur, prefs.wallpaperDarken);
+      prefs.wallpaperUrl = appliedUrl;
+      wpIn.value = appliedUrl;
+      rebuildWpControls();
+      toast.success('Wallpaper applied');
+    } catch (err) {
+      if (err?.message !== 'Wallpaper request was superseded') {
+        toast.error(err?.message || 'Wallpaper failed to load');
+      }
+    } finally {
+      applyBtn.disabled = false;
+      applyBtn.textContent = 'Apply';
+      applyBtn.style.cursor = 'pointer';
+      applyBtn.style.opacity = '1';
+    }
   };
   wpRow.append(wpIn, applyBtn);
   sec5.appendChild(wpRow);
@@ -380,8 +406,8 @@ function buildModal() {
     clrBtn.setAttribute('style', 'font-size:0.75rem;color:var(--accent-red);background:none;border:none;cursor:pointer;margin:8px 0;');
     clrBtn.onclick = () => { clearWallpaper(); prefs.wallpaperUrl = ''; wpIn.value = ''; rebuildWpControls(); };
     wpControls.appendChild(clrBtn);
-    wpControls.appendChild(slider('Blur', prefs.wallpaperBlur, 0, 20, 1, 'px', (v) => { prefs.wallpaperBlur = v; setWallpaper(prefs.wallpaperUrl, v, prefs.wallpaperDarken); Prefs.set('wallpaperBlur', v); }));
-    wpControls.appendChild(slider('Darken', prefs.wallpaperDarken, 0, 0.9, 0.05, '', (v) => { prefs.wallpaperDarken = v; setWallpaper(prefs.wallpaperUrl, prefs.wallpaperBlur, v); Prefs.set('wallpaperDarken', v); }));
+    wpControls.appendChild(slider('Blur', prefs.wallpaperBlur, 0, 20, 1, 'px', (v) => { prefs.wallpaperBlur = v; setWallpaperAppearance(v, prefs.wallpaperDarken); Prefs.set('wallpaperBlur', v); }));
+    wpControls.appendChild(slider('Darken', prefs.wallpaperDarken, 0, 0.9, 0.05, '', (v) => { prefs.wallpaperDarken = v; setWallpaperAppearance(prefs.wallpaperBlur, v); Prefs.set('wallpaperDarken', v); }));
     wpControls.appendChild(slider('Grain', prefs.grainOpacity, 0, 0.1, 0.005, '', (v) => { prefs.grainOpacity = v; setGrain(v); }));
   };
   rebuildWpControls();
@@ -425,7 +451,7 @@ function buildModal() {
   footer.textContent = 'Acrylic v1.0.0 — Preferances sync across devices';
   footer.className = 'settings-footer-note';
 
-  box.append(header, sec1, sec2, secFont, sec3, sec4, sec5, sec6, sec7, footer);
+  box.append(header, sec1, sec2, sec5, secFont, sec3, sec4, sec6, sec7, footer);
   overlay.appendChild(box);
   return overlay;
 }
