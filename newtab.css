@@ -221,18 +221,12 @@ button:disabled {
   pointer-events: none;
 }
 
-.video-fade-mask {
+.acrylic-video-mask {
   position: absolute;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: #000;
-  opacity: 1;
-  transition: opacity 0.8s ease-in-out;
-}
-
-.video-fade-mask.is-playing {
-  opacity: 0.3;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 #bg-overlay {

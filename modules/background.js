@@ -17,14 +17,9 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
-let youtubeWallpaperFrame = null;
-let youtubeWallpaperMonitor = null;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
-const YOUTUBE_PLAYER_STATE_PLAYING = 1;
-const YOUTUBE_PRE_END_FADE_SECONDS = 1.5;
-const YOUTUBE_MONITOR_INTERVAL_MS = 250;
 
 function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
@@ -98,8 +93,6 @@ function buildYouTubeEmbedUrl(videoId) {
     playsinline: '1',
     playlist: videoId,
     rel: '0',
-    enablejsapi: '1',
-    origin: `chrome-extension://${chrome.runtime.id}`,
   });
 
   return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
@@ -182,135 +175,7 @@ function getWallpaperLayer() {
   return document.getElementById('bg-layer');
 }
 
-function getYouTubeFadeMask(container) {
-  return container?.querySelector?.('.video-fade-mask') || null;
-}
-
-function setYouTubeWallpaperPlaying(container, isPlaying) {
-  const mask = getYouTubeFadeMask(container);
-  if (!mask) return;
-  mask.classList.toggle('is-playing', isPlaying);
-}
-
-function parseYouTubePlayerMessage(data) {
-  if (!data) return null;
-  if (typeof data === 'string') {
-    try {
-      return JSON.parse(data);
-    } catch {
-      return null;
-    }
-  }
-  return typeof data === 'object' ? data : null;
-}
-
-function isYouTubePlayerOrigin(origin) {
-  return origin === 'https://www.youtube.com'
-    || origin === 'https://youtube.com'
-    || origin === 'https://www.youtube-nocookie.com'
-    || origin === 'https://youtube-nocookie.com';
-}
-
-function stopYouTubeWallpaperMonitor() {
-  if (!youtubeWallpaperMonitor) return;
-  window.removeEventListener('message', youtubeWallpaperMonitor.handleMessage);
-  clearInterval(youtubeWallpaperMonitor.pollTimer);
-  clearTimeout(youtubeWallpaperMonitor.revealFallbackTimer);
-  youtubeWallpaperMonitor = null;
-}
-
-function startYouTubeWallpaperMonitor(frame, container) {
-  stopYouTubeWallpaperMonitor();
-
-  if (!(frame instanceof HTMLIFrameElement) || !(container instanceof HTMLElement)) return;
-
-  const playerOrigin = (() => {
-    try {
-      return new URL(frame.src).origin;
-    } catch {
-      return 'https://www.youtube.com';
-    }
-  })();
-
-  const postPlayerMessage = (payload) => {
-    if (youtubeWallpaperFrame !== frame) return;
-    try {
-      frame.contentWindow?.postMessage(JSON.stringify({
-        id: frame.id,
-        ...payload,
-      }), playerOrigin);
-    } catch {
-      // Ignore transient postMessage failures while the iframe is reloading.
-    }
-  };
-
-  const beginListening = () => {
-    postPlayerMessage({ event: 'listening' });
-    postPlayerMessage({ event: 'command', func: 'addEventListener', args: ['onStateChange'] });
-    postPlayerMessage({ event: 'command', func: 'getCurrentTime', args: [] });
-    postPlayerMessage({ event: 'command', func: 'getDuration', args: [] });
-  };
-
-  const monitor = {
-    container,
-    frame,
-    nearEndHidden: false,
-    pollTimer: 0,
-    revealFallbackTimer: 0,
-    handleMessage: null,
-  };
-
-  monitor.handleMessage = (event) => {
-    if (event.source !== frame.contentWindow || !isYouTubePlayerOrigin(event.origin)) return;
-
-    const message = parseYouTubePlayerMessage(event.data);
-    if (!message) return;
-
-    if (message.event === 'onStateChange') {
-      if (message.info === YOUTUBE_PLAYER_STATE_PLAYING) {
-        clearTimeout(monitor.revealFallbackTimer);
-        monitor.nearEndHidden = false;
-        setYouTubeWallpaperPlaying(container, true);
-      }
-      return;
-    }
-
-    if (message.event !== 'infoDelivery' || !message.info) return;
-
-    if (Number(message.info.playerState) === YOUTUBE_PLAYER_STATE_PLAYING) {
-      clearTimeout(monitor.revealFallbackTimer);
-      if (monitor.nearEndHidden) {
-        monitor.nearEndHidden = false;
-      }
-      setYouTubeWallpaperPlaying(container, true);
-    }
-
-    const duration = Number(message.info.duration);
-    const currentTime = Number(message.info.currentTime);
-    if (!Number.isFinite(duration) || !Number.isFinite(currentTime) || duration <= YOUTUBE_PRE_END_FADE_SECONDS) return;
-
-    if (currentTime >= duration - YOUTUBE_PRE_END_FADE_SECONDS) {
-      if (!monitor.nearEndHidden) {
-        monitor.nearEndHidden = true;
-        setYouTubeWallpaperPlaying(container, false);
-      }
-    }
-  };
-
-  window.addEventListener('message', monitor.handleMessage);
-  monitor.pollTimer = window.setInterval(beginListening, YOUTUBE_MONITOR_INTERVAL_MS);
-  monitor.revealFallbackTimer = window.setTimeout(() => {
-    if (youtubeWallpaperMonitor !== monitor) return;
-    setYouTubeWallpaperPlaying(container, true);
-  }, 4000);
-  youtubeWallpaperMonitor = monitor;
-
-  beginListening();
-}
-
 function clearWallpaperMedia() {
-  stopYouTubeWallpaperMonitor();
-  youtubeWallpaperFrame = null;
   getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
 }
 
@@ -330,14 +195,9 @@ function createWallpaperYouTubeShell(embedUrl) {
   frame.referrerPolicy = 'strict-origin-when-cross-origin';
   frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
-  youtubeWallpaperFrame = frame;
-  frame.addEventListener('load', () => {
-    if (youtubeWallpaperFrame !== frame) return;
-    startYouTubeWallpaperMonitor(frame, container);
-  }, { once: true });
 
   const mask = document.createElement('div');
-  mask.className = 'video-fade-mask';
+  mask.className = 'acrylic-video-mask';
   mask.setAttribute('aria-hidden', 'true');
 
   container.append(frame, mask);
