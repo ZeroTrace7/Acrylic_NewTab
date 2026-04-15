@@ -119,3 +119,9 @@
 - Bottom-Left Icon (`#focus-btn`, target/circles): Triggers "Zen Mode".
 - Bottom-Right Group (List Icon, `#settings-btn`): Triggers "Preferances" modal.
 - Bottom-Right Group (Grid Icon, `#grid-view-btn`): Triggers "Quick Tools" panel (Productivity/Notes/Tabs/Extensions).
+
+### 10. OFF-LIMITS DIRECTORIES
+- `.tmp_research/` contains static competitor/reference code (Tabliss, Bonjourr, etc.). **NEVER** modify, test, build, or commit files in this directory.
+- `.tmp_ui_before/` contains historical UI snapshots. **NEVER** modify these files.
+- Any task that targets files inside these directories must be rejected as **"Won't Fix — Reference Material Only"**.
+- See `AGENTS.md` in the project root for the complete set of AI agent rules.

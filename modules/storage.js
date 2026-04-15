@@ -183,22 +183,25 @@ export const Store = {
     return keys.map((k) => result[k]).filter(Boolean);
   },
 
-  /** Saves a note — prepends its ID to the index if new, then stores the note object. */
+  /** Saves a note — prepends its ID to the index if new, then stores the note object in one operation. */
   async saveNote(note) {
     const ids = await this.getNoteIds();
+    const update = { [`note_${note.id}`]: note };
     if (!ids.includes(note.id)) {
       ids.unshift(note.id);
-      await chrome.storage.local.set({ noteIds: ids });
+      update.noteIds = ids;
     }
-    await chrome.storage.local.set({ [`note_${note.id}`]: note });
+    await chrome.storage.local.set(update);
   },
 
-  /** Deletes a note by removing its ID from the index and its data key from storage. */
+  /** Deletes a note by removing its ID from the index and its data key concurrently. */
   async deleteNote(id) {
     const ids = await this.getNoteIds();
     const updated = ids.filter((i) => i !== id);
-    await chrome.storage.local.set({ noteIds: updated });
-    await chrome.storage.local.remove(`note_${id}`);
+    await Promise.all([
+      chrome.storage.local.set({ noteIds: updated }),
+      chrome.storage.local.remove(`note_${id}`),
+    ]);
   },
 
   // ── Pomodoro Timer ───────────────────────────────────────
