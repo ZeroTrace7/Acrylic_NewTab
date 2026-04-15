@@ -68,21 +68,7 @@ function getModeColor() {
   return 'rgba(96, 165, 250, 0.9)';
 }
 
-function render() {
-  if (!containerEl) return;
-  const running = state.isRunning;
-  const full = state.timeLeft === MODES[state.mode];
-
-  containerEl.innerHTML = '';
-  
-  containerEl.style.display = 'flex';
-  containerEl.style.flexDirection = 'column';
-  containerEl.style.justifyContent = 'space-between';
-  containerEl.style.minHeight = '100%';
-  containerEl.style.boxSizing = 'border-box';
-  containerEl.style.gap = '18px';
-
-  // 1. Daily Stats at top
+function createStatsSection() {
   const statsDiv = document.createElement('div');
   statsDiv.className = 'qt-title';
   statsDiv.style.textAlign = 'left';
@@ -91,19 +77,10 @@ function render() {
   statsDiv.style.gap = '4px';
   statsDiv.style.flexShrink = '0';
   statsDiv.innerHTML = `<span style="font-size:1.0rem">🍅</span> <span style="font-size:1.0rem; font-weight:600; display:inline-block; transform:translateY(2px);">${dailyCount}</span>`;
-  containerEl.appendChild(statsDiv);
+  return statsDiv;
+}
 
-  // Middle group wrapper (absorbs available space to push modeRow down safely)
-  const middleGroup = document.createElement('div');
-  middleGroup.style.flex = '1 1 auto';
-  middleGroup.style.minHeight = '0';
-  middleGroup.style.display = 'flex';
-  middleGroup.style.flexDirection = 'column';
-  middleGroup.style.alignItems = 'center';
-  middleGroup.style.justifyContent = 'center';
-  middleGroup.style.gap = '16px';
-
-  // 2. Circular Timer SVG
+function createTimerWrapper() {
   const timerWrapper = document.createElement('div');
   timerWrapper.className = 'qt-flex-center';
   timerWrapper.style.position = 'relative'; // Anchor for absolute text overlay
@@ -124,11 +101,15 @@ function render() {
       <div class="qt-muted" style="text-transform:capitalize;margin-top:2px;font-size:0.75rem;">${state.isRunning ? 'Focusing...' : 'Ready For Focus'}</div>
     </div>
   `;
-  middleGroup.appendChild(timerWrapper);
+  return timerWrapper;
+}
 
-  // 3. Controls Row directly under timer
+function createControlsRow() {
   const controlsRow = document.createElement('div');
   controlsRow.className = 'qt-flex-center qt-gap-md';
+
+  const running = state.isRunning;
+  const full = state.timeLeft === MODES[state.mode];
 
   const toggleBtn = document.createElement('button');
   toggleBtn.className = 'qt-icon-btn';
@@ -152,11 +133,26 @@ function render() {
   resetBtn.onclick = resetTimer;
 
   controlsRow.append(toggleBtn, resetBtn);
-  middleGroup.appendChild(controlsRow);
-  
-  containerEl.appendChild(middleGroup);
+  return controlsRow;
+}
 
-  // 4. Mode Selection Row at the very bottom
+function createMiddleGroup() {
+  const middleGroup = document.createElement('div');
+  middleGroup.style.flex = '1 1 auto';
+  middleGroup.style.minHeight = '0';
+  middleGroup.style.display = 'flex';
+  middleGroup.style.flexDirection = 'column';
+  middleGroup.style.alignItems = 'center';
+  middleGroup.style.justifyContent = 'center';
+  middleGroup.style.gap = '16px';
+
+  middleGroup.appendChild(createTimerWrapper());
+  middleGroup.appendChild(createControlsRow());
+  
+  return middleGroup;
+}
+
+function createModeRow() {
   const modeRow = document.createElement('div');
   modeRow.className = 'qt-flex qt-gap-sm';
   modeRow.style.marginTop = '0';
@@ -170,11 +166,28 @@ function render() {
     btn.className = `qt-btn ${active ? 'qt-btn-primary' : ''}`;
     btn.style.flex = '1';
     btn.style.padding = '8px 0';
-    if (running) btn.disabled = true;
+    if (state.isRunning) btn.disabled = true;
     btn.onclick = () => changeMode(m);
     modeRow.appendChild(btn);
   });
-  containerEl.appendChild(modeRow);
+  return modeRow;
+}
+
+function render() {
+  if (!containerEl) return;
+
+  containerEl.innerHTML = '';
+
+  containerEl.style.display = 'flex';
+  containerEl.style.flexDirection = 'column';
+  containerEl.style.justifyContent = 'space-between';
+  containerEl.style.minHeight = '100%';
+  containerEl.style.boxSizing = 'border-box';
+  containerEl.style.gap = '18px';
+
+  containerEl.appendChild(createStatsSection());
+  containerEl.appendChild(createMiddleGroup());
+  containerEl.appendChild(createModeRow());
 }
 
 function updateDisplay() {
