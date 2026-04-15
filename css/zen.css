@@ -1,78 +1,120 @@
 /* ── Zen Mode ───────────────────────────────────────────────
-   Pure CSS state — activated by body.zen-mode-active
+   Flip clock screensaver activated by body.zen-mode-active
    ──────────────────────────────────────────────────────────── */
 
-/* 1. Hide all productivity UI */
-body.zen-mode-active #left-dock,
-body.zen-mode-active #middle-zone,
-body.zen-mode-active #quicklinks-zone,
-body.zen-mode-active #right-panel,
-body.zen-mode-active #top-bar,
+/* 1. The Great Purge — hide all productivity UI */
+body.zen-mode-active .layout-root,
 body.zen-mode-active #bottom-right-controls {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(18px);
   pointer-events: none;
   transition:
-    opacity 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* 2. Keep the Zen button visible but glow active */
+/* Return animation on exit */
+.layout-root,
+#bottom-right-controls {
+  transition:
+    opacity 600ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 2. Keep the Zen button visible + glow when active */
 body.zen-mode-active #bottom-left-controls {
-  z-index: 100;
+  z-index: 110;
 }
 
 body.zen-mode-active #focus-btn {
   background: rgba(96, 165, 250, 0.14);
   border-color: rgba(147, 197, 253, 0.30);
-  box-shadow: 0 0 18px rgba(96, 165, 250, 0.14);
+  box-shadow: 0 0 20px rgba(96, 165, 250, 0.12);
 }
 
-/* 3. Enlarge + center the clock */
-body.zen-mode-active #clock-zone {
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
+/* ── Flip Clock ─────────────────────────────────────────── */
+
+.zen-flip-clock {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  opacity: 0;
+  pointer-events: none;
   transition:
-    top 600ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 800ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-body.zen-mode-active .simple-clock {
-  font-size: clamp(5rem, 12vw, 10rem);
-  transition: font-size 600ms cubic-bezier(0.16, 1, 0.3, 1);
+body.zen-mode-active .zen-flip-clock {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
 }
 
-body.zen-mode-active .clock-date {
-  font-size: clamp(1.2rem, 2.4vw, 1.8rem);
-  transition: font-size 600ms cubic-bezier(0.16, 1, 0.3, 1);
+.zen-flip-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-body.zen-mode-active .clock-period {
-  font-size: 0.28em;
+.zen-flip-colon-space {
+  width: 28px;
 }
 
-/* 4. Smooth return when exiting */
-#clock-zone {
-  transition:
-    top 500ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+/* Individual digit card */
+.zen-flip-card {
+  position: relative;
+  width: clamp(100px, 14vw, 180px);
+  height: clamp(140px, 20vw, 240px);
+  border-radius: 16px;
+  background: rgba(35, 40, 50, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.simple-clock {
-  transition: font-size 500ms cubic-bezier(0.16, 1, 0.3, 1);
+/* The horizontal split line */
+.zen-flip-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+  z-index: 2;
+  pointer-events: none;
 }
 
-.clock-date {
-  transition: font-size 500ms cubic-bezier(0.16, 1, 0.3, 1);
+.zen-flip-digit {
+  font-family: var(--font-ui);
+  font-size: clamp(4rem, 8vw, 7rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.30);
+  user-select: none;
+  z-index: 1;
 }
 
-#left-dock,
-#middle-zone,
-#quicklinks-zone,
-#right-panel,
-#top-bar,
-#bottom-right-controls {
-  transition:
-    opacity 480ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 480ms cubic-bezier(0.16, 1, 0.3, 1);
+/* Date line below the clock */
+.zen-flip-date {
+  font-family: var(--font-ui);
+  font-size: clamp(0.75rem, 1.4vw, 1.05rem);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.38);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
 }

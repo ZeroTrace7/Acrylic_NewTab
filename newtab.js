@@ -108,12 +108,94 @@ async function initApp() {
       syncToolsState();
     });
 
-    // Step 7.5 — Zen Mode (simple toggle)
+    // Step 7.5 — Zen Mode (flip clock)
+    let zenTickTimer = 0;
+    let zenClockEl = null;
+    const zenDigitEls = [];
+    let zenDateEl = null;
+    let zenUse24 = false;
+
+    function zenTick() {
+      const now = new Date();
+      let h = now.getHours();
+      if (!zenUse24) h = h % 12 || 12;
+      const digits = [
+        String(Math.floor(h / 10)),
+        String(h % 10),
+        String(Math.floor(now.getMinutes() / 10)),
+        String(now.getMinutes() % 10),
+      ];
+      digits.forEach((d, i) => {
+        if (zenDigitEls[i] && zenDigitEls[i].textContent !== d) {
+          zenDigitEls[i].textContent = d;
+        }
+      });
+      if (zenDateEl) {
+        zenDateEl.textContent = now.toLocaleDateString('en-US', {
+          weekday: 'long', month: 'long', day: 'numeric',
+        }).toUpperCase();
+      }
+    }
+
+    async function enterZen() {
+      if (zenClockEl) return;
+      zenUse24 = (await Prefs.get('clockFormat')) === '24h';
+      document.body.classList.add('zen-mode-active');
+
+      zenClockEl = document.createElement('div');
+      zenClockEl.className = 'zen-flip-clock';
+
+      const group = document.createElement('div');
+      group.className = 'zen-flip-group';
+
+      zenDigitEls.length = 0;
+      for (let i = 0; i < 4; i++) {
+        if (i === 2) {
+          const spacer = document.createElement('div');
+          spacer.className = 'zen-flip-colon-space';
+          group.appendChild(spacer);
+        }
+        const card = document.createElement('div');
+        card.className = 'zen-flip-card';
+        const digit = document.createElement('span');
+        digit.className = 'zen-flip-digit';
+        digit.textContent = '0';
+        card.appendChild(digit);
+        group.appendChild(card);
+        zenDigitEls.push(digit);
+      }
+
+      zenDateEl = document.createElement('div');
+      zenDateEl.className = 'zen-flip-date';
+
+      zenClockEl.append(group, zenDateEl);
+      document.body.appendChild(zenClockEl);
+      zenTick();
+      zenTickTimer = setInterval(zenTick, 1000);
+    }
+
+    function exitZen() {
+      document.body.classList.remove('zen-mode-active');
+      clearInterval(zenTickTimer);
+      zenTickTimer = 0;
+      if (zenClockEl) {
+        const el = zenClockEl;
+        zenClockEl = null;
+        zenDigitEls.length = 0;
+        zenDateEl = null;
+        // Wait for fade-out transition to finish before removing DOM
+        setTimeout(() => el.remove(), 800);
+      }
+    }
+
     const zenBtn = DOM.zenModeBtn;
     zenBtn?.addEventListener('click', () => {
-      // Don't toggle zen if the layout editor is active (button is being dragged)
       if (document.body.classList.contains('is-layout-editing')) return;
-      document.body.classList.toggle('zen-mode-active');
+      if (document.body.classList.contains('zen-mode-active')) {
+        exitZen();
+      } else {
+        enterZen();
+      }
     });
 
     // Step 8 — Keyboard shortcuts
@@ -125,7 +207,7 @@ async function initApp() {
       }
       if (e.key === 'Escape') {
         if (document.body.classList.contains('zen-mode-active')) {
-          document.body.classList.remove('zen-mode-active');
+          exitZen();
           return;
         }
         document.activeElement?.blur();
