@@ -76,8 +76,19 @@ export async function initClock() {
   startClockTimer();
 
   Prefs.onChange((changes) => {
-    if (changes.clockFormat !== undefined) use24 = is24HourFormat(changes.clockFormat);
-    if (changes.userName !== undefined) userName = changes.userName;
+    let needsTick = false;
+
+    if (changes.clockFormat !== undefined) {
+      use24 = is24HourFormat(changes.clockFormat);
+      needsTick = true;
+    }
+
+    if (changes.userName !== undefined) {
+      userName = changes.userName || '';
+      needsTick = true;
+    }
+
+    if (needsTick) tick();
   });
 
   return () => {

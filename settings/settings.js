@@ -396,11 +396,6 @@ function buildModal() {
   wpRow.append(wpIn, applyBtn);
   sec5.appendChild(wpRow);
 
-  const wpNote = document.createElement('div');
-  wpNote.textContent = 'Note: YouTube wallpapers are experimental. You may briefly see standard loading spinners or end-state UI.';
-  wpNote.setAttribute('style', 'margin-top:8px;font-size:0.72rem;line-height:1.4;color:rgba(255,255,255,0.5);');
-  sec5.appendChild(wpNote);
-
   const wpControls = document.createElement('div');
   const rebuildWpControls = () => {
     wpControls.innerHTML = '';
