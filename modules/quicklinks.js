@@ -1374,6 +1374,49 @@ function syncGrid(grid, targetLinks, hideLabel = false, useRawFavicon = false) {
   }
 }
 
+function applyTileStyles(wrapper, tile, iconEl, labelEl, hideLabel, useRawFavicon) {
+  if (useRawFavicon) {
+    Object.assign(wrapper.style, {
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: '6px', background: 'transparent', border: 'none',
+    });
+    Object.assign(tile.style, {
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: '6px', background: 'transparent', border: 'none',
+      backdropFilter: 'none', WebkitBackdropFilter: 'none',
+      boxShadow: 'none', borderRadius: '0',
+    });
+    Object.assign(iconEl.style, {
+      width: '52px', height: '52px', background: 'rgba(255,255,255,0.10)',
+      border: '1px solid rgba(255,255,255,0.12)', borderRadius: '18px',
+      overflow: 'hidden', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.25)', display: 'flex',
+      alignItems: 'center', justifyContent: 'center',
+    });
+    const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
+    if (rawFavicon instanceof HTMLImageElement) {
+      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:12px;object-fit:cover;filter:none;';
+    }
+  } else {
+    wrapper.style.background = ''; wrapper.style.border = ''; wrapper.style.gap = '';
+    tile.style.cssText = ''; iconEl.style.cssText = '';
+  }
+
+  Object.assign(labelEl.style, {
+    fontFamily: QUICKLINK_LABEL_FONT_FAMILY,
+    fontSize: useRawFavicon ? '0.76rem' : '0.72rem',
+    fontWeight: QUICKLINK_LABEL_FONT_WEIGHT,
+    color: useRawFavicon ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.9)',
+    lineHeight: useRawFavicon ? '1.2' : '1.15',
+    letterSpacing: useRawFavicon ? '0' : '0.01em',
+    textAlign: 'center', whiteSpace: 'nowrap',
+    overflow: 'hidden', textOverflow: 'ellipsis',
+    textShadow: useRawFavicon ? '0 1px 1px rgba(0,0,0,0.18)' : 'none',
+    maxWidth: useRawFavicon ? '78px' : '58px',
+    display: hideLabel ? 'none' : '',
+  });
+}
+
 function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
   if (!(wrapper instanceof HTMLElement)) return createTile(link, hideLabel, useRawFavicon);
   wrapper.dataset.linkId = link.id;
@@ -1401,58 +1444,10 @@ function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
     wrapper.classList.remove('is-sidebar-draggable');
     tile.setAttribute('draggable', 'false');
   }
-  if (useRawFavicon) {
-    Object.assign(wrapper.style, {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      background: 'transparent',
-      border: 'none',
-      gap: '6px',
-    });
-    Object.assign(tile.style, {
-      background: 'transparent',
-      border: 'none',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-      boxShadow: 'none',
-      borderRadius: '0',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '6px',
-    });
-    Object.assign(iconEl.style, {
-      width: '52px',
-      height: '52px',
-      background: 'rgba(255,255,255,0.10)',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '18px',
-      overflow: 'hidden',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    });
-  } else {
-    wrapper.style.background = '';
-    wrapper.style.border = '';
-    wrapper.style.gap = '';
-    tile.style.cssText = '';
-    iconEl.style.cssText = '';
-  }
   setTileIcon(iconEl, link, useRawFavicon);
-  if (useRawFavicon) {
-    const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
-    if (rawFavicon instanceof HTMLImageElement) {
-      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:12px;object-fit:cover;filter:none;';
-    }
-  }
   labelEl.textContent = link.title;
   labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
-  labelEl.style.display = hideLabel ? 'none' : '';
+  applyTileStyles(wrapper, tile, iconEl, labelEl, hideLabel, useRawFavicon);
 
   return wrapper;
 }
@@ -1494,66 +1489,13 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
   iconEl.className = 'ql-icon-wrap quicklink-icon';
   iconEl.setAttribute('draggable', 'false');
 
-  if (useRawFavicon) {
-    Object.assign(wrapper.style, {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: '6px',
-      background: 'transparent',
-      border: 'none',
-    });
-    Object.assign(a.style, {
-      background: 'transparent',
-      border: 'none',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-      boxShadow: 'none',
-      borderRadius: '0',
-    });
-    Object.assign(iconEl.style, {
-      width: '52px',
-      height: '52px',
-      background: 'rgba(255,255,255,0.10)',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '18px',
-      overflow: 'hidden',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    });
-  }
-
-  setTileIcon(iconEl, link, useRawFavicon);
-  if (useRawFavicon) {
-    const rawFavicon = iconEl.querySelector('.quicklink-native-favicon');
-    if (rawFavicon instanceof HTMLImageElement) {
-      rawFavicon.style.cssText = 'width:34px;height:34px;border-radius:12px;object-fit:cover;filter:none;';
-    }
-  }
-
   const labelEl = document.createElement('span');
   labelEl.className = 'quicklink-label';
   labelEl.textContent = link.title;
   labelEl.classList.toggle('quicklink-label-hidden', hideLabel);
-  Object.assign(labelEl.style, {
-    fontFamily: QUICKLINK_LABEL_FONT_FAMILY,
-    fontSize: useRawFavicon ? '0.76rem' : '0.72rem',
-    fontWeight: QUICKLINK_LABEL_FONT_WEIGHT,
-    color: useRawFavicon ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.9)',
-    lineHeight: useRawFavicon ? '1.2' : '1.15',
-    letterSpacing: useRawFavicon ? '0' : '0.01em',
-    textAlign: 'center',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textShadow: useRawFavicon ? '0 1px 1px rgba(0,0,0,0.18)' : 'none',
-    maxWidth: useRawFavicon ? '78px' : '58px',
-    display: hideLabel ? 'none' : '',
-  });
+  
+  setTileIcon(iconEl, link, useRawFavicon);
+  applyTileStyles(wrapper, a, iconEl, labelEl, hideLabel, useRawFavicon);
 
   a.appendChild(iconEl);
   wrapper.append(a, labelEl);
