@@ -7,6 +7,42 @@ type Config = Pick<
   "by" | "collections" | "featured" | "search" | "topics"
 >;
 
+interface UnsplashItem {
+  urls: {
+    raw: string;
+  };
+  links: {
+    html: string;
+  };
+  user: {
+    name: string;
+    links: {
+      html: string;
+    };
+  };
+  location?: {
+    name?: string | null;
+  } | null;
+}
+
+function isValidUnsplashItem(item: any): item is UnsplashItem {
+  if (!item || typeof item !== "object") return false;
+
+  if (!item.urls || typeof item.urls.raw !== "string") return false;
+  if (!item.links || typeof item.links.html !== "string") return false;
+
+  if (!item.user || typeof item.user !== "object") return false;
+  if (typeof item.user.name !== "string") return false;
+  if (!item.user.links || typeof item.user.links.html !== "string") return false;
+
+  if (item.location !== undefined && item.location !== null) {
+    if (typeof item.location !== "object") return false;
+    if (item.location.name !== undefined && item.location.name !== null && typeof item.location.name !== "string") return false;
+  }
+
+  return true;
+}
+
 export const fetchImages = async ({
   by,
   collections,
@@ -45,13 +81,29 @@ export const fetchImages = async ({
   const res = await fetch(`${url}?${params}`, { headers, cache: "no-cache" });
   const body = await res.json();
 
-  // TODO: validate types
+  if (!Array.isArray(body)) {
+    throw new Error("Unsplash API response is not an array");
+  }
 
-  return body.map((item: any) => ({
+  const validItems: UnsplashItem[] = [];
+
+  for (const item of body) {
+    if (isValidUnsplashItem(item)) {
+      validItems.push(item);
+    } else {
+      console.warn("Invalid Unsplash item dropped:", item);
+    }
+  }
+
+  if (validItems.length === 0) {
+    throw new Error("No valid Unsplash images found in response.");
+  }
+
+  return validItems.map((item) => ({
     src: item.urls.raw,
     credit: {
       imageLink: item.links.html,
-      location: item.location ? item.location.name : null,
+      location: item.location && item.location.name ? item.location.name : undefined,
       userName: item.user.name,
       userLink: item.user.links.html,
     },
