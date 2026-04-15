@@ -366,31 +366,7 @@ function buildAboutFooter() {
   return footer;
 }
 
-function buildModal() {
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay settings-overlay';
-  overlay.setAttribute('aria-hidden', 'true');
-  overlay.onclick = (e) => { if (e.target === overlay) closeSettings(); };
-
-  const box = document.createElement('div');
-  box.className = 'modal-box settings-box settings-panel';
-  box.setAttribute('style', 'position:relative;display:flex;flex-direction:column;gap:24px;');
-  box.onclick = (e) => e.stopPropagation();
-
-  // Header
-  const header = document.createElement('div');
-  header.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
-  const h2 = document.createElement('h2');
-  h2.textContent = 'Preferences';
-  h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
-  const closeBtn = document.createElement('button');
-  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  closeBtn.ariaLabel = 'Close preferences';
-  closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
-  closeBtn.onclick = closeSettings;
-  header.append(h2, closeBtn);
-
-  // Section 1 — Profile
+function buildProfileSection() {
   const sec1 = document.createElement('div');
   sec1.className = 'settings-card';
   sec1.appendChild(sectionLabel('Profile'));
@@ -405,8 +381,10 @@ function buildModal() {
   const saveName = debounce((v) => { Prefs.set('userName', v); toast.success('Name saved!'); }, 500);
   nameIn.oninput = () => saveName(nameIn.value);
   sec1.append(nameLabel, nameIn);
+  return sec1;
+}
 
-  // Section 2 — Theme
+function buildThemeSection() {
   const sec2 = document.createElement('div');
   sec2.className = 'settings-card';
   sec2.appendChild(sectionLabel('Theme'));
@@ -428,8 +406,10 @@ function buildModal() {
   };
   renderThemes();
   sec2.appendChild(grid);
+  return sec2;
+}
 
-  // Section 3 — Font
+function buildFontSection() {
   const secFont = document.createElement('div');
   secFont.className = 'settings-card';
   secFont.appendChild(sectionLabel('Font'));
@@ -457,8 +437,10 @@ function buildModal() {
   };
   renderFonts();
   secFont.appendChild(fontGrid);
+  return secFont;
+}
 
-  // Section 4 — Display
+function buildDisplaySection() {
   const sec3 = document.createElement('div');
   sec3.className = 'settings-card';
   sec3.appendChild(sectionLabel('Display'));
@@ -512,8 +494,10 @@ function buildModal() {
   };
   renderDisplay();
   sec3.appendChild(displayRows);
+  return sec3;
+}
 
-  // Section 5 — Widgets
+function buildWidgetsSection() {
   const sec4 = document.createElement('div');
   sec4.className = 'settings-card';
   sec4.appendChild(sectionLabel('Widgets'));
@@ -536,7 +520,6 @@ function buildModal() {
       ['showClock', 'Time', 'Show or hide the clock and date block'],
       ['showGreeting', 'Greeting', 'Show or hide the greeting above the search bar'],
     ];
-
     const secondaryWidgetOptions = [
       ['showSearchBar', 'Search Bar'],
       ['showQuickLinks', 'Quick Links'],
@@ -545,20 +528,17 @@ function buildModal() {
       ['showQuickTools', 'Quick Tools'],
       ['showZenButton', 'Zen Mode Button'],
     ];
-
     const toggleWidget = async (key) => {
       prefs[key] = prefs[key] === false;
       await Prefs.set(key, prefs[key]);
       renderWidgets();
     };
-
     primaryWidgetOptions.forEach(([key, label, description]) => {
       widgetRows.appendChild(toggleRow(label, description, prefs[key] !== false, async () => {
         await toggleWidget(key);
       }));
     });
     widgetRows.lastElementChild?.classList.add('settings-widget-primary-last');
-
     disclosure = document.createElement('button');
     disclosure.type = 'button';
     disclosure.className = 'settings-widget-disclosure';
@@ -576,7 +556,6 @@ function buildModal() {
       setWidgetsExpanded(!widgetsExpanded);
     });
     widgetRows.appendChild(disclosure);
-
     expandedRows = document.createElement('div');
     expandedRows.className = 'settings-widget-expanded';
     expandedRows.setAttribute('aria-hidden', 'true');
@@ -590,8 +569,10 @@ function buildModal() {
   };
   renderWidgets();
   sec4.appendChild(widgetRows);
+  return sec4;
+}
 
-  // Section 6 — Wallpaper
+function buildWallpaperSection() {
   const sec5 = document.createElement('div');
   sec5.className = 'settings-card';
   sec5.appendChild(sectionLabel('Wallpaper'));
@@ -629,7 +610,6 @@ function buildModal() {
   };
   wpRow.append(wpIn, applyBtn);
   sec5.appendChild(wpRow);
-
   const wpControls = document.createElement('div');
   const rebuildWpControls = () => {
     wpControls.innerHTML = '';
@@ -646,8 +626,10 @@ function buildModal() {
   };
   rebuildWpControls();
   sec5.appendChild(wpControls);
+  return sec5;
+}
 
-  // Section 7 — Clock
+function buildClockSection() {
   const sec6 = document.createElement('div');
   sec6.className = 'settings-card';
   sec6.appendChild(sectionLabel('Clock'));
@@ -660,27 +642,24 @@ function buildModal() {
     }));
   };
   renderClock();
+  return sec6;
+}
 
-  // Section 8 — Quick Links
+function buildQuickLinksSection() {
   const sec7 = document.createElement('div');
   sec7.className = 'settings-card';
   sec7.appendChild(sectionLabel('Quick Links'));
-
   const qlRow = document.createElement('div');
   qlRow.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;gap:12px;');
-
   const qlLbl = document.createElement('span');
   qlLbl.textContent = 'Top links';
   qlLbl.setAttribute('style', 'font-size:0.85rem;font-weight:600;color:var(--text-primary);flex-shrink:0;');
-
   const qlTrack = document.createElement('div');
   qlTrack.className = 'ql-segment-track';
   qlTrack.setAttribute('role', 'listbox');
   qlTrack.setAttribute('aria-label', 'Number of top quick links');
-
   const QL_VALUES = [4, 5, 6, 7, 8, 9];
   let qlSegments = [];
-
   const updateSegments = () => {
     const current = Number(prefs.quickLinksMax) || 6;
     qlSegments.forEach((seg) => {
@@ -689,7 +668,6 @@ function buildModal() {
       seg.setAttribute('aria-selected', String(isActive));
     });
   };
-
   QL_VALUES.forEach((val) => {
     const seg = document.createElement('button');
     seg.type = 'button';
@@ -708,15 +686,48 @@ function buildModal() {
     qlTrack.appendChild(seg);
     qlSegments.push(seg);
   });
-
   updateSegments();
   qlRow.append(qlLbl, qlTrack);
   sec7.appendChild(qlRow);
-
   const qlHint = document.createElement('div');
   qlHint.textContent = 'Top browser sites shown in the bottom quick links row.';
   qlHint.setAttribute('style', 'font-size:0.75rem;color:var(--text-secondary);margin-top:2px;');
   sec7.appendChild(qlHint);
+  return sec7;
+}
+
+function buildModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay settings-overlay';
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.onclick = (e) => { if (e.target === overlay) closeSettings(); };
+
+  const box = document.createElement('div');
+  box.className = 'modal-box settings-box settings-panel';
+  box.setAttribute('style', 'position:relative;display:flex;flex-direction:column;gap:24px;');
+  box.onclick = (e) => e.stopPropagation();
+
+  // Header
+  const header = document.createElement('div');
+  header.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
+  const h2 = document.createElement('h2');
+  h2.textContent = 'Preferences';
+  h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  closeBtn.ariaLabel = 'Close preferences';
+  closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
+  closeBtn.onclick = closeSettings;
+  header.append(h2, closeBtn);
+
+  const sec1 = buildProfileSection();
+  const sec2 = buildThemeSection();
+  const secFont = buildFontSection();
+  const sec3 = buildDisplaySection();
+  const sec4 = buildWidgetsSection();
+  const sec5 = buildWallpaperSection();
+  const sec6 = buildClockSection();
+  const sec7 = buildQuickLinksSection();
 
   // Section 9 — About & Support
   const sec8 = buildAboutSection();
