@@ -8,24 +8,31 @@ export async function getForecast(
   { latitude, longitude, units }: Config,
   loader: API["loader"],
 ): Promise<Cache> {
-  if (!latitude || !longitude) {
+  if (latitude == null || longitude == null) {
     return;
   }
 
   loader.push();
-  const url =
-    "https://api.open-meteo.com/v1/forecast?" +
-    `latitude=${latitude}&` +
-    `longitude=${longitude}&` +
-    "hourly=temperature_2m&" +
-    "hourly=apparent_temperature&" +
-    "hourly=relativehumidity_2m&" +
-    "hourly=weathercode&" +
-    "timeformat=unixtime&" +
-    `temperature_unit=${units === "us" ? "fahrenheit" : "celsius"}`;
-  const res = await fetch(url);
-  const body = await res.json();
-  loader.pop();
+  let body;
+  try {
+    const url =
+      "https://api.open-meteo.com/v1/forecast?" +
+      `latitude=${latitude}&` +
+      `longitude=${longitude}&` +
+      "hourly=temperature_2m&" +
+      "hourly=apparent_temperature&" +
+      "hourly=relativehumidity_2m&" +
+      "hourly=weathercode&" +
+      "timeformat=unixtime&" +
+      `temperature_unit=${units === "us" ? "fahrenheit" : "celsius"}`;
+    const res = await fetch(url);
+    body = await res.json();
+  } catch (error) {
+    console.error("Failed to fetch weather forecast:", error);
+    return undefined;
+  } finally {
+    loader.pop();
+  }
 
   // Process results
   if (
@@ -108,6 +115,10 @@ export async function geocodeLocation(query: string): Promise<Coordinates> {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=1`;
   const res = await fetch(url);
   const data = await res.json();
+
+  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+    throw new Error("No location found");
+  }
 
   return {
     latitude: round(data.results[0].latitude),
