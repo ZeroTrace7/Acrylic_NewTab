@@ -91,6 +91,7 @@ let layoutBindingsBound = false;
 let activeLayoutDrag = null;
 let layoutEditorHud = null;
 let layoutEditorHudTimer = 0;
+let activeHudDrag = null;
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -133,6 +134,22 @@ function announceLayoutEditor(message) {
   if (live) live.textContent = message;
 }
 
+function clampHudPosition(hud, left, top) {
+  const maxLeft = Math.max(12, window.innerWidth - hud.offsetWidth - 12);
+  const maxTop = Math.max(12, window.innerHeight - hud.offsetHeight - 12);
+  return {
+    left: clamp(Math.round(left), 12, maxLeft),
+    top: clamp(Math.round(top), 12, maxTop),
+  };
+}
+
+function setHudPosition(hud, left, top) {
+  const next = clampHudPosition(hud, left, top);
+  hud.style.left = `${next.left}px`;
+  hud.style.top = `${next.top}px`;
+  hud.style.right = 'auto';
+}
+
 function createLayoutEditorButton(label, className, onclick) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -156,6 +173,7 @@ function ensureLayoutEditorHud() {
 
   const copy = document.createElement('div');
   copy.className = 'layout-editor-copy';
+  copy.dataset.layoutEditorDragHandle = 'true';
 
   const eyebrow = document.createElement('span');
   eyebrow.className = 'layout-editor-eyebrow';
@@ -191,6 +209,9 @@ function ensureLayoutEditorHud() {
   hud.append(copy, actions);
   document.body.appendChild(hud);
   layoutEditorHud = hud;
+  requestAnimationFrame(() => {
+    setHudPosition(hud, window.innerWidth - hud.offsetWidth - 24, 24);
+  });
   requestAnimationFrame(() => hud.classList.add('is-visible'));
 }
 
@@ -231,12 +252,19 @@ function stopLayoutDrag({ persist = false } = {}) {
   }
 }
 
+function stopHudDrag() {
+  if (!activeHudDrag) return;
+  activeHudDrag.hud.classList.remove('is-dragging');
+  activeHudDrag = null;
+}
+
 function applyLayoutEditMode(enabled) {
   preferenceState.editLayoutMode = Boolean(enabled);
   document.body?.classList.toggle('is-layout-editing', preferenceState.editLayoutMode);
   if (preferenceState.editLayoutMode) {
     ensureLayoutEditorHud();
   } else {
+    stopHudDrag();
     removeLayoutEditorHud();
   }
   if (!preferenceState.editLayoutMode) {
@@ -342,6 +370,14 @@ function handleLayoutPointerMove(event) {
 }
 
 function handleLayoutPointerUp(event) {
+  if (activeHudDrag && event instanceof PointerEvent && event.pointerId === activeHudDrag.pointerId) {
+    try {
+      activeHudDrag.hud.releasePointerCapture(event.pointerId);
+    } catch {}
+    event.preventDefault();
+    stopHudDrag();
+    return;
+  }
   if (!activeLayoutDrag) return;
   if (!(event instanceof PointerEvent)) return;
   if (event.pointerId !== activeLayoutDrag.pointerId) return;
@@ -361,15 +397,65 @@ function handleLayoutEditorKeydown(event) {
   setLayoutEditMode(false, { persist: true, announce: false });
 }
 
+function handleLayoutEditorHudPointerDown(event) {
+  if (!preferenceState.editLayoutMode) return;
+  if (!(event instanceof PointerEvent)) return;
+  if (event.button !== 0 || event.isPrimary === false) return;
+
+  const handle = event.target instanceof Element
+    ? event.target.closest('[data-layout-editor-drag-handle]')
+    : null;
+  if (!(handle instanceof HTMLElement)) return;
+
+  const hud = handle.closest('.layout-editor-hud');
+  if (!(hud instanceof HTMLElement)) return;
+
+  const rect = hud.getBoundingClientRect();
+  activeHudDrag = {
+    pointerId: event.pointerId,
+    hud,
+    offsetX: event.clientX - rect.left,
+    offsetY: event.clientY - rect.top,
+  };
+
+  try {
+    hud.setPointerCapture(event.pointerId);
+  } catch {}
+
+  hud.classList.add('is-dragging');
+  event.preventDefault();
+  event.stopPropagation();
+}
+
+function handleLayoutEditorHudPointerMove(event) {
+  if (!activeHudDrag) return;
+  if (!(event instanceof PointerEvent)) return;
+  if (event.pointerId !== activeHudDrag.pointerId) return;
+
+  const nextLeft = event.clientX - activeHudDrag.offsetX;
+  const nextTop = event.clientY - activeHudDrag.offsetY;
+  setHudPosition(activeHudDrag.hud, nextLeft, nextTop);
+  event.preventDefault();
+}
+
+function handleLayoutViewportResize() {
+  if (!(layoutEditorHud instanceof HTMLElement)) return;
+  const rect = layoutEditorHud.getBoundingClientRect();
+  setHudPosition(layoutEditorHud, rect.left, rect.top);
+}
+
 function ensureLayoutBindings() {
   if (layoutBindingsBound) return;
   layoutBindingsBound = true;
   bindLayoutTargets();
+  document.addEventListener('pointerdown', handleLayoutEditorHudPointerDown, true);
+  document.addEventListener('pointermove', handleLayoutEditorHudPointerMove, true);
   document.addEventListener('pointerdown', handleLayoutPointerDown, true);
   document.addEventListener('pointermove', handleLayoutPointerMove, true);
   document.addEventListener('pointerup', handleLayoutPointerUp, true);
   document.addEventListener('pointercancel', handleLayoutPointerUp, true);
   document.addEventListener('keydown', handleLayoutEditorKeydown, true);
+  window.addEventListener('resize', handleLayoutViewportResize);
 }
 
 export async function setLayoutEditMode(enabled, { persist = true, announce = false } = {}) {
