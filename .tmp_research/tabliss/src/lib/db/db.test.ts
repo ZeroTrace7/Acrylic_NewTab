@@ -107,9 +107,17 @@ test("database atomic prefix search duplicate", () => {
   });
 });
 
-test("database delete with default data", () => {
+test("database delete with default data (fallback)", () => {
+  const db = DB.init({ test: "default_value" });
+  DB.put(db, "test", "override_value");
+  expect(DB.get(db, "test")).toBe("override_value");
+  DB.del(db, "test");
+  expect(DB.get(db, "test")).toBe("default_value");
+});
+
+test("database delHard with default data (tombstone)", () => {
   const db = DB.init({ test: "default_value" });
   expect(DB.get(db, "test")).toBe("default_value");
-  DB.del(db, "test");
+  DB.delHard(db, "test");
   expect(DB.get(db, "test")).toBeUndefined();
 });
