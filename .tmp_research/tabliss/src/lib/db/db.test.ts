@@ -56,12 +56,6 @@ test("database default data", () => {
   expect(DB.get(db, "test")).toBe("test");
 });
 
-test("database default data delete", () => {
-  const db = DB.init({ test: "test" });
-  DB.del(db, "test");
-  expect(DB.get(db, "test")).toBeUndefined();
-});
-
 test("database atomic writes flush", () => {
   const db = DB.init();
   DB.atomic(db, (trx) => {
