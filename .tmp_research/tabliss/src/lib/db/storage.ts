@@ -3,7 +3,7 @@ import * as Stream from "./stream";
 
 /** IndexedDB storage provider */
 // TODO: clean up indexeddb usage, convert to promises and double check error handling
-export const indexeddb = async (
+export const indexeddb = (
   db: DB.Database,
   name: string,
 ): Promise<Stream.Stream<StorageError>> => {
@@ -18,64 +18,63 @@ export const indexeddb = async (
     return new StorageError(`IndexedDB: ${name}: ${message}`, { cause });
   };
 
-  const conn = await new Promise<IDBDatabase>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
+    const rejectError = (message: string) => (err: unknown) => {
+      reject(mapError(message, err));
+    };
+
     const open = indexedDB.open(name, 1);
-    open.onerror = (err) => reject(mapError("Cannot open database", err));
+    open.onerror = rejectError("Cannot open database");
     open.onupgradeneeded = () => {
       open.result.createObjectStore("changes");
     };
     open.onsuccess = () => {
-      resolve(open.result);
+      const conn = open.result;
+
+      const trx = conn.transaction("changes", "readonly");
+      trx.onerror = rejectError("Cannot read changes from store");
+
+      const changes: DB.Change[] = [];
+      const cursor = trx.objectStore("changes").openCursor();
+      cursor.onsuccess = () => {
+        if (cursor.result) {
+          if (typeof cursor.result.key === "string")
+            changes.push([cursor.result.key, cursor.result.value]);
+          cursor.result.continue();
+        } else {
+          // Finished loading
+          DB.atomic(db, (trx) => {
+            changes.forEach(([key, val]) => DB.put(trx, key, val));
+          });
+
+          // Write
+          const errors = Stream.init<StorageError>();
+          DB.listen(
+            db,
+            batch((changes) => {
+              if (DEV) console.log("Storage: saving changes:", changes);
+
+              const trx = conn.transaction("changes", "readwrite");
+              trx.oncomplete = () => {}; // nice
+              trx.onerror = (error) =>
+                Stream.publish(
+                  errors,
+                  mapError("Cannot write changes to store", error),
+                );
+
+              const store = trx.objectStore("changes");
+              // TODO: iterator helpers
+              for (const [key, val] of changes) {
+                if (val === undefined) store.delete(key);
+                else store.put(val, key);
+              }
+            }),
+          );
+          resolve(errors);
+        }
+      };
     };
   });
-
-  const changes = await new Promise<DB.Change[]>((resolve, reject) => {
-    const trx = conn.transaction("changes", "readonly");
-    trx.onerror = (err) => reject(mapError("Cannot read changes from store", err));
-
-    const changesList: DB.Change[] = [];
-    const cursor = trx.objectStore("changes").openCursor();
-    cursor.onsuccess = () => {
-      if (cursor.result) {
-        if (typeof cursor.result.key === "string")
-          changesList.push([cursor.result.key, cursor.result.value]);
-        cursor.result.continue();
-      } else {
-        resolve(changesList);
-      }
-    };
-  });
-
-  // Finished loading
-  DB.atomic(db, (trx) => {
-    changes.forEach(([key, val]) => DB.put(trx, key, val));
-  });
-
-  // Write
-  const errors = Stream.init<StorageError>();
-  DB.listen(
-    db,
-    batch((changes) => {
-      if (DEV) console.log("Storage: saving changes:", changes);
-
-      const trx = conn.transaction("changes", "readwrite");
-      trx.oncomplete = () => {}; // nice
-      trx.onerror = (error) =>
-        Stream.publish(
-          errors,
-          mapError("Cannot write changes to store", error),
-        );
-
-      const store = trx.objectStore("changes");
-      // TODO: iterator helpers
-      for (const [key, val] of changes) {
-        if (val === undefined) store.delete(key);
-        else store.put(val, key);
-      }
-    }),
-  );
-
-  return errors;
 };
 
 /** Web Extension storage provider */
