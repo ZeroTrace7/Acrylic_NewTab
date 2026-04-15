@@ -7,6 +7,51 @@ type Config = Pick<
   "by" | "collections" | "featured" | "search" | "topics"
 >;
 
+interface UnsplashItem {
+  urls: {
+    raw: string;
+  };
+  links: {
+    html: string;
+  };
+  user: {
+    name: string;
+    links: {
+      html: string;
+    };
+  };
+  location?: {
+    name?: string | null;
+  } | null;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+};
+
+function isValidUnsplashItem(item: unknown): item is UnsplashItem {
+  if (!isRecord(item)) return false;
+  if (!isRecord(item.urls) || typeof item.urls.raw !== "string") return false;
+  if (!isRecord(item.links) || typeof item.links.html !== "string") return false;
+  if (!isRecord(item.user)) return false;
+  if (typeof item.user.name !== "string") return false;
+  if (!isRecord(item.user.links) || typeof item.user.links.html !== "string")
+    return false;
+
+  if (item.location !== undefined && item.location !== null) {
+    if (!isRecord(item.location)) return false;
+    const locationName = item.location.name;
+    if (
+      locationName !== undefined &&
+      locationName !== null &&
+      typeof locationName !== "string"
+    )
+      return false;
+  }
+
+  return true;
+}
+
 export const fetchImages = async ({
   by,
   collections,
@@ -43,15 +88,30 @@ export const fetchImages = async ({
   }
 
   const res = await fetch(`${url}?${params}`, { headers, cache: "no-cache" });
-  const body = await res.json();
+  if (!res.ok) {
+    throw new Error(`Unsplash request failed with status ${res.status}`);
+  }
 
-  // TODO: validate types
+  const body: unknown = await res.json();
+  if (!Array.isArray(body)) {
+    throw new Error("Unsplash API response is not an array");
+  }
 
-  return body.map((item: any) => ({
+  const validItems = body.filter((item, index): item is UnsplashItem => {
+    if (isValidUnsplashItem(item)) return true;
+    console.warn(`Invalid Unsplash item dropped at index ${index}`, item);
+    return false;
+  });
+
+  if (validItems.length === 0) {
+    throw new Error("No valid Unsplash images found in response.");
+  }
+
+  return validItems.map((item) => ({
     src: item.urls.raw,
     credit: {
       imageLink: item.links.html,
-      location: item.location ? item.location.name : null,
+      location: item.location?.name ?? undefined,
       userName: item.user.name,
       userLink: item.user.links.html,
     },
