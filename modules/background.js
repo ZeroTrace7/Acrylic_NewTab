@@ -92,9 +92,11 @@ function buildYouTubeEmbedUrl(videoId) {
     iv_load_policy: '3',
     playsinline: '1',
     rel: '0',
+    enablejsapi: '1',
+    origin: `chrome-extension://${chrome.runtime.id}`,
   });
 
-  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
 }
 
 function getImageLoadError() {
@@ -185,8 +187,10 @@ function createWallpaperYouTubeFrame(embedUrl) {
   frame.src = embedUrl;
   frame.title = 'YouTube wallpaper';
   frame.tabIndex = -1;
+  frame.loading = 'eager';
   frame.allow = 'autoplay; encrypted-media; picture-in-picture';
   frame.referrerPolicy = 'strict-origin-when-cross-origin';
+  frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
   return frame;
 }
@@ -254,12 +258,18 @@ function applyDarken(amount) {
   document.documentElement.style.setProperty('--bg-darken', amount);
 }
 
+function reportBackgroundError(message, error) {
+  console.warn(message, error);
+}
+
 export async function initBackground() {
   const prefs = await Prefs.getAll();
   applyTheme(prefs.theme);
   applyGrain(prefs.grainOpacity);
   if (prefs.wallpaperUrl) {
-    loadAndApplyWallpaper(prefs.wallpaperUrl, prefs.wallpaperBlur, prefs.wallpaperDarken, { silent: true }).catch(() => {});
+    loadAndApplyWallpaper(prefs.wallpaperUrl, prefs.wallpaperBlur, prefs.wallpaperDarken, { silent: true }).catch((error) => {
+      reportBackgroundError('Initial wallpaper load failed:', error);
+    });
   }
 
   Prefs.onChange((changes) => {
@@ -270,7 +280,9 @@ export async function initBackground() {
       const blur = parseFloat(root.getPropertyValue('--bg-blur-amount')) || 0;
       const darken = parseFloat(root.getPropertyValue('--bg-darken')) || 0.45;
       if (changes.wallpaperUrl) {
-        loadAndApplyWallpaper(changes.wallpaperUrl, blur, darken, { silent: false }).catch(() => {});
+        loadAndApplyWallpaper(changes.wallpaperUrl, blur, darken, { silent: false }).catch((error) => {
+          reportBackgroundError('Wallpaper change apply failed:', error);
+        });
       } else {
         applyWallpaperSourceToDom(null);
       }
@@ -294,7 +306,9 @@ export async function setWallpaper(url, blur = 0, darken = 0.45) {
 export function clearWallpaper() {
   wallpaperRequestId++;
   applyWallpaperSourceToDom(null);
-  Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 });
+  Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 }).catch((error) => {
+    reportBackgroundError('Failed to persist wallpaper clear:', error);
+  });
 }
 
 export function setWallpaperAppearance(blur = 0, darken = 0.45) {
@@ -303,9 +317,10 @@ export function setWallpaperAppearance(blur = 0, darken = 0.45) {
 
 export function setGrain(opacity) {
   applyGrain(opacity);
-  Prefs.set('grainOpacity', opacity);
+  Prefs.set('grainOpacity', opacity).catch((error) => {
+    reportBackgroundError('Failed to persist grain opacity:', error);
+  });
 }
 
 export function getCurrentTheme() { return currentTheme; }
 export function getAvailableThemes() { return THEMES; }
-

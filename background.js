@@ -8,6 +8,37 @@ const MODE_DURATION = {
   longBreak:  60 * 60,
 };
 
+const YOUTUBE_REFERER_RULE_ID = 4101;
+
+async function syncYouTubeEmbedRefererRule() {
+  if (!chrome.declarativeNetRequest?.updateDynamicRules) return;
+
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: [YOUTUBE_REFERER_RULE_ID],
+    addRules: [
+      {
+        id: YOUTUBE_REFERER_RULE_ID,
+        priority: 1,
+        action: {
+          type: 'modifyHeaders',
+          requestHeaders: [
+            {
+              header: 'referer',
+              operation: 'set',
+              value: chrome.runtime.id,
+            },
+          ],
+        },
+        condition: {
+          initiatorDomains: [chrome.runtime.id],
+          requestDomains: ['www.youtube.com'],
+          resourceTypes: ['sub_frame'],
+        },
+      },
+    ],
+  });
+}
+
 async function ensureOffscreen() {
   if (await chrome.offscreen.hasDocument()) return;
   await chrome.offscreen.createDocument({
@@ -20,8 +51,22 @@ async function ensureOffscreen() {
 async function playSound(source) {
   try {
     await ensureOffscreen();
-    chrome.runtime.sendMessage({ type: 'PLAY_SOUND', source }).catch(() => {});
+    chrome.runtime.sendMessage({ type: 'PLAY_SOUND', source }).catch((err) => {
+      console.warn('PLAY_SOUND message failed:', err);
+    });
   } catch (err) { console.warn('playSound failed:', err); }
+}
+
+function respondWith(promise, respond, label) {
+  promise
+    .then((state) => respond({ status: 'ok', state }))
+    .catch((error) => {
+      console.error(`${label} failed:`, error);
+      respond({
+        status: 'error',
+        message: error?.message || `${label} failed`,
+      });
+    });
 }
 
 async function startTimer(mode) {
@@ -103,19 +148,52 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 // ── Message listener ────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((msg, sender, respond) => {
-  if (msg.command === 'startTimer')  { startTimer(msg.mode).then(s => respond({ status: 'ok', state: s })); return true; }
-  if (msg.command === 'pauseTimer')  { pauseTimer(msg.timerState).then(s => respond({ status: 'ok', state: s })); return true; }
-  if (msg.command === 'resumeTimer') { resumeTimer(msg.timerState).then(s => respond({ status: 'ok', state: s })); return true; }
-  if (msg.command === 'resetTimer')  { resetTimer(msg.mode).then(s => respond({ status: 'ok', state: s })); return true; }
-  if (msg.type === 'GET_TABS') { chrome.tabs.query({ currentWindow: true }, tabs => respond(tabs)); return true; }
-  if (msg.type === 'CREATE_TAB') { chrome.tabs.create({ url: msg.url }); return false; }
+  if (msg.command === 'startTimer') {
+    respondWith(startTimer(msg.mode), respond, 'startTimer');
+    return true;
+  }
+  if (msg.command === 'pauseTimer') {
+    respondWith(pauseTimer(msg.timerState), respond, 'pauseTimer');
+    return true;
+  }
+  if (msg.command === 'resumeTimer') {
+    respondWith(resumeTimer(msg.timerState), respond, 'resumeTimer');
+    return true;
+  }
+  if (msg.command === 'resetTimer') {
+    respondWith(resetTimer(msg.mode), respond, 'resetTimer');
+    return true;
+  }
+  if (msg.type === 'GET_TABS') {
+    try {
+      chrome.tabs.query({ currentWindow: true }, (tabs) => {
+        if (chrome.runtime?.lastError) {
+          respond({ status: 'error', message: chrome.runtime.lastError.message });
+          return;
+        }
+        respond({ status: 'ok', tabs });
+      });
+    } catch (error) {
+      respond({ status: 'error', message: error?.message || 'GET_TABS failed' });
+    }
+    return true;
+  }
+  if (msg.type === 'CREATE_TAB') {
+    chrome.tabs
+      .create({ url: msg.url })
+      .then(() => respond({ status: 'ok' }))
+      .catch((error) => respond({ status: 'error', message: error?.message || 'CREATE_TAB failed' }));
+    return true;
+  }
   return false;
 });
 
 // ── Notification button click ───────────────────────────────
 
 chrome.notifications.onButtonClicked.addListener((notifId, btnIndex) => {
-  if (btnIndex === 0 && notifId in MODE_DURATION) startTimer(notifId);
+  if (btnIndex === 0 && notifId in MODE_DURATION) {
+    startTimer(notifId).catch((err) => console.error('Notification startTimer failed:', err));
+  }
   chrome.notifications.clear(notifId);
 });
 
@@ -124,6 +202,7 @@ chrome.notifications.onButtonClicked.addListener((notifId, btnIndex) => {
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
     console.log('Acrylic extension installed');
+    await syncYouTubeEmbedRefererRule();
     await chrome.storage.local.set({
       timerState: { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 },
       dailyStats: { date: TODAY(), count: 0 },
@@ -136,6 +215,12 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     }
   } catch (err) { console.error('Install handler error:', err); }
 });
+
+chrome.runtime.onStartup.addListener(() => {
+  syncYouTubeEmbedRefererRule().catch((err) => console.error('YouTube embed rule sync error:', err));
+});
+
+syncYouTubeEmbedRefererRule().catch((err) => console.error('Initial YouTube embed rule sync error:', err));
 
 // ── Context menu click ──────────────────────────────────────
 

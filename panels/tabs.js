@@ -339,7 +339,13 @@ function createGroupCard(group) {
   top.style.alignItems = 'flex-start';
 
   const left = document.createElement('div');
-  left.innerHTML = `<div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);font-family:var(--font-ui),sans-serif;">${group.name}</div><div class="qt-muted qt-mt-sm">${new Date(group.savedAt).toLocaleDateString()} · ${group.tabs.length} tabs</div>`;
+  const title = document.createElement('div');
+  title.style.cssText = 'font-size:0.85rem;font-weight:600;color:var(--text-primary);font-family:var(--font-ui),sans-serif;';
+  title.textContent = group.name;
+  const meta = document.createElement('div');
+  meta.className = 'qt-muted qt-mt-sm';
+  meta.textContent = `${new Date(group.savedAt).toLocaleDateString()} · ${group.tabs.length} tabs`;
+  left.append(title, meta);
 
   const right = document.createElement('div');
   right.className = 'qt-flex qt-gap-sm';
@@ -423,17 +429,32 @@ async function saveGroup() {
   }
 }
 
-function restoreGroup(group) {
-  try {
-    group.tabs.forEach((tab) => {
-      if (isRestorableUrl(tab.url)) {
-        chrome.tabs.create({ url: tab.url }).catch(() => {});
-      }
-    });
-    toast.success('Tabs restored!');
-  } catch {
-    toast.error('Failed to restore tabs');
+async function restoreGroup(group) {
+  const urls = group.tabs
+    .map((tab) => tab.url)
+    .filter((url) => isRestorableUrl(url));
+
+  if (urls.length === 0) {
+    toast.error('No restorable tabs in this group');
+    return;
   }
+
+  const results = await Promise.allSettled(
+    urls.map((url) => chrome.tabs.create({ url })),
+  );
+  const failed = results.filter((result) => result.status === 'rejected').length;
+
+  if (failed === 0) {
+    toast.success('Tabs restored!');
+    return;
+  }
+
+  if (failed === urls.length) {
+    toast.error('Failed to restore tabs');
+    return;
+  }
+
+  toast.info(`Restored ${urls.length - failed}/${urls.length} tabs`);
 }
 
 async function deleteGroup(id) {

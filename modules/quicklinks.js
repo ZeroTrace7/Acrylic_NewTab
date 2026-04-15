@@ -995,6 +995,7 @@ function toggleManagePanel() {
 function handleManageOutsideClick(event) {
   if (!managePanelOpen || !managePanelEl) return;
   const target = event.target;
+  if (!(target instanceof Node)) return;
   const manageBtn = DOM.manageQuicklinksBtn;
   if (managePanelEl.contains(target) || (manageBtn && manageBtn.contains(target))) return;
   closeManagePanel();
@@ -1550,7 +1551,8 @@ function openContextMenu(e, link) {
   document.body.appendChild(menu);
   setTimeout(() => {
     document.addEventListener('mousedown', (ev) => {
-      if (!menu.contains(ev.target)) removeContextMenu();
+      const target = ev.target;
+      if (!(target instanceof Node) || !menu.contains(target)) removeContextMenu();
     }, { once: true });
   }, 10);
 }
@@ -1659,7 +1661,9 @@ function emitLinksUpdated() {
 }
 
 function persistLinks() {
-  Store.setLinks(links);
+  Store.setLinks(links).catch((error) => {
+    console.warn('Failed to persist quick links:', error);
+  });
   emitLinksUpdated();
 }
 
@@ -1732,11 +1736,17 @@ export async function initQuickLinks() {
   };
 
   window.addEventListener('focus', () => {
-    refreshTopSites();
+    refreshTopSites().catch((error) => {
+      console.warn('Failed to refresh top sites on focus:', error);
+    });
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refreshTopSites();
+    if (document.visibilityState === 'visible') {
+      refreshTopSites().catch((error) => {
+        console.warn('Failed to refresh top sites on visibilitychange:', error);
+      });
+    }
   });
 
   bus.addEventListener('linksUpdated', (event) => {

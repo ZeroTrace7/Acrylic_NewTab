@@ -9,6 +9,19 @@ let dailyCount = 0;
 const MODES = { pomodoro: 1500, shortBreak: 300, longBreak: 3600 };
 const CIRC = 263.9;
 
+async function sendTimerCommand(message) {
+  try {
+    const response = await chrome.runtime.sendMessage(message);
+    if (response?.status === 'error') {
+      console.warn('Pomodoro command rejected:', message?.command, response.message);
+      toast.error('Timer sync failed. Please try again.');
+    }
+  } catch (error) {
+    console.warn('Pomodoro command failed:', message?.command, error);
+    toast.error('Timer sync failed. Please try again.');
+  }
+}
+
 function normalizeTimerState(nextState) {
   if (!nextState || typeof nextState !== 'object') {
     return { mode: 'pomodoro', isRunning: false, timeLeft: MODES.pomodoro, endTime: 0 };
@@ -186,21 +199,21 @@ function startLocalTick() {
 
 function changeMode(modeId) {
   if (state.isRunning) return;
-  chrome.runtime.sendMessage({ command: 'resetTimer', mode: modeId }).catch(() => {});
+  void sendTimerCommand({ command: 'resetTimer', mode: modeId });
   state = { mode: modeId, isRunning: false, timeLeft: MODES[modeId], endTime: 0 };
   render();
 }
 
 function toggleTimer() {
   if (state.isRunning) {
-    chrome.runtime.sendMessage({ command: 'pauseTimer', timerState: state }).catch(() => {});
+    void sendTimerCommand({ command: 'pauseTimer', timerState: state });
     state.isRunning = false;
     clearInterval(tickInterval);
   } else {
     const cmd = state.timeLeft === MODES[state.mode]
       ? { command: 'startTimer', mode: state.mode }
       : { command: 'resumeTimer', timerState: state };
-    chrome.runtime.sendMessage(cmd).catch(() => {});
+    void sendTimerCommand(cmd);
     state.isRunning = true;
     state.endTime = Date.now() + state.timeLeft * 1000;
     startLocalTick();
@@ -211,7 +224,7 @@ function toggleTimer() {
 function resetTimer() {
   if (!state.isRunning && state.timeLeft === MODES[state.mode]) return;
   clearInterval(tickInterval);
-  chrome.runtime.sendMessage({ command: 'resetTimer', mode: state.mode }).catch(() => {});
+  void sendTimerCommand({ command: 'resetTimer', mode: state.mode });
   state.isRunning = false;
   state.timeLeft = MODES[state.mode];
   state.endTime = 0;
@@ -239,7 +252,9 @@ export async function initPomodoro(container) {
         state.timeLeft = Math.max(0, Math.floor((state.endTime - Date.now()) / 1000));
         startLocalTick();
       } else if (changes.timerState?.timeLeft !== state.timeLeft || changes.timerState?.mode !== state.mode) {
-        Store.setTimerState(state).catch(() => {});
+        Store.setTimerState(state).catch((error) => {
+          console.warn('Failed to normalize timer state:', error);
+        });
       }
       render();
     }

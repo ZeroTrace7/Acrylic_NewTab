@@ -14,14 +14,6 @@ let currentStageEl = null;
 let tabSwitchToken = 0;
 
 const TAB_STAGE_EXIT_MS = 320;
-
-function handleOutsideClick(e) {
-  const triggerBtn = DOM.quickToolsBtn;
-  const rp = DOM.rightPanel;
-  if (panelEl && rp && !rp.contains(e.target) && (!triggerBtn || !triggerBtn.contains(e.target))) {
-    closePanel();
-  }
-}
 let handleDocumentMouseDown = null;
 
 const TABS = [
