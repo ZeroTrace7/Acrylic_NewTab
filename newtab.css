@@ -203,10 +203,6 @@ button:disabled {
   pointer-events: none;
 }
 
-.wallpaper-media-video {
-  object-fit: cover;
-}
-
 .wallpaper-media-youtube {
   top: 50%;
   left: 50%;

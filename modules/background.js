@@ -20,7 +20,6 @@ let wallpaperRequestId = 0;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
-const VIDEO_EXT_RE = /\.(mp4|webm|ogv|ogg|mov|m4v)(?:[?#].*)?$/i;
 
 function getBodyEl() { return document.body; }
 function normalizeTheme(themeId) {
@@ -72,14 +71,9 @@ function getYouTubeVideoId(url) {
 
   if (hostname === 'youtu.be') {
     candidate = parsed.pathname.split('/').filter(Boolean)[0] || '';
-  } else if (hostname === 'youtube.com' || hostname === 'm.youtube.com' || hostname === 'music.youtube.com' || hostname === 'youtube-nocookie.com') {
+  } else if (hostname === 'youtube.com') {
     if (parsed.pathname === '/watch') {
       candidate = parsed.searchParams.get('v') || '';
-    } else {
-      const parts = parsed.pathname.split('/').filter(Boolean);
-      if (['embed', 'shorts', 'live'].includes(parts[0])) {
-        candidate = parts[1] || '';
-      }
     }
   }
 
@@ -101,10 +95,6 @@ function buildYouTubeEmbedUrl(videoId) {
   });
 
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
-}
-
-function isLikelyVideoUrl(url) {
-  return VIDEO_EXT_RE.test(url);
 }
 
 function getImageLoadError() {
@@ -154,42 +144,6 @@ function validateWallpaperImage(url) {
   });
 }
 
-function validateWallpaperVideo(url) {
-  return new Promise((resolve, reject) => {
-    const video = document.createElement('video');
-    let settled = false;
-
-    const finish = (callback, value) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeoutId);
-      video.onloadedmetadata = null;
-      video.onerror = null;
-      video.removeAttribute('src');
-      video.load();
-      callback(value);
-    };
-
-    const timeoutId = setTimeout(() => {
-      finish(reject, new Error('Wallpaper video took too long to load'));
-    }, WALLPAPER_LOAD_TIMEOUT_MS);
-
-    video.preload = 'metadata';
-    video.muted = true;
-    video.playsInline = true;
-    video.onloadedmetadata = () => {
-      if (video.videoWidth > 0 && video.videoHeight > 0) {
-        finish(resolve, url);
-        return;
-      }
-      finish(reject, new Error('That link did not load as a video'));
-    };
-    video.onerror = () => finish(reject, new Error('That link did not load as a video'));
-    video.src = url;
-    video.load();
-  });
-}
-
 async function resolveWallpaperSource(rawUrl) {
   const url = normalizeWallpaperUrl(rawUrl);
   const youtubeId = getYouTubeVideoId(url);
@@ -202,21 +156,11 @@ async function resolveWallpaperSource(rawUrl) {
     };
   }
 
-  if (isLikelyVideoUrl(url)) {
-    await validateWallpaperVideo(url);
-    return { type: 'video', url };
-  }
-
   try {
     await validateWallpaperImage(url);
     return { type: 'image', url };
-  } catch (imageError) {
-    try {
-      await validateWallpaperVideo(url);
-      return { type: 'video', url };
-    } catch {
-      throw new Error('Use a direct image URL, direct video URL, or YouTube video link');
-    }
+  } catch {
+    throw new Error('Use a direct image URL or a standard YouTube link');
   }
 }
 
@@ -232,23 +176,6 @@ function getWallpaperLayer() {
 
 function clearWallpaperMedia() {
   getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
-}
-
-function createWallpaperVideo(url) {
-  const video = document.createElement('video');
-  video.className = 'wallpaper-media wallpaper-media-video';
-  video.dataset.wallpaperMedia = 'true';
-  video.src = url;
-  video.autoplay = true;
-  video.muted = true;
-  video.loop = true;
-  video.playsInline = true;
-  video.preload = 'auto';
-  video.setAttribute('aria-hidden', 'true');
-  video.addEventListener('canplay', () => {
-    video.play().catch(() => {});
-  }, { once: true });
-  return video;
 }
 
 function createWallpaperYouTubeFrame(embedUrl) {
@@ -281,9 +208,6 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
   applyWallpaperAppearance(blur, darken);
 
   const layer = getWallpaperLayer();
-  if (layer && source.type === 'video') {
-    layer.appendChild(createWallpaperVideo(source.url));
-  }
   if (layer && source.type === 'youtube') {
     layer.appendChild(createWallpaperYouTubeFrame(source.embedUrl));
   }
