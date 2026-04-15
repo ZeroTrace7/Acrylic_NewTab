@@ -15,11 +15,14 @@ export const isValidWidgetPosition = (pos: any): boolean => {
 export const validateV2 = (dump: any) => {
   if (!Array.isArray(dump.backgrounds))
     throw new TypeError("Invalid v2: backgrounds must be an array");
+
+  let hasActiveBackground = false;
   for (const bg of dump.backgrounds) {
     if (typeof bg.id !== "string") throw new TypeError("Invalid v2 bg id");
     if (typeof bg.key !== "string") throw new TypeError("Invalid v2 bg key");
     if (typeof bg.active !== "boolean")
       throw new TypeError("Invalid v2 bg active");
+    if (bg.active) hasActiveBackground = true;
     if (typeof bg.display !== "object" || bg.display === null)
       throw new TypeError("Invalid v2 bg display");
     if (
@@ -32,6 +35,10 @@ export const validateV2 = (dump: any) => {
       typeof bg.display.luminosity !== "number"
     )
       throw new TypeError("Invalid v2 bg display luminosity");
+  }
+
+  if (!hasActiveBackground) {
+    throw new TypeError("Invalid v2: missing active background");
   }
 
   if (!Array.isArray(dump.widgets))
