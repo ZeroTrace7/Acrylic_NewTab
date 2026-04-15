@@ -147,11 +147,11 @@ function buildModal() {
   const header = document.createElement('div');
   header.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
   const h2 = document.createElement('h2');
-  h2.textContent = 'Preferances';
+  h2.textContent = 'Preferences';
   h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
   const closeBtn = document.createElement('button');
   closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  closeBtn.ariaLabel = 'Close preferances';
+  closeBtn.ariaLabel = 'Close preferences';
   closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
   closeBtn.onclick = closeSettings;
   header.append(h2, closeBtn);
@@ -431,36 +431,62 @@ function buildModal() {
   const sec7 = document.createElement('div');
   sec7.className = 'settings-card';
   sec7.appendChild(sectionLabel('Quick Links'));
+
   const qlRow = document.createElement('div');
-  qlRow.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
+  qlRow.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;gap:12px;');
+
   const qlLbl = document.createElement('span');
   qlLbl.textContent = 'Top links';
-  qlLbl.setAttribute('style', 'font-size:0.85rem;color:var(--text-primary);');
-  const qlValue = document.createElement('select');
-  qlValue.ariaLabel = 'Number of top links to show';
-  qlValue.setAttribute('style', 'min-width:84px;padding:8px 12px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:10px;color:var(--text-primary);font-size:0.88rem;text-align:center;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;');
-  [4, 5, 6, 7, 8, 9, 10].forEach((count) => {
-    const option = document.createElement('option');
-    option.value = String(count);
-    option.textContent = String(count);
-    option.selected = count === (prefs.quickLinksMax || 6);
-    qlValue.appendChild(option);
+  qlLbl.setAttribute('style', 'font-size:0.85rem;font-weight:600;color:var(--text-primary);flex-shrink:0;');
+
+  const qlTrack = document.createElement('div');
+  qlTrack.className = 'ql-segment-track';
+  qlTrack.setAttribute('role', 'listbox');
+  qlTrack.setAttribute('aria-label', 'Number of top quick links');
+
+  const QL_VALUES = [4, 5, 6, 7, 8, 9, 10];
+  let qlSegments = [];
+
+  const updateSegments = () => {
+    const current = Number(prefs.quickLinksMax) || 6;
+    qlSegments.forEach((seg) => {
+      const isActive = Number(seg.dataset.value) === current;
+      seg.classList.toggle('is-active', isActive);
+      seg.setAttribute('aria-selected', String(isActive));
+    });
+  };
+
+  QL_VALUES.forEach((val) => {
+    const seg = document.createElement('button');
+    seg.type = 'button';
+    seg.className = 'ql-segment';
+    seg.textContent = String(val);
+    seg.dataset.value = String(val);
+    seg.setAttribute('role', 'option');
+    seg.setAttribute('aria-selected', 'false');
+    seg.setAttribute('aria-label', `Show ${val} quick links`);
+    seg.addEventListener('click', async () => {
+      if (Number(prefs.quickLinksMax) === val) return;
+      prefs.quickLinksMax = val;
+      updateSegments();
+      await Prefs.set('quickLinksMax', val);
+    });
+    qlTrack.appendChild(seg);
+    qlSegments.push(seg);
   });
-  qlValue.addEventListener('change', async () => {
-    const next = Number(qlValue.value) || 6;
-    prefs.quickLinksMax = next;
-    await Prefs.set('quickLinksMax', next);
-  });
-  qlRow.append(qlLbl, qlValue);
+
+  updateSegments();
+  qlRow.append(qlLbl, qlTrack);
   sec7.appendChild(qlRow);
+
   const qlHint = document.createElement('div');
-  qlHint.textContent = 'Choose how many top browser sites Acrylic shows automatically.';
-  qlHint.setAttribute('style', 'margin-top:8px;font-size:0.75rem;color:var(--text-secondary);');
+  qlHint.textContent = 'Top browser sites shown in the bottom quick links row.';
+  qlHint.setAttribute('style', 'font-size:0.75rem;color:var(--text-secondary);margin-top:2px;');
   sec7.appendChild(qlHint);
 
   // Footer
   const footer = document.createElement('div');
-  footer.textContent = 'Acrylic v1.0.0 — Preferances sync across devices';
+  footer.textContent = 'Acrylic v1.0.0 — Preferences sync across devices';
   footer.className = 'settings-footer-note';
 
   box.append(header, sec1, sec2, sec5, secFont, sec3, sec4, sec6, sec7, footer);
