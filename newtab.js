@@ -48,7 +48,7 @@ function armEntryAnimation() {
 
 async function initApp() {
   try {
-    debugStylesheetBinding();
+    // debugStylesheetBinding();
 
     document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
     document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);

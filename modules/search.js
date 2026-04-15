@@ -264,7 +264,16 @@ function buildPicker() {
     opt.setAttribute('role', 'option');
     opt.setAttribute('aria-selected', String(engine.id === currentEngine.id));
     opt.tabIndex = -1;
-    opt.innerHTML = `<img src="${engine.icon}" alt="${engine.name}" width="16" height="16"><span>${engine.name}</span>`;
+    const img = document.createElement('img');
+    img.src = engine.icon;
+    img.alt = engine.name;
+    img.width = 16;
+    img.height = 16;
+
+    const span = document.createElement('span');
+    span.textContent = engine.name;
+
+    opt.append(img, span);
     opt.addEventListener('mouseenter', () => {
       highlightedIndex = index;
       getEngineOptions().forEach((el, i) => el.classList.toggle('is-focused', i === highlightedIndex));
