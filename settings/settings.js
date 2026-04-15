@@ -270,8 +270,6 @@ function buildAboutSection() {
   rateCard.append(rateIcon, rateTitle, rateDesc);
 
   // ── Right column (What's New + Report Bug) ──────────────
-  const rightCol = document.createElement('div');
-  rightCol.className = 'about-col-right';
 
   const wnCard = document.createElement('button');
   wnCard.type = 'button';
@@ -297,7 +295,7 @@ function buildAboutSection() {
   bugCopy.append(bugTitle, bugDesc);
   bugCard.append(bugIcon, bugCopy);
 
-  rightCol.append(wnCard, bugCard);
+
 
   // ── Export Your Data (full width) ───────────────────────
   const exportCard = document.createElement('button');
@@ -324,7 +322,7 @@ function buildAboutSection() {
     }
   };
 
-  grid.append(rateCard, rightCol, exportCard);
+  grid.append(rateCard, wnCard, bugCard, exportCard);
   sec.appendChild(grid);
   return sec;
 }

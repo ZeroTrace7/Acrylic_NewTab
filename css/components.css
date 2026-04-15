@@ -1369,7 +1369,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  display: contents; /* fallback: children become direct grid items */
 }
+
 
 .about-card {
   border-radius: 14px;
@@ -1411,6 +1413,8 @@
   text-align: center;
   background: linear-gradient(135deg, rgba(236, 72, 153, 0.26) 0%, rgba(139, 92, 246, 0.20) 100%);
   border-color: rgba(236, 72, 153, 0.26);
+  grid-column: 1;
+  grid-row: 1 / span 2;
 }
 
 .about-card-feature:hover {
@@ -1455,7 +1459,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  flex: 1;
+  align-self: stretch;
 }
 
 .about-card-full {
@@ -1465,6 +1469,7 @@
   gap: 12px;
   padding: 12px 14px;
   grid-column: 1 / -1;
+  grid-row: 3;
 }
 
 .about-card-icon {
