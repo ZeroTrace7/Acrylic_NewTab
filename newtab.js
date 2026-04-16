@@ -112,6 +112,26 @@ async function initApp() {
     const zenDigitEls = [];
     let zenDateEl = null;
     let zenUse24 = false;
+    let zenExitBtn = null;
+    let zenEnterTimer = 0;
+    const ZEN_ENTER_DELAY_MS = 130;
+
+    function ensureZenExitButton() {
+      if (zenExitBtn) return;
+      zenExitBtn = document.createElement('button');
+      zenExitBtn.type = 'button';
+      zenExitBtn.className = 'zen-exit-btn';
+      zenExitBtn.setAttribute('aria-label', 'Exit Zen Mode');
+      zenExitBtn.setAttribute('title', 'Exit Zen Mode');
+      zenExitBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      `;
+      zenExitBtn.addEventListener('click', exitZen);
+      document.body.appendChild(zenExitBtn);
+    }
 
     function zenTick() {
       const now = new Date();
@@ -138,7 +158,9 @@ async function initApp() {
     async function enterZen() {
       if (zenClockEl) return;
       zenUse24 = (await Prefs.get('clockFormat')) === '24h';
-      document.body.classList.add('zen-mode-active');
+      ensureZenExitButton();
+      zenExitBtn?.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('zen-mode-entering');
 
       zenClockEl = document.createElement('div');
       zenClockEl.className = 'zen-flip-clock';
@@ -170,10 +192,21 @@ async function initApp() {
       document.body.appendChild(zenClockEl);
       zenTick();
       zenTickTimer = setInterval(zenTick, 1000);
+
+      clearTimeout(zenEnterTimer);
+      zenEnterTimer = setTimeout(() => {
+        if (!zenClockEl) return;
+        document.body.classList.add('zen-mode-active');
+        document.body.classList.remove('zen-mode-entering');
+      }, ZEN_ENTER_DELAY_MS);
     }
 
     function exitZen() {
       document.body.classList.remove('zen-mode-active');
+      document.body.classList.remove('zen-mode-entering');
+      clearTimeout(zenEnterTimer);
+      zenEnterTimer = 0;
+      zenExitBtn?.setAttribute('aria-hidden', 'true');
       clearInterval(zenTickTimer);
       zenTickTimer = 0;
       if (zenClockEl) {
@@ -189,7 +222,7 @@ async function initApp() {
     const zenBtn = DOM.zenModeBtn;
     zenBtn?.addEventListener('click', () => {
       if (document.body.classList.contains('is-layout-editing')) return;
-      if (document.body.classList.contains('zen-mode-active')) {
+      if (zenClockEl || document.body.classList.contains('zen-mode-entering') || document.body.classList.contains('zen-mode-active')) {
         exitZen();
       } else {
         enterZen();
@@ -204,7 +237,7 @@ async function initApp() {
         DOM.searchInput?.focus();
       }
       if (e.key === 'Escape') {
-        if (document.body.classList.contains('zen-mode-active')) {
+        if (zenClockEl || document.body.classList.contains('zen-mode-entering') || document.body.classList.contains('zen-mode-active')) {
           exitZen();
           return;
         }

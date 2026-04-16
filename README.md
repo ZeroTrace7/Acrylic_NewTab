@@ -1,6 +1,29 @@
 # Acrylic — New Tab
 
-Premium glassmorphism new tab Chrome extension. Improved version of "Glassy - New Tab".
+Premium glassmorphism new tab Chrome extension. Built from the ground up as the successor to *Glassy — New Tab* — faster, more capable, completely free.
+
+---
+
+## Why Acrylic?
+
+> The New Tab page is the most frequently rendered surface in any browser — opened dozens to hundreds of times daily. Chrome alone commands **~69% of global desktop market share** across **~178,000 active extensions**. This makes the New Tab the highest-visibility, most performance-sensitive real estate in the entire browser ecosystem.
+
+The current market forces users into a false choice:
+
+| | Legacy Dashboards *(Momentum)* | Minimalist Tabs *(Tabliss, Bonjourr)* |
+|---|---|---|
+| **Performance** | ❌ Cloud sync, telemetry, heavy frameworks | ✅ Local-first, lightweight |
+| **Productivity** | ✅ Tasks, integrations, custom themes | ❌ Clock and wallpaper only |
+| **Privacy** | ❌ Account required, data collection | ✅ No tracking |
+| **Cost** | ❌ ~$40/yr paywall for basic customization | ✅ Free |
+
+**Acrylic breaks the tradeoff.** Premium glassmorphism aesthetics. Full productivity suite — tasks, Pomodoro, notes, tabs, extension manager. Zero accounts. Zero paywalls. Zero telemetry. Sub-100ms load.
+
+### The Manifest V3 Advantage
+
+Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline) in July 2025, introducing cold-start latency for every extension that relied on background pages to hydrate the DOM. Acrylic is built **natively for MV3** — pure ES modules loaded directly from `newtab.html`, no bundler, no transpiler, no service worker dependency for rendering. The critical path never waits on `chrome.runtime`; it just renders.
+
+---
 
 ## What Acrylic Includes
 

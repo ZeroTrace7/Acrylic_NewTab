@@ -1,20 +1,10 @@
 # 🚀 Acrylic: Strategic Architecture & Market Positioning
 
-This document outlines the macro-market dynamics of the browser extension ecosystem, deep competitive landscape analysis, and a strategic roadmap to position **Acrylic** as the definitive premium, zero-latency, local-first New Tab extension.
+This document outlines the competitive landscape analysis and strategic roadmap to position **Acrylic** as the definitive premium, zero-latency, local-first New Tab extension.
 
 ---
 
-## 1. The Macro-Market Dynamics of the Browser Extension Ecosystem
-
-The browser extension ecosystem is highly saturated but continually evolving, deeply integrated into the workflows of billions of users.
-*   **Market Share:** Google Chrome maintains a dominant 67.72% - 73.22% global desktop market share (approx. 3.45 to 3.83 billion users). The Chrome Web Store hosts roughly 178,299 active extensions.
-*   **Emerging Ecosystems:** The Firefox add-on marketplace is growing rapidly (74.16% YoY growth), indicating a robust secondary market populated by privacy-conscious users.
-*   **The "New Tab" Real Estate:** Rendered dozens if not hundreds of times daily per user, this is the most highly visible and performance-sensitive space in the browser. Users demand instantaneous loading, aesthetic superiority, and workflow integration.
-*   **Manifest V3 (MV3) Impact:** The deprecation of MV2 in July 2025 structurally altered extension operations. Background pages are out; ephemeral service workers are in. This introduces initialization latency ("cold start") for extensions relying on background scripts to hydrate the DOM. Extensions that achieve "zero-latency" execution using pure ES modules, vanilla JS, and local storage hold a distinct advantage.
-
----
-
-## 2. Competitive Landscape Analysis
+## 1. Competitive Landscape Analysis
 
 The new tab market is bifurcated into legacy conglomerates, modern aesthetic minimalists, and emerging glassmorphic dashboards.
 
@@ -38,7 +28,7 @@ The new tab market is bifurcated into legacy conglomerates, modern aesthetic min
 
 ---
 
-## 3. User Psychology and Core Frustrations
+## 2. User Psychology and Core Frustrations
 
 1.  **The 100ms Rule:** Taking more than 100ms to open is cardinal sin. As a transitional space, delays (spinners/blank flashes) disrupt cognitive flow and lead to immediate uninstallation. "Zero-latency" is a psychological requirement.
 2.  **Paywall Resentment:** Users view modifying typography or uploading personal images as fundamental digital rights. Monetizing these features alienates the user base.
@@ -46,7 +36,7 @@ The new tab market is bifurcated into legacy conglomerates, modern aesthetic min
 
 ---
 
-## 4. Architectural Engineering for Zero-Latency Execution
+## 3. Architectural Engineering for Zero-Latency Execution
 
 Achieving sub-100ms time-to-interactive (TTI) is the defining technical challenge.
 
@@ -57,7 +47,7 @@ Achieving sub-100ms time-to-interactive (TTI) is the defining technical challeng
 
 ---
 
-## 5. Evolving "Glassmorphism 2.0" for Premium Aesthetics
+## 4. Evolving "Glassmorphism 2.0" for Premium Aesthetics
 
 *   **Contrast, Legibility, & Structural Definition:** Maintaining WCAG AA 4.5:1 contrast against blurred backgrounds requires semi-opaque sub-layers (a subtle dark/light tint film between the blur and text) and soft, dark inner shadows. 
 *   **The 1px Delineation Border:** A crisp, semi-transparent 1px border is non-negotiable. It defines edges tightly, aiding low-vision users and generating the premium Microsoft Fluent / Apple visionOS "raised software" aesthetic.
@@ -66,7 +56,7 @@ Achieving sub-100ms time-to-interactive (TTI) is the defining technical challeng
 
 ---
 
-## 6. Advanced Functional Integration: Beyond Basic Widgets
+## 5. Advanced Functional Integration: Beyond Basic Widgets
 
 *   **Spatial Keyboard Navigation:** Target power users by mapping visual coordinates to allow **Arrow/WASD traversal** across the dashboard. Add discrete shortcuts: `Cmd/Ctrl + K` (Focus Search), `Cmd/Ctrl + T` (Open Tasks), and `Esc` (Dismiss Overlays).
 *   **Quick Links & SVG Dictionaries:** Utilizing an internal dictionary of monochrome SVG icons (`MONO_ICONS`) instead of pixelated external favicons ensures uniform aesthetics for user shortcuts.
@@ -75,7 +65,7 @@ Achieving sub-100ms time-to-interactive (TTI) is the defining technical challeng
 
 ---
 
-## 7. Privacy Sovereignty & Trust Mechanics
+## 6. Privacy Sovereignty & Trust Mechanics
 
 *   **"Free Forever, Local First":** Weaponize privacy as marketing. The Web Store description must read: *"Zero Telemetry. Zero Tracking. No Accounts Required."* Task data goes to `chrome.storage.local`, imagery to `IndexedDB`.
 *   **One-Click JSON Data Management:** Formalize JSON Export/Import capabilities. Give users full portability over their settings without a corporate cloud server.
@@ -84,7 +74,7 @@ Achieving sub-100ms time-to-interactive (TTI) is the defining technical challeng
 
 ---
 
-## 8. Strategy Verification: Why This Will Gain Users
+## 7. Strategy Verification: Why This Will Gain Users
 
 Implementing this specific feature set ensures that Acrylic captures the most vocal and influential demographic: power users, developers, and students.
 
@@ -94,7 +84,7 @@ Implementing this specific feature set ensures that Acrylic captures the most vo
 
 ---
 
-## 9. The Innovator's Dilemma: Why Momentum & Others Haven't Done This
+## 8. The Innovator's Dilemma: Why Momentum & Others Haven't Done This
 
 If "Free Forever" and "Zero-Latency Local Storage" are so superior, why hasn't a massive company like Momentum simply pivoted to this architecture?
 
