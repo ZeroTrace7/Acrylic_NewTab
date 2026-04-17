@@ -36,12 +36,14 @@
     "alarms",
     "contextMenus",
     "offscreen",
-    "declarativeNetRequestWithHostAccess",
-    "bookmarks",
     "management"
   ],
 
-  "host_permissions": [
+  "optional_permissions": [
+    "declarativeNetRequestWithHostAccess"
+  ],
+
+  "optional_host_permissions": [
     "https://youtube.com/*",
     "https://www.youtube.com/*",
     "https://youtube-nocookie.com/*",

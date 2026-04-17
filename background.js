@@ -13,6 +13,20 @@ const YOUTUBE_REFERER_RULE_ID = 4101;
 async function syncYouTubeEmbedRefererRule() {
   if (!chrome.declarativeNetRequest?.updateDynamicRules) return;
 
+  // declarativeNetRequestWithHostAccess is an optional permission — skip if not granted
+  try {
+    const hasPermission = await chrome.permissions.contains({
+      permissions: ['declarativeNetRequestWithHostAccess'],
+      origins: [
+        'https://youtube.com/*',
+        'https://www.youtube.com/*',
+        'https://youtube-nocookie.com/*',
+        'https://www.youtube-nocookie.com/*',
+      ],
+    });
+    if (!hasPermission) return;
+  } catch { return; }
+
   await chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: [YOUTUBE_REFERER_RULE_ID],
     addRules: [
@@ -185,6 +199,12 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       .catch((error) => respond({ status: 'error', message: error?.message || 'CREATE_TAB failed' }));
     return true;
   }
+  if (msg.command === 'syncYouTubeRule') {
+    syncYouTubeEmbedRefererRule()
+      .then(() => respond({ status: 'ok' }))
+      .catch((error) => respond({ status: 'error', message: error?.message || 'syncYouTubeRule failed' }));
+    return true;
+  }
   return false;
 });
 
@@ -201,7 +221,6 @@ chrome.notifications.onButtonClicked.addListener((notifId, btnIndex) => {
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
-
     await syncYouTubeEmbedRefererRule();
     await chrome.storage.local.set({
       timerState: { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 },
@@ -241,4 +260,3 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
   } catch (err) { console.error('Context menu error:', err); }
 });
-

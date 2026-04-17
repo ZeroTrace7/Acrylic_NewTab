@@ -232,10 +232,33 @@ async function initApp() {
     // Step 8 — Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       const tag = document.activeElement?.tagName;
-      if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA') {
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+      // / → Focus search (only when not typing)
+      if (e.key === '/' && !isInput) {
         e.preventDefault();
         DOM.searchInput?.focus();
       }
+
+      // Ctrl+K / Cmd+K → Focus search (universal convention)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        DOM.searchInput?.focus();
+      }
+
+      // T → Toggle tasks panel (only when not typing)
+      if (e.key === 't' && !isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        DOM.tasksBtn?.click();
+      }
+
+      // Ctrl+, / Cmd+, → Open preferences
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        DOM.settingsBtn?.click();
+      }
+
+      // Escape → exit overlays / blur
       if (e.key === 'Escape') {
         if (zenClockEl || document.body.classList.contains('zen-mode-entering') || document.body.classList.contains('zen-mode-active')) {
           exitZen();

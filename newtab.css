@@ -15,6 +15,7 @@
   --glass-bg-active:     rgba(255, 255, 255, 0.14);
   --glass-subtle:        rgba(255, 255, 255, 0.06);
   --glass-border:        rgba(255, 255, 255, 0.10);
+  --glass-border-panel:  rgba(255, 255, 255, 0.18);
   --glass-border-soft:   rgba(255, 255, 255, 0.10);
   --glass-blur:          14px;
   --glass-radius:        14px;
@@ -173,7 +174,9 @@ button:disabled {
 }
 
 :focus-visible {
-  outline: none;
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 2px;
+  border-radius: var(--glass-radius-sm);
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -385,13 +388,6 @@ body.acrylic-loaded .anim-sidebar {
     linear-gradient(160deg, #2d0320 0%, #4a154b 50%, #5d3a5f 100%);
 }
 
-#app-body.theme-jet {
-  background:
-    radial-gradient(ellipse at 50% 50%, rgba(40, 40, 40, 0.30) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 48%),
-    linear-gradient(165deg, #030303 0%, #090909 52%, #0f0f0f 100%);
-}
-
 #app-body.theme-espresso {
   background:
     radial-gradient(ellipse at 40% 60%, rgba(80, 40, 20, 0.15) 0%, transparent 55%),
@@ -399,18 +395,26 @@ body.acrylic-loaded .anim-sidebar {
     linear-gradient(160deg, #1c0f0a 0%, #2a1a12 50%, #3d2015 100%);
 }
 
-#app-body.theme-slate {
-  background:
-    radial-gradient(ellipse at 60% 40%, rgba(51, 65, 85, 0.20) 0%, transparent 55%),
-    radial-gradient(ellipse at 18% 24%, rgba(148, 163, 184, 0.10) 0%, transparent 52%),
-    linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-}
-
 #app-body.theme-forest {
   background:
     radial-gradient(ellipse at 50% 50%, rgba(34, 80, 34, 0.15) 0%, transparent 55%),
     radial-gradient(ellipse at 24% 20%, rgba(74, 222, 128, 0.09) 0%, transparent 50%),
     linear-gradient(160deg, #0d1f0f 0%, #1a2e1c 50%, #1e3320 100%);
+}
+
+#app-body.theme-carbon {
+  background:
+    radial-gradient(ellipse at 50% 50%, rgba(30, 58, 138, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 48%),
+    linear-gradient(165deg, #050505 0%, #0a0a0a 52%, #111111 100%);
+}
+
+#app-body.theme-synthwave {
+  background:
+    radial-gradient(ellipse at 30% 70%, rgba(168, 85, 247, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 24%, rgba(236, 72, 153, 0.14) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #0f0720 0%, #1a0533 50%, #2d0a4e 100%);
 }
 
 #app-body.has-wallpaper {

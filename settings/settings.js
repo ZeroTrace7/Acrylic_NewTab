@@ -17,7 +17,7 @@ let closeModalTimer = 0;
 let widgetsExpanded = false;
 
 const SETTINGS_OPEN_CLASS = 'is-settings-open';
-const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', jet:'#000', espresso:'#1c0f0a', slate:'#0f172a', forest:'#0d1f0f' };
+const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', espresso:'#1c0f0a', forest:'#0d1f0f', carbon:'#0a0a0a', synthwave:'#1a0533' };
 const FONT_OPTIONS = [
   { id: 'system', label: 'System', family: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
   { id: 'poppins', label: 'Poppins', family: "'Poppins', sans-serif" },
@@ -233,6 +233,45 @@ async function exportData() {
   URL.revokeObjectURL(url);
 }
 
+async function importData() {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,application/json';
+    input.style.display = 'none';
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) { resolve(false); return; }
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (!data?._meta || data._meta.app !== 'Acrylic') {
+          throw new Error('This file is not a valid Acrylic backup');
+        }
+        const confirmed = confirm(
+          'This will replace ALL your current Acrylic data (preferences, tasks, notes, quick links, and more).\n\nThis action cannot be undone. Continue?'
+        );
+        if (!confirmed) { resolve(false); return; }
+        if (data.preferences && typeof data.preferences === 'object') {
+          await chrome.storage.sync.clear();
+          await chrome.storage.sync.set(data.preferences);
+        }
+        if (data.localData && typeof data.localData === 'object') {
+          await chrome.storage.local.clear();
+          await chrome.storage.local.set(data.localData);
+        }
+        resolve(true);
+      } catch (err) {
+        reject(err);
+      } finally {
+        input.remove();
+      }
+    });
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
 function mkAboutIcon(svgInner, colorClass) {
   const wrap = document.createElement('div');
   wrap.className = `about-card-icon ${colorClass}`;
@@ -322,7 +361,39 @@ function buildAboutSection() {
     }
   };
 
-  grid.append(rateCard, wnCard, bugCard, exportCard);
+  // ── Import Your Data ────────────────────────────────────
+  const importCard = document.createElement('button');
+  importCard.type = 'button';
+  importCard.className = 'about-card about-card-full';
+  importCard.setAttribute('aria-label', 'Import Acrylic data from a JSON backup');
+  const importIcon = mkAboutIcon(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`, 'about-icon-green');
+  const importCopy = document.createElement('div');
+  const importTitleEl = document.createElement('div'); importTitleEl.className = 'about-card-sm-title'; importTitleEl.textContent = 'Import Your Data';
+  const importDescEl = document.createElement('div'); importDescEl.className = 'about-card-sm-desc'; importDescEl.textContent = 'Restore from a JSON backup';
+  importCopy.append(importTitleEl, importDescEl);
+  importCard.append(importIcon, importCopy);
+  importCard.onclick = async () => {
+    if (importCard.disabled) return;
+    importCard.disabled = true;
+    importTitleEl.textContent = 'Select file…';
+    try {
+      const imported = await importData();
+      if (imported) {
+        importTitleEl.textContent = 'Restored! ✓';
+        toast.success('Data restored — refreshing…');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        importTitleEl.textContent = 'Import Your Data';
+        importCard.disabled = false;
+      }
+    } catch (err) {
+      toast.error(err?.message || 'Import failed');
+      importTitleEl.textContent = 'Import Your Data';
+      importCard.disabled = false;
+    }
+  };
+
+  grid.append(rateCard, wnCard, bugCard, exportCard, importCard);
   sec.appendChild(grid);
   return sec;
 }

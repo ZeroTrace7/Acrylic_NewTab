@@ -2,6 +2,8 @@
 
 This document outlines the competitive landscape analysis and strategic roadmap to position **Acrylic** as the definitive premium, zero-latency, local-first New Tab extension.
 
+> **Note:** Items marked ✅ have been implemented and validated in the current codebase.
+
 ---
 
 ## 1. Competitive Landscape Analysis
@@ -36,51 +38,53 @@ The new tab market is bifurcated into legacy conglomerates, modern aesthetic min
 
 ---
 
-## 3. Architectural Engineering for Zero-Latency Execution
+## 3. Architectural Engineering for Zero-Latency Execution *(Partially Implemented)*
 
-Achieving sub-100ms time-to-interactive (TTI) is the defining technical challenge.
-
-*   **Bypassing Service Worker Bottlenecks (MV3):** Acrylic must entirely bypass the ephemeral service worker for initial rendering. The HTML document must directly invoke primary ES modules (`<script src="newtab.js" type="module"></script>`), circumventing the messaging delay inherent in `chrome.runtime.sendMessage`.
-*   **The IndexedDB Advantage for Asset Caching:** Relying on `chrome.storage.local` for large binaries or base64 strings blocks the main thread. Acrylic must utilize the asynchronous **IndexedDB API** to natively store Blob/ImageData objects. Further, leveraging Chromium's native **Snappy compression** for LevelDB vastly reduces disk I/O.
-    *   *Implementation:* An off-screen HTML5 Canvas processing engine should resize and compress 4K user uploads to viewport dimensions before committing to IndexedDB, guaranteeing the render thread never struggles on load.
-*   **Aggressive DOM Lazy-Loading:** The Pomodoro, Notes, Tabs, and Extensions panels must *not* exist in the DOM during initial page load. The critical rendering path should only contain the clock, greeting, background, and base containers. Panels are instantiated and injected only upon explicit user interaction.
+*   ✅ **Bypassing Service Worker Bottlenecks (MV3):** Acrylic loads via `<script src="newtab.js" type="module">` directly, bypassing the service worker for rendering.
+*   **IndexedDB Asset Caching:** *(Future roadmap — blocked by AGENTS.md Rule 4: no IndexedDB)*. Consider for a future phase where wallpaper caching becomes a performance bottleneck.
+*   ✅ **Aggressive DOM Lazy-Loading:** Pomodoro, Notes, Tabs, and Extensions panels are injected only upon user interaction.
 
 ---
 
-## 4. Evolving "Glassmorphism 2.0" for Premium Aesthetics
+## 4. Evolving "Glassmorphism 2.0" for Premium Aesthetics *(Mostly Implemented)*
 
-*   **Contrast, Legibility, & Structural Definition:** Maintaining WCAG AA 4.5:1 contrast against blurred backgrounds requires semi-opaque sub-layers (a subtle dark/light tint film between the blur and text) and soft, dark inner shadows. 
-*   **The 1px Delineation Border:** A crisp, semi-transparent 1px border is non-negotiable. It defines edges tightly, aiding low-vision users and generating the premium Microsoft Fluent / Apple visionOS "raised software" aesthetic.
-*   **Temporal Feedback & Micro-Animations:** Implement sub-800ms delayed reorder animations (e.g., using `0.4s cubic-bezier(0.16, 1, 0.3, 1)` cubic-bezier easing). Completed tasks must feature cognitive-registration delays like hand-drawn scribble strike effects before transitioning out.
-*   **Dynamic Themes & Grain Texture:** The grain prevents blur banding. To advance, transition from static themes to **Time-of-Day Dynamic Themes**, blending (e.g., 'aurora' to 'midnight') based on local user time to align with circadian rhythms.
-
----
-
-## 5. Advanced Functional Integration: Beyond Basic Widgets
-
-*   **Spatial Keyboard Navigation:** Target power users by mapping visual coordinates to allow **Arrow/WASD traversal** across the dashboard. Add discrete shortcuts: `Cmd/Ctrl + K` (Focus Search), `Cmd/Ctrl + T` (Open Tasks), and `Esc` (Dismiss Overlays).
-*   **Quick Links & SVG Dictionaries:** Utilizing an internal dictionary of monochrome SVG icons (`MONO_ICONS`) instead of pixelated external favicons ensures uniform aesthetics for user shortcuts.
-*   **Iframe Embedding & Developer Dashboards:** Allow users to inject remote web apps (Grafana, Sentry logs, TradingView) into Acrylic’s glassmorphic containers. Enables complete modularity without breaking visual immersion.
-*   **Local AI Aggregation and RSS:** Provide intelligent, noise-reducing RSS feeds parsed via *client-side only* light LLMs/sentiment analysis, preserving zero-telemetry rules.
+*   ✅ **Contrast & Legibility:** Semi-opaque sub-layers and dark inner shadows implemented via CSS custom properties.
+*   ✅ **1px Delineation Border:** `--glass-border` and `--glass-border-panel` enforced across all glass surfaces.
+*   ✅ **Micro-Animations:** Sub-800ms staggered entry animation, scribble-strike task completion effect, cubic-bezier panel transitions.
+*   ✅ **Grain Texture:** Film grain overlay with configurable opacity.
+*   ✅ **WCAG Focus Ring:** Glass-themed `:focus-visible` ring (replaces previous `outline: none` violation).
+*   **Time-of-Day Dynamic Themes:** *(Future roadmap)* — Blend themes based on local time to align with circadian rhythms.
 
 ---
 
-## 6. Privacy Sovereignty & Trust Mechanics
+## 5. Advanced Functional Integration *(Partially Implemented)*
 
-*   **"Free Forever, Local First":** Weaponize privacy as marketing. The Web Store description must read: *"Zero Telemetry. Zero Tracking. No Accounts Required."* Task data goes to `chrome.storage.local`, imagery to `IndexedDB`.
-*   **One-Click JSON Data Management:** Formalize JSON Export/Import capabilities. Give users full portability over their settings without a corporate cloud server.
-*   **Avoiding Permission Bloat (Least Privilege):** Under MV3, declare only essential permissions in `manifest.json`. Advanced access (e.g., geolocation for weather) should be requested *contextually* at runtime via `optional_permissions`, building immediate user trust.
-*   **In-App Open Transparency Changelog:** Create a clean glassmorphic changelog panel within Preferences to persistently highlight the extension's independence, privacy, and un-gated feature set. 
+*   ✅ **Keyboard Shortcuts:** `Ctrl+K` (search), `T` (tasks), `Ctrl+,` (preferences), `/` (search), `Escape` (dismiss).
+*   ✅ **Quick Links SVG Dictionaries:** Internal `MONO_ICONS` for uniform aesthetics.
+*   **Iframe Embedding & Developer Dashboards:** *(Future roadmap)* — Allow injecting remote web apps into glass containers.
+*   **Local AI/RSS Aggregation:** *(Future roadmap — requires careful Rule 3 compliance review)*.
 
 ---
 
-## 7. Strategy Verification: Why This Will Gain Users
+## 6. Privacy Sovereignty & Trust Mechanics *(Implemented)*
 
-Implementing this specific feature set ensures that Acrylic captures the most vocal and influential demographic: power users, developers, and students.
+*   ✅ **"Free Forever, Local First":** All data stored via `chrome.storage.sync`/`local`. No cloud, no accounts.
+*   ✅ **JSON Data Management:** Full JSON Export + Import with schema validation and confirmation dialog.
+*   ✅ **Least Privilege Permissions:** YouTube/DNR permissions moved to `optional_permissions`, requested at runtime. Unused `bookmarks` permission removed.
+*   ✅ **Transparency Changelog:** "What's New" glassmorphic panel in Preferences.
 
-*   **Solving "Momentum Fatigue" (The Market Gap):** Currently, users are forced to choose between a heavy/bloated extension with great tools (Momentum) or a lightning-fast extension without advanced tools (Tabliss). Acrylic becomes the "Holy Grail" intersection: heavy productivity tools wrapped in a hyper-fast, zero-telemetry architecture.
-*   **High Retention (Solving Uninstalls):** The #1 reason users uninstall new tab extensions is the "flash" or "lag" when opening a new tab. By implementing Canvas-to-IndexedDB image caching and bypassing the service worker, Acrylic loads in under 100ms. Because it feels instantaneous, users won't uninstall it.
-*   **Viral Selling Points:** When marketing to communities like Reddit (`r/productivity`) or Product Hunt, pushing features like *"Zero Telemetry. 100% Offline Capable. No Accounts. No Paywalls"* turns regular users into brand champions.
+---
+
+## 7. Future Roadmap
+
+The following items remain as future work:
+
+1. **i18n / Localization:** Scaffold `_locales/` for multi-language support
+2. **Time-of-Day Dynamic Themes:** Auto-blend themes based on local time
+3. **Iframe Developer Dashboards:** Embed remote apps (Grafana, TradingView) in glass containers
+4. **IndexedDB Wallpaper Caching:** Cache processed wallpapers for instant reload (requires Rule 4 exception)
+5. **GEO / `llms.txt`:** AI crawler optimization for the project website (not extension code)
+6. **Competitive Comparison Landing Page:** External website for marketing (not extension code)
 
 ---
 
@@ -91,7 +95,7 @@ If "Free Forever" and "Zero-Latency Local Storage" are so superior, why hasn't a
 1.  **Business Model Conflict:** Momentum generates massive revenue from its $40/year cloud sync subscriptions. If they made their application 100% offline and local-first (using IndexedDB natively without cloud backup), they would destroy their own recurring revenue stream.
 2.  **The Value of Telemetry:** Massive legacy extensions rely on gathering user behavioral data and analytics (telemetry) to drive marketing, secure corporate funding, or package data. A zero-telemetry architecture strips away this hidden revenue/growth stream.
 3.  **Technical Debt:** Momentum is built on an older, heavier tech stack (likely relying heavily on React or Vue and complex backend logic). Rewriting a massive application from the ground up to use pure Vanilla JS/ES Modules and Canvas image compression is incredibly expensive and risks breaking the workflow of their millions of legacy users.
-4.  **The Disruption Opportunity:** Acrylic, as a new and agile product, carries zero technical debt and no legacy revenue streams to protect. You can build natively for Manifest V3 and Chromium's latest APIs (like Snappy LevelDB compression) from day one. You can afford to give away premium features for free, leveraging "The Innovator's Dilemma" to disrupt their paid model entirely.
+4.  **The Disruption Opportunity:** Acrylic, as a new and agile product, carries zero technical debt and no legacy revenue streams to protect. You can build natively for Manifest V3 and Chromium's latest APIs from day one. You can afford to give away premium features for free, leveraging "The Innovator's Dilemma" to disrupt their paid model entirely.
 
 ---
 

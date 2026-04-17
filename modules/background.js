@@ -1,16 +1,17 @@
 import { Prefs } from './storage.js';
 import { toast } from './toast.js';
 import { bus } from './event-bus.js';
+import { detectAndApplyBrightness, clearBrightnessAdaptation } from './brightness.js';
 
 const THEMES = [
   { id: 'midnight',  label: 'Midnight'  },
   { id: 'deep-blue', label: 'Deep Blue' },
   { id: 'aurora',    label: 'Aurora'    },
   { id: 'rose-noir', label: 'Rose Noir' },
-  { id: 'jet',       label: 'Jet Black' },
   { id: 'espresso',  label: 'Espresso'  },
-  { id: 'slate',     label: 'Slate'     },
   { id: 'forest',    label: 'Forest'    },
+  { id: 'carbon',    label: 'Carbon'    },
+  { id: 'synthwave', label: 'Synthwave' },
 ];
 export { THEMES };
 
@@ -144,11 +145,42 @@ function validateWallpaperImage(url) {
   });
 }
 
-async function resolveWallpaperSource(rawUrl) {
+async function resolveWallpaperSource(rawUrl, { requestPermission = false } = {}) {
   const url = normalizeWallpaperUrl(rawUrl);
   const youtubeId = getYouTubeVideoId(url);
 
   if (youtubeId) {
+    // Check or request YouTube permissions depending on context
+    const youtubePerms = {
+      permissions: ['declarativeNetRequestWithHostAccess'],
+      origins: [
+        'https://youtube.com/*',
+        'https://www.youtube.com/*',
+        'https://youtube-nocookie.com/*',
+        'https://www.youtube-nocookie.com/*',
+      ],
+    };
+
+    try {
+      let hasPermission;
+      if (requestPermission) {
+        // Called from user gesture (Apply button) — prompt the user
+        hasPermission = await chrome.permissions.request(youtubePerms);
+      } else {
+        // Called from page load — just check, don't prompt
+        hasPermission = await chrome.permissions.contains(youtubePerms);
+      }
+
+      if (hasPermission) {
+        // Tell background worker to install the referer header rule
+        chrome.runtime.sendMessage({ command: 'syncYouTubeRule' }).catch(() => {});
+      }
+    } catch (err) {
+      // Permission request failed (no user gesture or denied)
+      if (requestPermission && err?.message?.includes('permissions')) throw err;
+      // On page load, just continue without the DNR rule — embed may still work
+    }
+
     return {
       type: 'youtube',
       url,
@@ -211,6 +243,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
     root.setProperty('--bg-image', 'none');
     if (body) body.classList.remove('has-wallpaper');
     currentWallpaperUrl = '';
+    clearBrightnessAdaptation();
     applyTheme(currentTheme);
     return;
   }
@@ -226,14 +259,22 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
 
   if (body) body.classList.add('has-wallpaper');
   currentWallpaperUrl = source.url;
+
+  // Brightness adaptation: analyze image wallpapers for text legibility.
+  // YouTube embeds are cross-origin iframes — skip analysis, default to light text.
+  if (source.type === 'image') {
+    detectAndApplyBrightness(source.url);
+  } else {
+    clearBrightnessAdaptation();
+  }
 }
 
-async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.45, { persist = false, silent = false } = {}) {
+async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.45, { persist = false, silent = false, requestPermission = false } = {}) {
   const requestId = ++wallpaperRequestId;
   let source;
 
   try {
-    source = await resolveWallpaperSource(rawUrl);
+    source = await resolveWallpaperSource(rawUrl, { requestPermission });
   } catch (err) {
     if (requestId === wallpaperRequestId && !silent) {
       toast.error(err?.message || 'Wallpaper failed to load');
@@ -308,7 +349,7 @@ export async function setTheme(themeId) {
 }
 
 export async function setWallpaper(url, blur = 0, darken = 0.45) {
-  return loadAndApplyWallpaper(url, blur, darken, { persist: true, silent: true });
+  return loadAndApplyWallpaper(url, blur, darken, { persist: true, silent: true, requestPermission: true });
 }
 
 export function clearWallpaper() {
