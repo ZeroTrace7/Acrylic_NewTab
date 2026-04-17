@@ -749,7 +749,7 @@ function createManageAddedTile(link) {
     font-family: ${QUICKLINK_LABEL_FONT_FAMILY};
     font-size: 0.72rem;
     font-weight: ${QUICKLINK_LABEL_FONT_WEIGHT};
-    color: rgba(255,255,255,0.88);
+    color: var(--text-primary);
     text-align: center;
     max-width: 72px;
     overflow: hidden;
@@ -836,8 +836,8 @@ function createManageLibraryTile(entry) {
     height: 30px;
     padding: 0;
     border-radius: 9px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     transition: background 150ms ease, transform 150ms ease;
     min-width: 0;
     justify-self: center;
@@ -852,11 +852,11 @@ function createManageLibraryTile(entry) {
   const svg = tile.querySelector('svg');
   if (svg) svg.style.cssText = 'width:17px;height:17px;opacity:0.85;display:block;';
   tile.addEventListener('mouseenter', () => {
-    tile.style.background = 'rgba(255,255,255,0.12)';
+    tile.style.background = 'var(--glass-bg-hover)';
     tile.style.transform = 'scale(1.02)';
   });
   tile.addEventListener('mouseleave', () => {
-    tile.style.background = 'rgba(255,255,255,0.06)';
+    tile.style.background = 'var(--glass-bg)';
     tile.style.transform = 'scale(1)';
   });
   tile.addEventListener('click', () => {
@@ -867,7 +867,7 @@ function createManageLibraryTile(entry) {
     tile.style.background = 'rgba(52,211,153,0.2)';
     setTimeout(() => {
       tile.innerHTML = orig;
-      tile.style.background = 'rgba(255,255,255,0.06)';
+      tile.style.background = 'var(--glass-bg)';
     }, 800);
   });
   return tile;
@@ -1042,7 +1042,7 @@ function buildManagePanelHeader() {
     letter-spacing: 0.02em;
     line-height: 1.1;
     margin: 0;
-    color: rgba(255,255,255,0.92);
+    color: var(--text-primary);
     text-transform: none;
   `;
 
@@ -1078,7 +1078,7 @@ function buildManagePanelAddedSection() {
     font-size: 0.74rem;
     font-weight: 500;
     line-height: 1.25;
-    color: rgba(255,255,255,0.72);
+    color: var(--text-secondary);
     margin: 2px 0 0 0;
     text-align: center;
   `;
@@ -1088,7 +1088,7 @@ function buildManagePanelAddedSection() {
   divider1.style.cssText = `
     width: 100%;
     height: 1px;
-    background: rgba(255,255,255,0.10);
+    background: var(--glass-border);
     margin: 8px 0 8px 0;
     display: block;
     flex-shrink: 0;
@@ -1110,7 +1110,7 @@ function buildManagePanelAddForm() {
     font-weight: 600;
     letter-spacing: 0.01em;
     line-height: 1.2;
-    color: rgba(255,255,255,0.78);
+    color: var(--text-secondary);
     text-transform: none;
     margin-bottom: 6px;
     margin-top: 0;
@@ -1125,9 +1125,9 @@ function buildManagePanelAddForm() {
     font-family: 'Geist', 'Inter', system-ui, sans-serif;
     font-size: 0.79rem;
     font-weight: 400;
-    color: rgba(255,255,255,0.85);
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     padding: 8px 12px 8px 38px;
     width: 100%;
@@ -1136,10 +1136,10 @@ function buildManagePanelAddForm() {
     transition: border 150ms ease;
   `;
   manageUrlInputEl.addEventListener('focus', () => {
-    manageUrlInputEl.style.border = '1px solid rgba(255,255,255,0.25)';
+    manageUrlInputEl.style.border = '1px solid var(--glass-border-panel)';
   });
   manageUrlInputEl.addEventListener('blur', () => {
-    manageUrlInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
+    manageUrlInputEl.style.border = '1px solid var(--glass-border)';
   });
   manageUrlInputEl.addEventListener('input', () => {
     if (!manageUrlInputEl.value.trim() && manageNameInputEl && manageNameInputEl.value.trim() === manageUrlInputEl.dataset.autoName) {
@@ -1177,7 +1177,7 @@ function buildManagePanelAddForm() {
     justify-content: center;
     width: 16px;
     height: 16px;
-    color: rgba(255,255,255,0.42);
+    color: var(--text-ghost);
     pointer-events: none;
     z-index: 1;
   `;
@@ -1198,9 +1198,9 @@ function buildManagePanelAddForm() {
     font-family: 'Geist', 'Inter', system-ui, sans-serif;
     font-size: 0.79rem;
     font-weight: 400;
-    color: rgba(255,255,255,0.85);
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 10px;
     padding: 8px 12px 8px 38px;
     width: 100%;
@@ -1209,10 +1209,10 @@ function buildManagePanelAddForm() {
     transition: border 150ms ease;
   `;
   manageNameInputEl.addEventListener('focus', () => {
-    manageNameInputEl.style.border = '1px solid rgba(255,255,255,0.25)';
+    manageNameInputEl.style.border = '1px solid var(--glass-border-panel)';
   });
   manageNameInputEl.addEventListener('blur', () => {
-    manageNameInputEl.style.border = '1px solid rgba(255,255,255,0.10)';
+    manageNameInputEl.style.border = '1px solid var(--glass-border)';
   });
 
   const nameWrap = document.createElement('div');
@@ -1237,7 +1237,7 @@ function buildManagePanelAddForm() {
     justify-content: center;
     width: 16px;
     height: 16px;
-    color: rgba(255,255,255,0.42);
+    color: var(--text-ghost);
     pointer-events: none;
     z-index: 1;
   `;
@@ -1387,8 +1387,8 @@ function applyTileStyles(wrapper, tile, iconEl, labelEl, hideLabel, useRawFavico
       boxShadow: 'none', borderRadius: '0',
     });
     Object.assign(iconEl.style, {
-      width: '52px', height: '52px', background: 'rgba(255,255,255,0.10)',
-      border: '1px solid rgba(255,255,255,0.12)', borderRadius: '18px',
+      width: '52px', height: '52px', background: 'var(--glass-bg-hover)',
+      border: '1px solid var(--glass-border)', borderRadius: '18px',
       overflow: 'hidden', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
       boxShadow: '0 4px 16px rgba(0,0,0,0.25)', display: 'flex',
       alignItems: 'center', justifyContent: 'center',
@@ -1406,7 +1406,7 @@ function applyTileStyles(wrapper, tile, iconEl, labelEl, hideLabel, useRawFavico
     fontFamily: QUICKLINK_LABEL_FONT_FAMILY,
     fontSize: useRawFavicon ? '0.76rem' : '0.72rem',
     fontWeight: QUICKLINK_LABEL_FONT_WEIGHT,
-    color: useRawFavicon ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.9)',
+    color: 'var(--text-primary)',
     lineHeight: useRawFavicon ? '1.2' : '1.15',
     letterSpacing: useRawFavicon ? '0' : '0.01em',
     textAlign: 'center', whiteSpace: 'nowrap',
@@ -1561,7 +1561,7 @@ function openLinkModal(existingLink = null) {
     font-weight: 600;
     line-height: 1.15;
     letter-spacing: 0.01em;
-    color: rgba(255,255,255,0.94);
+    color: var(--text-primary);
     margin: 0 0 8px 0;
   `;
 
@@ -1572,7 +1572,7 @@ function openLinkModal(existingLink = null) {
   titleInput.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
   titleInput.style.fontSize = '0.84rem';
   titleInput.style.fontWeight = '500';
-  titleInput.style.color = 'rgba(255,255,255,0.9)';
+  titleInput.style.color = 'var(--text-primary)';
 
   const urlInput = document.createElement('input');
   urlInput.type = 'text';
@@ -1581,7 +1581,7 @@ function openLinkModal(existingLink = null) {
   urlInput.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
   urlInput.style.fontSize = '0.84rem';
   urlInput.style.fontWeight = '500';
-  urlInput.style.color = 'rgba(255,255,255,0.9)';
+  urlInput.style.color = 'var(--text-primary)';
 
   urlInput.addEventListener('input', () => {
     if (!urlInput.value.trim() && titleInput.value.trim() === urlInput.dataset.autoName) {
@@ -1601,7 +1601,7 @@ function openLinkModal(existingLink = null) {
   sidebarToggleLabel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
   sidebarToggleLabel.style.fontSize = '0.82rem';
   sidebarToggleLabel.style.fontWeight = '500';
-  sidebarToggleLabel.style.color = 'rgba(255,255,255,0.88)';
+  sidebarToggleLabel.style.color = 'var(--text-primary)';
   const sidebarToggle = document.createElement('input');
   sidebarToggle.type = 'checkbox';
   sidebarToggle.id = 'ql-pin-sidebar';
