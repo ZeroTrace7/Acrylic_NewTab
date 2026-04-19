@@ -13,12 +13,13 @@ const ENGINE_GROUPS = [
 
 const ENGINES = [
   { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
-  { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'https://chatgpt.com/favicon.ico' },
+  { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
-  { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'https://grok.com/favicon.ico' },
+  { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
+  { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/search?q=', icon: 'icons/deepseek.png' },
   { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://api.iconify.design/logos:google-icon.svg' },
   { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
-  { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'https://duckduckgo.com/favicon.ico' },
+  { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'icons/duckduckgo_color.png' },
   { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'https://brave.com/favicon.ico' },
   { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'https://www.youtube.com/favicon.ico' },
 ];
