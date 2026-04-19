@@ -264,7 +264,7 @@
   top: calc(100% + 16px);
   left: 50%;
   width: min(510px, calc(100vw - 36px));
-  max-height: min(348px, calc(100vh - 240px));
+  max-height: min(318px, calc(100vh - 248px));
   padding: 12px;
   z-index: 100;
   display: block;
@@ -286,10 +286,10 @@
     transform 760ms cubic-bezier(0.16, 1, 0.3, 1),
     filter 620ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0s linear 760ms;
-  background: rgba(18, 26, 39, 0.82);
+  background: rgba(18, 26, 39, 0.66);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 22px;
   box-shadow:
     0 24px 64px rgba(0, 0, 0, 0.38),
@@ -357,8 +357,8 @@
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  padding-right: 4px;
+  gap: 20px;
+  padding-right: 8px;
   opacity: 0;
   transform: translateY(12px);
   transition:
@@ -391,7 +391,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .engine-picker-title {
@@ -416,7 +416,7 @@
 .engine-picker-list {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 8px;
 }
 
 .engine-option {
@@ -426,9 +426,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 11px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid transparent;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.035);
+  background: transparent;
   overflow: hidden;
   text-align: start;
   font-size: 0.86rem;
@@ -632,6 +632,7 @@
 
 .engine-option.active {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
   box-shadow:
     0 10px 18px rgba(15, 23, 42, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.18);
@@ -648,13 +649,13 @@
 @media (max-width: 640px) {
   .engine-picker {
     width: min(398px, calc(100vw - 24px));
-    max-height: min(332px, calc(100vh - 220px));
+    max-height: min(304px, calc(100vh - 220px));
     padding: 11px;
   }
 
   .engine-picker-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 14px;
   }
 
   .engine-picker-grid::before {

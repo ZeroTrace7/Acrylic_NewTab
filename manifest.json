@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Acrylic - New Tab",
   "version": "1.0.0",
-  "description": "Premium glassmorphism New Tab page. Boost productivity with tasks, Pomodoro, notes, and custom themes. Fast, free, and zero tracking.",
+  "description": "Premium glassmorphism New Tab. Tasks, Pomodoro timer, notes, and 8 themes built in. Sub-100ms load. Free forever. Zero tracking.",
   "default_locale": "en",
 
   "chrome_url_overrides": {
@@ -30,7 +30,6 @@
 
   "permissions": [
     "storage",
-    "search",
     "topSites",
     "notifications",
     "alarms",

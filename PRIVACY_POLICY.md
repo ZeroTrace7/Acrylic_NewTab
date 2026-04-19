@@ -91,7 +91,6 @@ Acrylic requests only the minimum browser permissions strictly necessary for its
 | Permission | Functionality | Data Transmission |
 |---|---|---|
 | `storage` | Persists all user data (tasks, notes, preferences, Quick Links, Pomodoro stats) locally via `chrome.storage.sync` and `chrome.storage.local`. | **None.** All data remains on-device. `chrome.storage.sync` uses Chrome's native sync infrastructure — Acrylic has no access to or control over this transport layer. |
-| `search` | Powers the integrated search bar, enabling the user to submit queries to their selected search engine via `chrome.search.query()`. | **None.** The search query is sent directly from Chrome to the selected search engine. Acrylic does not intercept, log, store, or transmit the query. |
 | `topSites` | Populates the bottom Quick Links row with the user's most-visited sites via `chrome.topSites.get()`. | **None.** The top sites list is provided by Chrome's local history database and never leaves the device. |
 | `notifications` | Displays desktop notifications when a Pomodoro timer session (focus, short break, or long break) completes. | **None.** Notifications are rendered locally by the operating system. |
 | `alarms` | Schedules Pomodoro timer intervals and daily statistic resets via `chrome.alarms.create()`. | **None.** Alarms execute locally within the browser's alarm scheduler. |

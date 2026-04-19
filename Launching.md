@@ -68,12 +68,17 @@ These are uploaded directly to the Developer Dashboard — not part of the codeb
 *   Open `store/cws_long_description.txt` and copy-paste the full text into the "Detailed description" field in the CWS Developer Dashboard
 
 ### 4. Review Permissions Before Submission
-Current permissions in `manifest.json`:
+Current static permissions in `manifest.json`:
 ```
-storage, search, tabs, topSites, notifications, alarms, contextMenus, offscreen, management
+storage, topSites, notifications, alarms, contextMenus, offscreen, management
 ```
-*   `tabs` triggers a "Read your browsing history" install warning — this is the #1 reason users abandon installs for new tab extensions
-*   Consider moving `tabs`, `management`, and `notifications` to `optional_permissions` with runtime permission requests (requires code changes — can be deferred to v1.1 if time-critical)
+Optional permissions (requested at runtime):
+```
+tabs, declarativeNetRequestWithHostAccess
+```
+*   ✅ `tabs` has been moved to `optional_permissions` with a runtime permission gate in `panels/tabs.js` — eliminates the "Read your browsing history" install warning
+*   ✅ `search` has been **removed entirely** — was a phantom permission (the search bar uses `window.location.href`, not `chrome.search.query()`)
+*   ⚠️ `management` triggers a "Manage your apps, extensions, and themes" warning — consider moving to `optional_permissions` in v1.1 (same pattern as `tabs`)
 
 ---
 
