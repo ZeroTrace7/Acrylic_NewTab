@@ -4,9 +4,10 @@ import { generateId } from './utils.js';
 import { toast } from './toast.js';
 
 const TASKS_KEY = 'tasks';
-const SUCCESS_REVEAL_DELAY_MS = 480;
-const SUCCESS_AUTOCLEAR_MS = 4300;
-const TASK_REORDER_DELAY_MS = 180;
+const SUCCESS_REVEAL_DELAY_MS = 620;
+const SUCCESS_AUTOCLEAR_MS = 7600;
+const TASK_REORDER_DELAY_MS = 320;
+const TASK_INPUT_FOCUS_DELAY_MS = 220;
 
 let panelEl = null;
 let listEl = null;
@@ -24,6 +25,8 @@ let openPanelRaf = 0;
 let openPanelRaf2 = 0;
 let successTimeout = null;
 let successRevealTimeout = null;
+let reorderTimeout = 0;
+let inputFocusTimeout = 0;
 
 const taskRows = new Map();
 
@@ -150,7 +153,7 @@ function animateListReorder(beforeRects) {
     row.style.transform = `translateY(${dy}px)`;
     row.style.willChange = 'transform';
     requestAnimationFrame(() => {
-      row.style.transition = 'transform 420ms cubic-bezier(0.16, 1, 0.3, 1)';
+      row.style.transition = 'transform 680ms cubic-bezier(0.16, 1, 0.3, 1)';
       row.style.transform = 'translateY(0)';
       const cleanup = () => {
         row.style.transition = '';
@@ -204,6 +207,43 @@ function cleanupSuccessTimer() {
   successRevealTimeout = null;
 }
 
+function cleanupReorderTimer() {
+  clearTimeout(reorderTimeout);
+  reorderTimeout = 0;
+}
+
+function cleanupInputFocusTimer() {
+  clearTimeout(inputFocusTimeout);
+  inputFocusTimeout = 0;
+}
+
+function resetTaskRowAnimations() {
+  taskRows.forEach((row) => {
+    row.style.transition = '';
+    row.style.transform = '';
+    row.style.willChange = '';
+  });
+}
+
+function scheduleTaskReorder() {
+  cleanupReorderTimer();
+  reorderTimeout = setTimeout(async () => {
+    reorderTimeout = 0;
+    sortTasks();
+    await persistTasks();
+    renderTasks({ animateReorder: isOpen });
+  }, TASK_REORDER_DELAY_MS);
+}
+
+function scheduleInputFocus() {
+  cleanupInputFocusTimer();
+  inputFocusTimeout = setTimeout(() => {
+    inputFocusTimeout = 0;
+    if (!isOpen || !panelEl?.classList.contains('open') || panelEl.classList.contains('is-success')) return;
+    inputEl?.focus();
+  }, TASK_INPUT_FOCUS_DELAY_MS);
+}
+
 function resetSuccessStateClass() {
   panelEl?.classList.remove('is-success');
 }
@@ -215,6 +255,8 @@ function showNormalPanelState() {
 
 async function clearCompleted(options = {}) {
   const { silent = false } = options;
+  cleanupSuccessTimer();
+  cleanupReorderTimer();
   const remaining = tasks.filter((t) => !t.completed);
   if (remaining.length === tasks.length) return;
   tasks = remaining;
@@ -251,6 +293,7 @@ async function addTask(raw) {
   }
 
   cleanupSuccessTimer();
+  cleanupReorderTimer();
 
   const newTask = {
     id: generateId(),
@@ -274,18 +317,16 @@ async function toggleTask(id) {
   const task = tasks.find((t) => t.id === id);
   if (!task) return;
   cleanupSuccessTimer();
+  cleanupReorderTimer();
   task.completed = !task.completed;
   await persistTasks();
   renderTasks();
-  setTimeout(async () => {
-    sortTasks();
-    await persistTasks();
-    renderTasks({ animateReorder: true });
-  }, TASK_REORDER_DELAY_MS);
+  scheduleTaskReorder();
 }
 
 async function deleteTask(id) {
   cleanupSuccessTimer();
+  cleanupReorderTimer();
   tasks = tasks.filter((t) => t.id !== id);
   await persistTasks();
   showNormalPanelState();
@@ -437,18 +478,18 @@ function openPanel() {
     btn.setAttribute('aria-expanded', 'true');
   }
 
+  resetTaskRowAnimations();
   renderTasks();
   document.addEventListener('mousedown', handleOutsideClick);
   document.addEventListener('keydown', handleKeydown);
-  if (!panelEl.classList.contains('is-success')) {
-    setTimeout(() => inputEl?.focus(), 90);
-  }
+  scheduleInputFocus();
 }
 
 function closePanel() {
   if (!isOpen) return;
   isOpen = false;
   cleanupSuccessTimer();
+  cleanupInputFocusTimer();
   if (openPanelRaf) {
     cancelAnimationFrame(openPanelRaf);
     openPanelRaf = 0;
@@ -462,6 +503,10 @@ function closePanel() {
     panelEl.classList.remove('open');
     panelEl.setAttribute('aria-hidden', 'true');
   }
+
+  resetTaskRowAnimations();
+  showNormalPanelState();
+  inputEl?.blur();
 
   const btn = DOM.tasksBtn;
   if (btn) {

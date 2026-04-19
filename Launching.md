@@ -29,8 +29,8 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 ### Launch Preparation
 *   **Featured Badge Pitch:** Self-nomination narrative drafted and saved to `store/featured_badge_pitch.txt`. Highlights MV3 cold-start solution, zero-paywall architecture, sub-100ms load, and MIT license.
 
-### Tier 1 Geo-Optimization (v1.0 — No `_locales/` Required)
-*   **Runtime Locale Detection:** `newtab.js` sets `document.documentElement.lang = navigator.language` at startup. HTML fallback remains `lang="en"` for SSR/crawlers.
+### Tier 1 Geo-Optimization (v1.0)
+*   **Declarative Locale & Bidi:** Created `_locales/en/messages.json` (empty `{}` stub) and added `"default_locale": "en"` to `manifest.json`. HTML now uses `lang="__MSG_@@ui_locale__" dir="__MSG_@@bidi_dir__"` — Chrome injects the user's locale and text direction *before HTML parsing*, enabling correct screen reader pronunciation, browser auto-translation, and the `[dir="rtl"]` CSS selectors for Arabic/Hebrew. Zero runtime JS needed.
 *   **Locale-Aware Dates:** Stripped all 6 hardcoded `'en-US'` locale strings from `clock.js`, `utils.js`, `newtab.js` (Zen Mode), and `notes.js`. Replaced with `undefined` so the browser renders dates in the user's native format (e.g., "2026年4月19日" for Japanese, "Sonntag, 19. April" for German).
 *   **Locale-Aware Greetings:** Replaced hardcoded English `Good morning/afternoon/evening` in `utils.js` with a 10-language `GREETINGS` lookup table using `navigator.language` (en, es, fr, de, pt, ja, zh, ko, ar, hi).
 *   **CSS Logical Properties:** Replaced all `margin-left` → `margin-inline-start` and `text-align: left` → `text-align: start` across `newtab.css`, `components.css`, and `quicktools.css` (6 locations). RTL layouts now auto-flip correctly.
@@ -105,6 +105,8 @@ The CWS algorithm heavily rewards "Install Velocity" — the rate of installs in
     *   Twitter/X
 3.  **Review Seeding:** Have beta testers install and leave detailed 5-star reviews specifying *why* they like it. Early positive reviews push Acrylic up the organic search ladder.
 4.  **Reply to every comment** on Product Hunt and HN within 15 minutes — high reply velocity is an algorithmic signal.
+5.  **Performance Comparison Video:** Record a 15-second split-screen video showing Acrylic's instant load vs. a legacy competitor (use Chrome DevTools Performance tab). Post as a short-form video on Twitter/X, Reddit, and YouTube Shorts. Visual proof of sub-100ms load time is inherently viral.
+6.  **SRM University Outreach:** Pitch Acrylic to local hackathon groups (Hack4Good, Tensor'26, Beyond Hack) and CS cohorts at SRM as the ultimate distraction-free student dashboard. Target GDSC SRM and GitHub Community SRM Discord servers for beta testing and early reviews.
 
 ---
 
@@ -175,3 +177,30 @@ Build a website with dedicated competitor comparison pages:
 *   Host codebase publicly on GitHub (already in progress)
 *   Captures searches for "open source new tab extension github"
 *   Developers trust readable code — this lowers the install barrier dramatically
+
+---
+
+## 📦 ARCHIVED CONCEPTS — v3.0+ (Do Not Implement Pre-Launch)
+
+The following ideas were evaluated during the v1.0 launch planning cycle and **explicitly deferred** because they conflict with the current privacy-first architecture or are premature for an unvalidated product. They are preserved here for future reference only.
+
+> ⚠️ **CODEBASE LOCK:** The Acrylic v1.0 codebase is officially locked for Chrome Web Store submission as of April 19, 2026. No further JS/CSS feature additions will be made until v1.0 is live and validated with real users. Only bug fixes and CWS compliance adjustments are permitted.
+
+### A. Referral Tracking & Gated Themes
+*   **Concept:** Unlock exclusive themes (e.g., "Jet Black Matte", "Neon Synthwave") when a user successfully refers 3+ peers to install Acrylic. Use a lightweight referral tracking mechanism (e.g., GrowSurf) to count installs.
+*   **Why Deferred:** Referral tracking **requires an external server** to correlate referrer → referee install events. This directly violates:
+    *   `AGENTS.md` Rule 3 — "No unauthorized external requests"
+    *   `PRIVACY_POLICY.md` — "Acrylic does not collect, transmit, or sell any user data. Period."
+    *   `store/cws_long_description.txt` — "No accounts. No cloud sync. No analytics. No tracking."
+    *   `store/featured_badge_pitch.txt` — "Features that leading competitors charge $40/year for are included free — permanently."
+*   **Revisit Condition:** Only if Acrylic pivots to a cloud-sync model in v3.0+ and the privacy policy is formally rewritten. Requires new user consent flows and a CMP (Consent Management Platform).
+
+### B. Paid Acquisition — Google Ads Competitor Conquesting
+*   **Concept:** Bid on competitor-adjacent search terms (e.g., "Momentum alternative", "Tabliss with task manager") to capture high-intent users actively seeking alternatives.
+*   **Why Deferred:** Premature and expensive for v1.0. Competitor conquesting incurs high CPCs due to low initial relevancy scores. The indie/privacy brand positioning is better served by organic community-driven growth (Reddit, HN, Product Hunt) in the first 6 months.
+*   **Revisit Condition:** Only after organic growth plateaus (6+ months post-launch) and there is a validated conversion funnel (landing page + comparison matrix + CWS listing) to route paid traffic through. Sending ads to a generic CWS listing wastes budget.
+
+### C. Non-Financial Viral Loop Mechanics
+*   **Concept:** Award cosmetic rewards (expanded SVG library, custom wallpaper packs) for social sharing or community contributions (e.g., submitting a theme, filing a bug report).
+*   **Why Deferred:** Requires a tracking mechanism to verify actions occurred. Even "privacy-respecting" implementations introduce state that must be stored and validated, adding architectural complexity for unproven user behavior.
+*   **Revisit Condition:** After v2.5 "Share Your Setup" (Canvas snapshot export) ships. If users are organically sharing screenshots, a reward layer can be added on top without needing external tracking — verification can be local (e.g., "you used the share button 3 times" stored in `chrome.storage.local`).

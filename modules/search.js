@@ -4,23 +4,35 @@ import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
 
-const ENGINES = [
-  { id: 'browser',    name: 'Browser default', url: 'https://www.google.com/search?q=',     icon: 'icons/icon16.png' },
-  { id: 'google',     name: 'Google',     url: 'https://www.google.com/search?q=',     icon: 'https://www.google.com/favicon.ico' },
-  { id: 'bing',       name: 'Bing',       url: 'https://www.bing.com/search?q=',       icon: 'https://www.bing.com/favicon.ico' },
-  { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=',           icon: 'https://duckduckgo.com/favicon.ico' },
-  { id: 'brave',      name: 'Brave',      url: 'https://search.brave.com/search?q=',   icon: 'https://brave.com/favicon.ico' },
-  { id: 'perplexity', name: 'Perplexity', url: 'https://www.perplexity.ai/search?q=',  icon: 'https://www.perplexity.ai/favicon.ico' },
+const DEFAULT_ENGINE_ID = 'google';
+
+const ENGINE_GROUPS = [
+  { id: 'assistants', label: 'AI Assistants' },
+  { id: 'search', label: 'Search Engines' },
 ];
 
-let currentEngine = ENGINES[0];
+const ENGINES = [
+  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'https://www.perplexity.ai/favicon.ico' },
+  { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'https://chatgpt.com/favicon.ico' },
+  { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://claude.ai/favicon.ico' },
+  { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'https://grok.com/favicon.ico' },
+  { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/favicon.ico' },
+  { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'https://duckduckgo.com/favicon.ico' },
+  { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'https://brave.com/favicon.ico' },
+  { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'https://www.youtube.com/favicon.ico' },
+];
+
+let currentEngine = ENGINES.find((engine) => engine.id === DEFAULT_ENGINE_ID) || ENGINES[0];
 let highlightedIndex = 0;
-let warnedSearchFallback = false;
 let pickerOpenRaf = 0;
 let pickerOpenRaf2 = 0;
 let pickerFocusTimer = 0;
 let searchHistoryEnabled = true;
 let searchHistoryItems = [];
+
+function setSearchPickerUiState(isOpen) {
+  document.body.classList.toggle('search-picker-open', isOpen);
+}
 
 function handleSearchError(error) {
   console.error('Search failed:', error);
@@ -143,7 +155,9 @@ async function rememberSearchQuery(query) {
 }
 
 function getEngine(id) {
-  return ENGINES.find((e) => e.id === id) || ENGINES[0];
+  return ENGINES.find((engine) => engine.id === id)
+    || ENGINES.find((engine) => engine.id === DEFAULT_ENGINE_ID)
+    || ENGINES[0];
 }
 
 function setEngine(engine) {
@@ -157,7 +171,7 @@ function setEngine(engine) {
 function getEngineOptions() {
   const picker = DOM.enginePicker;
   if (!picker) return [];
-  return Array.from(picker.children).filter((el) => el.classList?.contains('engine-option'));
+  return Array.from(picker.querySelectorAll('.engine-option'));
 }
 
 function updatePickerSelection() {
@@ -200,6 +214,7 @@ function openPicker(focusList = false) {
     pickerFocusTimer = 0;
   }
   picker.setAttribute('aria-hidden', 'false');
+  setSearchPickerUiState(true);
   DOM.engineBtn?.classList.add('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'true');
   const activeIdx = ENGINES.findIndex((engine) => engine.id === currentEngine.id);
@@ -238,6 +253,7 @@ function closePicker() {
   }
   picker.classList.remove('is-open');
   picker.setAttribute('aria-hidden', 'true');
+  setSearchPickerUiState(false);
   DOM.engineBtn?.classList.remove('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'false');
   getEngineOptions().forEach((el) => el.classList.remove('is-focused'));
@@ -248,47 +264,78 @@ function togglePicker() {
   else openPicker();
 }
 
+function setOptionHighlight(index) {
+  highlightedIndex = index;
+  getEngineOptions().forEach((el, optionIndex) => {
+    el.classList.toggle('is-focused', optionIndex === highlightedIndex);
+  });
+}
+
 function buildPicker() {
   const picker = DOM.enginePicker;
   if (!picker) return;
   picker.innerHTML = '';
   picker.setAttribute('role', 'listbox');
-  picker.setAttribute('aria-label', 'Search engine');
+  picker.setAttribute('aria-label', 'Search destination');
   picker.setAttribute('aria-hidden', 'true');
-  ENGINES.forEach((engine, index) => {
-    const opt = document.createElement('button');
-    opt.type = 'button';
-    opt.className = 'engine-option';
-    if (engine.id === currentEngine.id) opt.classList.add('active');
-    opt.dataset.engineId = engine.id;
-    opt.setAttribute('role', 'option');
-    opt.setAttribute('aria-selected', String(engine.id === currentEngine.id));
-    opt.tabIndex = -1;
-    const img = document.createElement('img');
-    img.src = engine.icon;
-    img.alt = engine.name;
-    img.width = 16;
-    img.height = 16;
 
-    const span = document.createElement('span');
-    span.textContent = engine.name;
+  const grid = document.createElement('div');
+  grid.className = 'engine-picker-grid';
 
-    opt.append(img, span);
-    opt.addEventListener('mouseenter', () => {
-      highlightedIndex = index;
-      getEngineOptions().forEach((el, i) => el.classList.toggle('is-focused', i === highlightedIndex));
-    });
-    opt.addEventListener('focus', () => {
-      highlightedIndex = index;
-      getEngineOptions().forEach((el, i) => el.classList.toggle('is-focused', i === highlightedIndex));
-    });
-    opt.addEventListener('click', () => {
-      setEngine(engine);
-      closePicker();
-      DOM.engineBtn?.focus();
-    });
-    picker.appendChild(opt);
+  let optionIndex = 0;
+  ENGINE_GROUPS.forEach((group) => {
+    const section = document.createElement('section');
+    section.className = 'engine-picker-section';
+    section.setAttribute('aria-label', group.label);
+
+    const title = document.createElement('div');
+    title.className = 'engine-picker-title';
+    title.textContent = group.label;
+
+    const list = document.createElement('div');
+    list.className = 'engine-picker-list';
+
+    ENGINES
+      .filter((engine) => engine.group === group.id)
+      .forEach((engine) => {
+        const currentOptionIndex = optionIndex;
+        const opt = document.createElement('button');
+        opt.type = 'button';
+        opt.className = 'engine-option';
+        if (engine.id === currentEngine.id) opt.classList.add('active');
+        opt.dataset.engineId = engine.id;
+        opt.setAttribute('role', 'option');
+        opt.setAttribute('aria-selected', String(engine.id === currentEngine.id));
+        opt.style.setProperty('--engine-option-delay', `${40 + (currentOptionIndex * 24)}ms`);
+        opt.tabIndex = -1;
+
+        const img = document.createElement('img');
+        img.src = engine.icon;
+        img.alt = engine.name;
+        img.width = 18;
+        img.height = 18;
+
+        const span = document.createElement('span');
+        span.textContent = engine.name;
+
+        opt.append(img, span);
+        opt.addEventListener('mouseenter', () => setOptionHighlight(currentOptionIndex));
+        opt.addEventListener('focus', () => setOptionHighlight(currentOptionIndex));
+        opt.addEventListener('click', () => {
+          setEngine(engine);
+          closePicker();
+          DOM.engineBtn?.focus();
+        });
+
+        list.appendChild(opt);
+        optionIndex += 1;
+      });
+
+    section.append(title, list);
+    grid.appendChild(section);
   });
+
+  picker.appendChild(grid);
   updatePickerSelection();
 }
 
@@ -339,22 +386,6 @@ function handlePickerKeydown(e) {
   }
 }
 
-function queryBrowserDefault(text) {
-  return new Promise((resolve) => {
-    if (!globalThis.chrome?.search?.query) {
-      resolve(false);
-      return;
-    }
-    try {
-      chrome.search.query({ text, disposition: 'CURRENT_TAB' }, () => {
-        resolve(!chrome.runtime?.lastError);
-      });
-    } catch {
-      resolve(false);
-    }
-  });
-}
-
 async function performSearch(query) {
   const q = query.trim();
   if (!q) return;
@@ -363,14 +394,6 @@ async function performSearch(query) {
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
   } else {
-    if (currentEngine.id === 'browser') {
-      const searched = await queryBrowserDefault(q);
-      if (searched) return;
-      if (!warnedSearchFallback) {
-        warnedSearchFallback = true;
-        toast.info('Browser search unavailable here. Falling back to Google.');
-      }
-    }
     window.location.href = currentEngine.url + encodeURIComponent(q);
   }
 }

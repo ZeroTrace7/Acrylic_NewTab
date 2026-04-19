@@ -67,6 +67,8 @@
   width: 100%;
   max-width: 680px;
   pointer-events: auto;
+  z-index: 24;
+  transition: transform 680ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
 }
 
@@ -75,7 +77,23 @@
   bottom: var(--quicklinks-bottom);
   left: 50%;
   transform: translateX(-50%) translate3d(var(--quicklinks-offset-x), var(--quicklinks-offset-y), 0);
+  z-index: 12;
+  transition:
+    transform 680ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 420ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 420ms cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+}
+
+#app-body.search-picker-open #middle-zone {
+  transform: translate(-50%, -50%) translate3d(var(--center-offset-x), calc(var(--center-offset-y) - 12px), 0);
+}
+
+#app-body.search-picker-open #quicklinks-zone {
+  transform: translateX(-50%) translate3d(var(--quicklinks-offset-x), calc(var(--quicklinks-offset-y) + 86px), 0);
+  opacity: 0.16;
+  filter: blur(8px);
+  pointer-events: none;
 }
 
 .right-panel,

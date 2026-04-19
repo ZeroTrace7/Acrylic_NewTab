@@ -5,23 +5,30 @@ import { DOM } from '../modules/dom.js';
 
 let overlayEl = null;
 let currentStep = 0;
-let selections = { name: '', theme: 'midnight', searchEngine: 'browser' };
+let selections = { name: '', theme: 'midnight', searchEngine: 'google' };
 
 const STEPS = [
   { id: 'welcome',     title: 'Welcome to Acrylic',  subtitle: "The most beautiful new tab for Chrome. Let's get you set up in 30 seconds." },
   { id: 'personalize', title: 'Make it yours',        subtitle: 'Choose a name and pick your favorite theme.' },
-  { id: 'search',      title: 'How do you search?',   subtitle: 'Choose a mode. Browser default respects your Chrome search setting.' },
+  { id: 'search',      title: 'Where should search go?', subtitle: 'Pick a default destination. You can switch between AI assistants and search engines any time.' },
 ];
 
 const THEME_COLORS = { midnight:'#0f0f23','deep-blue':'#021b37',aurora:'#003840','rose-noir':'#2d0320',jet:'#000',espresso:'#1c0f0a',slate:'#0f172a',forest:'#0d1f0f' };
 
+const ENGINE_GROUPS = [
+  { id: 'assistants', label: 'AI Assistants' },
+  { id: 'search', label: 'Search Engines' },
+];
+
 const ENGINES = [
-  { id:'browser',    name:'Browser default', desc:'Use your Chrome default search engine (recommended)' },
-  { id:'google',     name:'Google',     desc:"The world's most popular search engine" },
-  { id:'duckduckgo', name:'DuckDuckGo', desc:'Privacy-first search, no tracking' },
-  { id:'bing',       name:'Bing',       desc:"Microsoft's powerful search engine" },
-  { id:'brave',      name:'Brave',      desc:'Fast, private and secure search' },
-  { id:'perplexity', name:'Perplexity', desc:'AI-powered answers and search' },
+  { id: 'perplexity', group: 'assistants', name: 'Perplexity', desc: 'Answer-first research with citations and web grounding' },
+  { id: 'chatgpt', group: 'assistants', name: 'ChatGPT', desc: 'Use ChatGPT as your primary assistant for open-ended queries' },
+  { id: 'claude', group: 'assistants', name: 'Claude', desc: 'Thoughtful long-form responses and deep writing support' },
+  { id: 'grok', group: 'assistants', name: 'Grok', desc: 'Fast conversational search with a live-web leaning workflow' },
+  { id: 'google', group: 'search', name: 'Google', desc: "The world's most popular search engine" },
+  { id: 'duckduckgo', group: 'search', name: 'DuckDuckGo', desc: 'Privacy-first search with no tracking by default' },
+  { id: 'brave', group: 'search', name: 'Brave', desc: 'Independent private search with a clean results page' },
+  { id: 'youtube', group: 'search', name: 'YouTube', desc: 'Jump straight into video discovery and visual how-tos' },
 ];
 
 let contentEl = null;
@@ -159,21 +166,42 @@ function renderStep() {
     const sub = document.createElement('p');
     sub.textContent = s.subtitle;
     sub.setAttribute('style', 'font-size:0.9rem;color:var(--text-secondary);text-align:center;margin-bottom:16px;');
-    const list = document.createElement('div');
-    list.setAttribute('style', 'display:flex;flex-direction:column;gap:10px;');
-    ENGINES.forEach(eng => {
-      const active = selections.searchEngine === eng.id;
-      const row = document.createElement('div');
-      row.setAttribute('style', `display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;cursor:pointer;transition:all 150ms ease;background:${active ? 'var(--glass-bg)' : 'var(--glass-subtle)'};border:1px solid ${active ? 'var(--glass-border)' : 'transparent'};`);
-      row.innerHTML = `<div><div style="font-weight:600;font-size:0.9rem;color:${active ? 'var(--text-primary)' : 'var(--text-secondary)'};">${eng.name}</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${eng.desc}</div></div>`;
-      const radio = document.createElement('div');
-      radio.setAttribute('style', `width:18px;height:18px;border-radius:50%;border:2px solid ${active ? 'rgba(255,255,255,0.8)' : 'var(--glass-border)'};background:${active ? 'rgba(255,255,255,0.8)' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;`);
-      if (active) { const dot = document.createElement('div'); dot.setAttribute('style', 'width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.6);'); radio.appendChild(dot); }
-      row.appendChild(radio);
-      row.onclick = () => { selections.searchEngine = eng.id; renderStep(); };
-      list.appendChild(row);
+    const groups = document.createElement('div');
+    groups.setAttribute('style', 'display:flex;flex-direction:column;gap:14px;');
+
+    ENGINE_GROUPS.forEach((group) => {
+      const section = document.createElement('section');
+      section.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;');
+
+      const title = document.createElement('div');
+      title.textContent = group.label.toUpperCase();
+      title.setAttribute('style', 'padding:0 4px;font-size:0.7rem;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);');
+
+      const list = document.createElement('div');
+      list.setAttribute('style', 'display:flex;flex-direction:column;gap:10px;');
+
+      ENGINES.filter((eng) => eng.group === group.id).forEach((eng) => {
+        const active = selections.searchEngine === eng.id;
+        const row = document.createElement('div');
+        row.setAttribute('style', `display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;cursor:pointer;transition:all 150ms ease;background:${active ? 'var(--glass-bg)' : 'var(--glass-subtle)'};border:1px solid ${active ? 'var(--glass-border)' : 'transparent'};`);
+        row.innerHTML = `<div><div style="font-weight:600;font-size:0.9rem;color:${active ? 'var(--text-primary)' : 'var(--text-secondary)'};">${eng.name}</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${eng.desc}</div></div>`;
+        const radio = document.createElement('div');
+        radio.setAttribute('style', `width:18px;height:18px;border-radius:50%;border:2px solid ${active ? 'rgba(255,255,255,0.8)' : 'var(--glass-border)'};background:${active ? 'rgba(255,255,255,0.8)' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;`);
+        if (active) {
+          const dot = document.createElement('div');
+          dot.setAttribute('style', 'width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.6);');
+          radio.appendChild(dot);
+        }
+        row.appendChild(radio);
+        row.onclick = () => { selections.searchEngine = eng.id; renderStep(); };
+        list.appendChild(row);
+      });
+
+      section.append(title, list);
+      groups.appendChild(section);
     });
-    contentEl.append(h, sub, list);
+
+    contentEl.append(h, sub, groups);
   }
 }
 
@@ -198,7 +226,7 @@ export async function initOnboarding() {
   const done = await Prefs.get('onboardingDone');
   if (done) return;
   currentStep = 0;
-  selections = { name: '', theme: 'midnight', searchEngine: 'browser' };
+  selections = { name: '', theme: 'midnight', searchEngine: 'google' };
   overlayEl = buildOverlay();
   renderStep();
   (DOM.onboardingMount || document.body).appendChild(overlayEl);

@@ -13,7 +13,7 @@ export const Prefs = {
     wallpaperDarken: 0.45,
     grainOpacity:    0.035,
     userName:        '',
-    searchEngine:    'browser',
+    searchEngine:    'google',
     searchHistory:   true,
     clockFormat:     '12h',
     dashboardFont:   'gloria',
