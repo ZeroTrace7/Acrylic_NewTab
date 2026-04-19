@@ -274,8 +274,6 @@
   overscroll-behavior-y: contain;
   isolation: isolate;
   scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
   opacity: 0;
   visibility: hidden;
   transform: translate(-50%, -24px) scale(0.915);
@@ -327,10 +325,12 @@
   background-clip: padding-box;
 }
 
-.engine-picker::-webkit-scrollbar-button {
-  display: none;
-  width: 0;
-  height: 0;
+.engine-picker::-webkit-scrollbar-button,
+.engine-picker::-webkit-scrollbar-button:start:decrement,
+.engine-picker::-webkit-scrollbar-button:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .engine-picker.is-open {
