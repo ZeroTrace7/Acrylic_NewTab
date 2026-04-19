@@ -169,6 +169,10 @@ function setEngine(engine) {
   updatePickerSelection();
 }
 
+function clearOptionHighlight() {
+  getEngineOptions().forEach((el) => el.classList.remove('is-focused'));
+}
+
 function getEngineOptions() {
   const picker = DOM.enginePicker;
   if (!picker) return [];
@@ -257,7 +261,7 @@ function closePicker() {
   setSearchPickerUiState(false);
   DOM.engineBtn?.classList.remove('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'false');
-  getEngineOptions().forEach((el) => el.classList.remove('is-focused'));
+  clearOptionHighlight();
 }
 
 function togglePicker() {
@@ -320,7 +324,6 @@ function buildPicker() {
         span.textContent = engine.name;
 
         opt.append(img, span);
-        opt.addEventListener('mouseenter', () => setOptionHighlight(currentOptionIndex));
         opt.addEventListener('focus', () => setOptionHighlight(currentOptionIndex));
         opt.addEventListener('click', () => {
           setEngine(engine);
