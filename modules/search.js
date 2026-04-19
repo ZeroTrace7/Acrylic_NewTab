@@ -20,8 +20,8 @@ const ENGINES = [
   { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://api.iconify.design/logos:google-icon.svg' },
   { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
   { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'icons/duckduckgo_color.png' },
-  { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'https://brave.com/favicon.ico' },
-  { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'https://www.youtube.com/favicon.ico' },
+  { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'icons/brave_color.png' },
+  { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'icons/youtube_color.png' },
 ];
 
 let currentEngine = ENGINES.find((engine) => engine.id === DEFAULT_ENGINE_ID) || ENGINES[0];
