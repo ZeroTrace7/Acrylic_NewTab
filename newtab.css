@@ -10,24 +10,26 @@
    ──────────────────────────────────────────────────────────── */
 :root {
   /* Glass */
-  --glass-bg:            rgba(255, 255, 255, 0.06);
+  --glass-bg:            rgba(255, 255, 255, 0.04);
   --glass-bg-hover:      rgba(255, 255, 255, 0.10);
   --glass-bg-active:     rgba(255, 255, 255, 0.14);
-  --glass-subtle:        rgba(255, 255, 255, 0.06);
-  --glass-border:        rgba(255, 255, 255, 0.10);
+  --glass-subtle:        rgba(255, 255, 255, 0.04);
+  --glass-border:        rgba(255, 255, 255, 0.08);
   --glass-border-panel:  rgba(255, 255, 255, 0.18);
-  --glass-border-soft:   rgba(255, 255, 255, 0.10);
-  --glass-blur:          14px;
+  --glass-border-soft:   rgba(255, 255, 255, 0.08);
+  --glass-blur:          16px;
   --glass-radius:        14px;
   --glass-radius-sm:     12px;
   --glass-radius-lg:     14px;
-  --glass-shadow:        0 8px 32px rgba(0, 0, 0, 0.20);
-  --glass-shadow-lg:     0 20px 60px rgba(0, 0, 0, 0.30);
+  --shadow-x-sm:         -5px;
+  --shadow-x-lg:         -8px;
+  --glass-shadow:        var(--shadow-x-sm) 8px 32px rgba(0, 0, 0, 0.20);
+  --glass-shadow-lg:     var(--shadow-x-lg) 20px 60px rgba(0, 0, 0, 0.30);
   --glass-inset:         inset 0 1px 0 rgba(255, 255, 255, 0.15);
   --control-radius:      12px;
-  --control-blur:        14px;
-  --control-border:      rgba(255, 255, 255, 0.10);
-  --control-bg:          rgba(255, 255, 255, 0.06);
+  --control-blur:        16px;
+  --control-border:      rgba(255, 255, 255, 0.08);
+  --control-bg:          rgba(255, 255, 255, 0.04);
   --control-bg-hover:    rgba(255, 255, 255, 0.11);
   --control-shadow:      0 10px 28px rgba(0, 0, 0, 0.34);
 
@@ -43,10 +45,10 @@
   --text-secondary: rgba(255, 255, 255, 0.75);
   --text-muted:     rgba(255, 255, 255, 0.55);
   --text-ghost:     rgba(255, 255, 255, 0.25);
-  --dashboard-text-depth-strong: 0 4px 24px rgba(0, 0, 0, 0.40);
-  --dashboard-text-depth-soft: 0 2px 16px rgba(0, 0, 0, 0.26);
-  --dashboard-focus-text-depth-strong: 0 5px 18px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.45);
-  --dashboard-focus-text-depth-soft: 0 3px 12px rgba(0, 0, 0, 0.42), 0 1px 2px rgba(0, 0, 0, 0.30);
+  --dashboard-text-depth-strong: 0 2px 4px rgba(0, 0, 0, 0.50);
+  --dashboard-text-depth-soft: 0 2px 4px rgba(0, 0, 0, 0.35);
+  --dashboard-focus-text-depth-strong: 0 2px 4px rgba(0, 0, 0, 0.50), 0 1px 2px rgba(0, 0, 0, 0.40);
+  --dashboard-focus-text-depth-soft: 0 2px 4px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
 
   /* Accents */
   --accent-blue:  rgba(96, 165, 250, 0.90);
@@ -75,6 +77,12 @@
   --bg-center-glow:   0.10;
   --bg-grain-opacity: 0.035;
   --bg-blur-amount:   0px;
+}
+
+/* RTL shadow inversion — maintains glassmorphism light-source consistency */
+[dir="rtl"] {
+  --shadow-x-sm: 5px;
+  --shadow-x-lg: 8px;
 }
 
 [hidden] {
@@ -493,7 +501,7 @@ body.acrylic-loaded .anim-sidebar {
   font-family: var(--dashboard-font-family);
   font-weight: 700;
   color: var(--text-secondary);
-  margin-left: 0.2em;
+  margin-inline-start: 0.2em;
   vertical-align: baseline;
 }
 

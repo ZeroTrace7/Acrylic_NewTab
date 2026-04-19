@@ -23,9 +23,9 @@ export function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-/** Formats a Date object into a human-readable string like "Monday, January 6". */
+/** Formats a Date object into a locale-aware human-readable date string. */
 export function formatDate(date) {
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric'
@@ -42,14 +42,27 @@ export function formatTime(date, use24 = false) {
   return hours.toString().padStart(2, '0') + ':' + minutes;
 }
 
-/** Returns a greeting string based on the hour of the given Date, optionally appending a name. */
+/** Locale-aware greeting lookup table — reads navigator.language, falls back to English. */
+const GREETINGS = {
+  en: ['Good morning', 'Good afternoon', 'Good evening'],
+  es: ['Buenos días', 'Buenas tardes', 'Buenas noches'],
+  fr: ['Bonjour', 'Bon après-midi', 'Bonsoir'],
+  de: ['Guten Morgen', 'Guten Tag', 'Guten Abend'],
+  pt: ['Bom dia', 'Boa tarde', 'Boa noite'],
+  ja: ['おはようございます', 'こんにちは', 'こんばんは'],
+  zh: ['早上好', '下午好', '晚上好'],
+  ko: ['좋은 아침이에요', '안녕하세요', '안녕하세요'],
+  ar: ['صباح الخير', 'مساء الخير', 'مساء النور'],
+  hi: ['सुप्रभात', 'नमस्ते', 'शुभ संध्या'],
+};
+
+/** Returns a locale-aware greeting string based on the hour, optionally appending a name. */
 export function getGreeting(date, name = '') {
   const hour = date.getHours();
-  let greeting;
-  if (hour < 12) greeting = 'Good morning';
-  else if (hour < 17) greeting = 'Good afternoon';
-  else greeting = 'Good evening';
-  if (name && name.trim()) greeting += `, ${name.trim()}`;
+  const lang = navigator.language?.slice(0, 2) || 'en';
+  const set = GREETINGS[lang] || GREETINGS['en'];
+  const greeting = hour < 12 ? set[0] : hour < 17 ? set[1] : set[2];
+  if (name && name.trim()) return `${greeting}, ${name.trim()}`;
   return greeting;
 }
 

@@ -60,26 +60,22 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
 
 ## Features
 
-- 🕐 Gloria Hallelujah clock with AM/PM and date display
-- 👋 Personalized greeting with user name
-- 🔍 Search bar with engine picker (Google, Bing, DuckDuckGo, Brave, Perplexity)
-- 🎨 8 premium themes (Midnight, Deep Blue, Aurora, Rose Noir, Espresso, Forest, Carbon, Synthwave)
-- 🖼️ Wallpaper support (image URL + YouTube video)
-- ✅ Smart To-Do list with scribble strike animation and progress tracking
-- ⏱️ Pomodoro Timer with ambient sounds and notification alerts
-- 📝 Notes panel with rich text support
-- 🗂️ Tabs manager with live sync
-- 🧩 Extensions manager panel
-- 📋 Clipboard history — last 20 items
-- 🔗 Quick Links with drag-to-reorder (sidebar dock + bottom row)
-- 🔗 Quick Link management panel with 50-app preset library
-- 🎛️ Layout editor — drag any widget to customize your dashboard
-- 🧘 Zen Mode — single-click distraction-free experience
-- 💾 Full data export + import (JSON backup/restore)
-- ✨ Premium entry animation (sub-800ms, staggered)
-- 🌌 Grain texture overlay
-- 🎓 First-run onboarding flow
-- 🔔 Toast notification system
+- **Dynamic Background Brightness Adaptation:** Automatically samples wallpaper luminosity (Canvas BT.709) and flips text/UI colors to dark mode on bright backgrounds to maintain legibility.
+- **Total Blackout Zen Mode:** Single-click distraction-free experience featuring a pure #000 background and a massive retro-mechanical flip clock.
+- **Glassmorphism Architecture:** Custom CSS variables for mathematically perfect blur (16px), fill (0.04), and border offsets, with dynamic text-depth shadowing.
+- **Accessibility Engine:** Respects OS-level `prefers-reduced-transparency` (renders solid opaque panels) and `prefers-reduced-motion` settings.
+- **Productivity Suite (Quick Tools Panel):**
+  - ✅ **Smart Tasks:** Scribble strike animations, progress tracking, and reward states.
+  - ⏱️ **Pomodoro Timer:** Ambient sounds and dynamic focus states.
+  - 📝 **Notes:** Persistent draft saving via `chrome.storage.local`.
+  - 🗂️ **Tabs Manager:** Live DOM-synced open tab management.
+  - 🧩 **Extensions Manager:** Full `chrome.management` interface.
+  - 📋 **Clipboard Manager:** Caches the last 20 copied items.
+- **Quick Links System:** Native drag-to-reorder layout, 50-app SVG library with `evenodd` clipping, and 128px fallback icon rendering (desaturated & inverted).
+- **Personalization Engine:** 8 premium baseline themes, custom YouTube video ambient background support, and user greeting toggles.
+- **Search Command:** Google, Bing, DuckDuckGo, Brave, and Perplexity support, with a privacy-focused History toggle.
+- **Data Sovereignty:** 100% localized standard. JSON Export/Import for backup workflows.
+- **Performance First:** Sub-100ms load times, CSS `will-change` hardware acceleration, zero React/framework overhead, and custom `cubic-bezier(0.16, 1, 0.3, 1)` motion curves.
 
 ### Tasks Panel (Top-Right)
 

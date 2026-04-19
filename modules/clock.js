@@ -37,7 +37,7 @@ function updateDate(date) {
   const el = DOM.date;
   if (!el) return;
 
-  el.textContent = date.toLocaleDateString('en-US', {
+  el.textContent = date.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric'

@@ -10,7 +10,7 @@ let editingNote = null;
 let noteMenuCleanup = null;
 
 const STARTER_NOTE_SEEDED_KEY = 'notesStarterSeeded';
-const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   weekday: 'long',
   month: 'long',
   day: 'numeric',
@@ -19,12 +19,12 @@ const NOTE_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
   minute: '2-digit',
   hour12: true,
 });
-const NOTE_LIST_DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
+const NOTE_LIST_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
 });
-const NOTE_LIST_TIME_FORMATTER = new Intl.DateTimeFormat('en-US', {
+const NOTE_LIST_TIME_FORMATTER = new Intl.DateTimeFormat(undefined, {
   hour: 'numeric',
   minute: '2-digit',
   hour12: true,

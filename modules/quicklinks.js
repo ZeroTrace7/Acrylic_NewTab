@@ -211,7 +211,7 @@ function renderFallbackIcon(iconEl, link) {
       iconEl.innerHTML = iconData;
     } else if (iconData && iconData.path) {
       const vb = iconData.viewBox || '0 0 24 24';
-      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white"><path d="${iconData.path}"/></svg>`;
+      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
     }
     const svgEl = iconEl.querySelector('svg');
     if (svgEl) svgEl.style.cssText = 'width:22px;height:22px;opacity:0.9;';
@@ -302,7 +302,7 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
       iconEl.innerHTML = iconData;
     } else if (iconData && iconData.path) {
       const vb = iconData.viewBox || '0 0 24 24';
-      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white"><path d="${iconData.path}"/></svg>`;
+      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
     }
     const svgEl = iconEl.querySelector('svg');
     if (svgEl) svgEl.style.cssText = 'width:22px;height:22px;opacity:0.9;';
@@ -316,7 +316,7 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
   const fallbackUrl = getFaviconFallbackUrl(link?.url || '');
 
   const img = document.createElement('img');
-  img.className = 'quicklink-color-favicon';
+  img.className = 'quicklink-color-favicon fallback-icon';
   img.src = primaryUrl;
   img.alt = '';
   img.loading = 'lazy';
@@ -847,7 +847,7 @@ function createManageLibraryTile(entry) {
     tile.innerHTML = iconData;
   } else if (iconData && iconData.path) {
     const vb = iconData.viewBox || '0 0 24 24';
-    tile.innerHTML = `<svg viewBox="${vb}" fill="white"><path d="${iconData.path}"/></svg>`;
+    tile.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
   }
   const svg = tile.querySelector('svg');
   if (svg) svg.style.cssText = 'width:17px;height:17px;opacity:0.85;display:block;';
@@ -1066,7 +1066,6 @@ function buildManagePanelAddedSection() {
   
   manageAddedGridEl = document.createElement('div');
   manageAddedGridEl.className = 'manage-links-grid manage-links-added-grid';
-  manageAddedGridEl.style.cssText = 'display:grid;grid-template-columns:repeat(4, 1fr);gap:10px;padding:2px 0 0 0;';
   manageAddedGridEl.style.marginBottom = '0';
   manageAddedGridEl.style.paddingBottom = '0';
   
@@ -1257,14 +1256,9 @@ function buildManagePanelLibrary() {
   manageLibraryGridEl = document.createElement('div');
   manageLibraryGridEl.className = 'manage-links-grid manage-links-library-grid';
   manageLibraryGridEl.style.cssText = `
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
-    width: 100%;
     max-height: 204px;
     overflow-y: auto;
     overflow-x: hidden;
-    justify-items: center;
     padding: 2px 4px 6px 0;
   `;
   return manageLibraryGridEl;

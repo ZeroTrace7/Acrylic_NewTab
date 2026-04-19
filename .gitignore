@@ -44,3 +44,23 @@ readfirst.md
 
 
 Improvements.md
+
+# Development diffs
+*.diff
+
+# Internal documentation (not for CWS package)
+Launching.md
+AGENTS.md
+glassy.md
+
+# Build/fetch tooling (dev-only scripts)
+fetch-icons.js
+icon-paths.json
+
+# UI snapshots
+.tmp_ui_before/
+
+# CWS submission reference materials
+store/
+
+

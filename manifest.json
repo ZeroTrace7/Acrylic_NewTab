@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Acrylic - New Tab",
   "version": "1.0.0",
-  "description": "Crystal-clear productivity. The most beautiful glassmorphism dashboard for Chrome.",
+  "description": "Premium glassmorphism New Tab page. Boost productivity with tasks, Pomodoro, notes, and custom themes. Fast, free, and zero tracking.",
 
   "chrome_url_overrides": {
     "newtab": "newtab.html"

@@ -229,9 +229,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await chrome.alarms.create('dailyReset', { when: new Date().setHours(24, 0, 0, 0), periodInMinutes: 1440 });
     await chrome.contextMenus.removeAll();
     chrome.contextMenus.create({ id: 'addToNotes', title: 'Save to Acrylic Notes', contexts: ['selection'] });
-    if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-      chrome.runtime.setUninstallURL('https://example.com/uninstall');
-    }
+    // Uninstall feedback URL — will be added in v1.1 with a real feedback form
   } catch (err) { console.error('Install handler error:', err); }
 });
 

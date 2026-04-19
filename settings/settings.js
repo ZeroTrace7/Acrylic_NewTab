@@ -294,8 +294,8 @@ function buildAboutSection() {
   rateCard.className = 'about-card about-card-feature';
   rateCard.setAttribute('aria-label', 'Rate Acrylic on the Chrome Web Store');
   rateCard.onclick = () => {
-    // TODO: replace '#' with Chrome Web Store URL when Acrylic is published
-    window.open('#', '_blank', 'noopener');
+    // TODO: replace EXTENSION_ID_HERE with actual CWS extension ID after publishing
+    window.open('https://chromewebstore.google.com/detail/EXTENSION_ID_HERE/reviews', '_blank', 'noopener');
   };
   const rateIcon = document.createElement('div');
   rateIcon.className = 'about-card-feature-icon';
