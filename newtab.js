@@ -48,9 +48,6 @@ function armEntryAnimation() {
 
 async function initApp() {
   try {
-    // Set locale-aware lang attribute (HTML fallback is "en", JS upgrades to actual browser locale)
-    document.documentElement.lang = navigator.language || 'en';
-
     document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
     document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
     document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);

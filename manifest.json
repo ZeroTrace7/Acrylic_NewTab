@@ -3,6 +3,7 @@
   "name": "Acrylic - New Tab",
   "version": "1.0.0",
   "description": "Premium glassmorphism New Tab page. Boost productivity with tasks, Pomodoro, notes, and custom themes. Fast, free, and zero tracking.",
+  "default_locale": "en",
 
   "chrome_url_overrides": {
     "newtab": "newtab.html"
