@@ -17,6 +17,7 @@ const ENGINES = [
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://claude.ai/favicon.ico' },
   { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'https://grok.com/favicon.ico' },
   { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/favicon.ico' },
+  { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
   { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'https://duckduckgo.com/favicon.ico' },
   { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'https://brave.com/favicon.ico' },
   { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'https://www.youtube.com/favicon.ico' },

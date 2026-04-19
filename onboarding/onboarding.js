@@ -26,6 +26,7 @@ const ENGINES = [
   { id: 'claude', group: 'assistants', name: 'Claude', desc: 'Thoughtful long-form responses and deep writing support' },
   { id: 'grok', group: 'assistants', name: 'Grok', desc: 'Fast conversational search with a live-web leaning workflow' },
   { id: 'google', group: 'search', name: 'Google', desc: "The world's most popular search engine" },
+  { id: 'bing', group: 'search', name: 'Bing', desc: "Microsoft's search engine with strong image and Copilot integration" },
   { id: 'duckduckgo', group: 'search', name: 'DuckDuckGo', desc: 'Privacy-first search with no tracking by default' },
   { id: 'brave', group: 'search', name: 'Brave', desc: 'Independent private search with a clean results page' },
   { id: 'youtube', group: 'search', name: 'YouTube', desc: 'Jump straight into video discovery and visual how-tos' },
