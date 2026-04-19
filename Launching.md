@@ -29,6 +29,14 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 ### Launch Preparation
 *   **Featured Badge Pitch:** Self-nomination narrative drafted and saved to `store/featured_badge_pitch.txt`. Highlights MV3 cold-start solution, zero-paywall architecture, sub-100ms load, and MIT license.
 
+### Tier 1 Geo-Optimization (v1.0 — No `_locales/` Required)
+*   **Runtime Locale Detection:** `newtab.js` sets `document.documentElement.lang = navigator.language` at startup. HTML fallback remains `lang="en"` for SSR/crawlers.
+*   **Locale-Aware Dates:** Stripped all 6 hardcoded `'en-US'` locale strings from `clock.js`, `utils.js`, `newtab.js` (Zen Mode), and `notes.js`. Replaced with `undefined` so the browser renders dates in the user's native format (e.g., "2026年4月19日" for Japanese, "Sonntag, 19. April" for German).
+*   **Locale-Aware Greetings:** Replaced hardcoded English `Good morning/afternoon/evening` in `utils.js` with a 10-language `GREETINGS` lookup table using `navigator.language` (en, es, fr, de, pt, ja, zh, ko, ar, hi).
+*   **CSS Logical Properties:** Replaced all `margin-left` → `margin-inline-start` and `text-align: left` → `text-align: start` across `newtab.css`, `components.css`, and `quicktools.css` (6 locations). RTL layouts now auto-flip correctly.
+*   **RTL Shadow Inversion:** Added `--shadow-x-sm` / `--shadow-x-lg` CSS variables to `:root` and a `[dir="rtl"]` block that inverts them. Glassmorphism light-source direction stays consistent in Arabic/Hebrew.
+*   **Zen Mode Date Fix:** Removed `.toUpperCase()` from Zen Mode date — uppercasing breaks non-Latin scripts (Japanese, Arabic, Chinese).
+
 ---
 
 ## ⏳ REMAINING TASKS — BEFORE CWS SUBMISSION
