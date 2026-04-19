@@ -59,7 +59,6 @@ Acrylic requests only the minimum browser permissions necessary for its core fun
 |---|---|
 | `storage` | Save your preferences, tasks, notes, and Quick Links locally |
 | `search` | Enable the integrated search bar |
-| `tabs` | Power the Tabs panel in Quick Tools |
 | `topSites` | Display your most-visited sites in the bottom Quick Links row |
 | `notifications` | Alert you when a Pomodoro timer session completes |
 | `alarms` | Schedule Pomodoro timer intervals and daily statistic resets |
@@ -67,7 +66,13 @@ Acrylic requests only the minimum browser permissions necessary for its core fun
 | `offscreen` | Play Pomodoro ambient sounds in the background |
 | `management` | Power the Extensions panel in Quick Tools |
 
-No permission is used to read, modify, or monitor your browsing activity. The `tabs` and `management` permissions are used solely to display open tabs and installed extensions within Acrylic's Quick Tools panel — they are **never** used to track or log your browsing history.
+**Optional permissions (requested at runtime only when needed):**
+
+| Permission | Why It's Needed |
+|---|---|
+| `tabs` | Power the Tabs panel in Quick Tools — **only requested when you open the Tab Manager for the first time** |
+
+No permission is used to read, modify, or monitor your browsing activity. The `tabs` permission is only requested on-demand when you actively choose to use the Tab Manager feature. The `management` permission is used solely to display installed extensions within Acrylic's Quick Tools panel — it is **never** used to track or log your browsing history.
 
 ---
 

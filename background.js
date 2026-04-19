@@ -179,24 +179,36 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     return true;
   }
   if (msg.type === 'GET_TABS') {
-    try {
-      chrome.tabs.query({ currentWindow: true }, (tabs) => {
-        if (chrome.runtime?.lastError) {
-          respond({ status: 'error', message: chrome.runtime.lastError.message });
-          return;
-        }
-        respond({ status: 'ok', tabs });
-      });
-    } catch (error) {
-      respond({ status: 'error', message: error?.message || 'GET_TABS failed' });
-    }
+    chrome.permissions.contains({ permissions: ['tabs'] }, (has) => {
+      if (!has) {
+        respond({ status: 'error', message: 'tabs permission not granted' });
+        return;
+      }
+      try {
+        chrome.tabs.query({ currentWindow: true }, (tabs) => {
+          if (chrome.runtime?.lastError) {
+            respond({ status: 'error', message: chrome.runtime.lastError.message });
+            return;
+          }
+          respond({ status: 'ok', tabs });
+        });
+      } catch (error) {
+        respond({ status: 'error', message: error?.message || 'GET_TABS failed' });
+      }
+    });
     return true;
   }
   if (msg.type === 'CREATE_TAB') {
-    chrome.tabs
-      .create({ url: msg.url })
-      .then(() => respond({ status: 'ok' }))
-      .catch((error) => respond({ status: 'error', message: error?.message || 'CREATE_TAB failed' }));
+    chrome.permissions.contains({ permissions: ['tabs'] }, (has) => {
+      if (!has) {
+        respond({ status: 'error', message: 'tabs permission not granted' });
+        return;
+      }
+      chrome.tabs
+        .create({ url: msg.url })
+        .then(() => respond({ status: 'ok' }))
+        .catch((error) => respond({ status: 'error', message: error?.message || 'CREATE_TAB failed' }));
+    });
     return true;
   }
   if (msg.command === 'syncYouTubeRule') {

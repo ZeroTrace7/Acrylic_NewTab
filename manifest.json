@@ -31,7 +31,6 @@
   "permissions": [
     "storage",
     "search",
-    "tabs",
     "topSites",
     "notifications",
     "alarms",
@@ -41,6 +40,7 @@
   ],
 
   "optional_permissions": [
+    "tabs",
     "declarativeNetRequestWithHostAccess"
   ],
 

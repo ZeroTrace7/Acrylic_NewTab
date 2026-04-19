@@ -1,6 +1,7 @@
 import { Store } from '../modules/storage.js';
 import { truncate, generateId, getDomain, debounce } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
+import { hasTabsPermission, requestTabsPermission } from '../modules/permissions.js';
 
 let containerEl = null;
 let openTabs = [];
@@ -483,11 +484,74 @@ async function clearAllGroups() {
   }
 }
 
+/**
+ * Renders the glassmorphism permission-gate UI when 'tabs' permission
+ * has not yet been granted. The button must be wired to a direct click
+ * event to satisfy Chrome's user-gesture requirement for runtime requests.
+ */
+function renderPermissionGate(container, onGranted) {
+  container.innerHTML = '';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'qt-empty';
+  wrapper.style.padding = '48px 24px';
+
+  // Lock icon
+  wrapper.insertAdjacentHTML('beforeend', `
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+         stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+         style="margin-bottom:16px;opacity:0.5;">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+  `);
+
+  const title = document.createElement('p');
+  title.textContent = 'Tab Manager';
+  title.style.cssText = 'font-size:0.95rem;font-weight:600;color:var(--text-primary);margin-bottom:8px;font-family:var(--font-ui),sans-serif;';
+  wrapper.appendChild(title);
+
+  const desc = document.createElement('p');
+  desc.textContent = 'Acrylic needs permission to manage your open tabs. This data is stored 100% locally and is never transmitted.';
+  desc.style.cssText = 'font-size:0.78rem;color:var(--text-muted);line-height:1.5;max-width:280px;margin-bottom:20px;';
+  wrapper.appendChild(desc);
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = 'Grant Permission';
+  btn.className = 'qt-btn qt-btn-primary';
+  btn.style.cssText = 'padding:8px 20px;font-size:0.82rem;';
+  btn.onclick = async () => {
+    btn.disabled = true;
+    btn.textContent = 'Requesting...';
+    const granted = await requestTabsPermission();
+    if (granted) {
+      onGranted();
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Grant Permission';
+      toast.info('Permission not granted. You can try again anytime.');
+    }
+  };
+  wrapper.appendChild(btn);
+
+  container.appendChild(wrapper);
+}
+
 export async function initTabs(container) {
   containerEl = container;
   groupNameInput = '';
   searchQuery = '';
   stopLiveSync();
+
+  // Permission gatekeeper — check before touching chrome.tabs
+  const permitted = await hasTabsPermission();
+  if (!permitted) {
+    renderPermissionGate(container, () => initTabs(container));
+    return () => {
+      if (containerEl === container) containerEl = null;
+    };
+  }
 
   containerEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:32px 0;">Loading tabs...</div>`;
 
