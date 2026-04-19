@@ -12,7 +12,7 @@ const ENGINE_GROUPS = [
 ];
 
 const ENGINES = [
-  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'https://www.perplexity.ai/favicon.ico' },
+  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
   { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'https://chatgpt.com/favicon.ico' },
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://claude.ai/favicon.ico' },
   { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'https://grok.com/favicon.ico' },

@@ -7,12 +7,12 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 ## ✅ COMPLETED TASKS
 
 ### Store SEO — Text Assets
-*   **Title:** Executive decision — kept as `"Acrylic - New Tab"`.
-*   **Summary (132-char):** Manifest `description` updated to: `"Premium glassmorphism New Tab page. Boost productivity with tasks, Pomodoro, notes, and custom themes. Fast, free, and zero tracking."` (131 chars).
-*   **Long Description (4,000-char):** SEO-optimized CWS description drafted with high fact density, all 8 themes, full feature enumeration, and competitive positioning keywords. Saved to `store/cws_long_description.txt` (3,703 chars). Copy-paste into the Developer Dashboard at submission time.
+*   **Title:** Executive decision — kept as `"Acrylic - New Tab"`. Front-loaded brand with primary keyword ("New Tab") for CWS TF-IDF indexing.
+*   **Summary (132-char):** Manifest `description` updated to: `"Premium glassmorphism New Tab. Tasks, Pomodoro timer, notes, and 8 themes built in. Sub-100ms load. Free forever. Zero tracking."` (128 chars). Optimized for entity density ("Pomodoro timer" > "Pomodoro", "8 themes" > "custom themes", "Sub-100ms" > "Fast").
+*   **Long Description:** Semantic long description rewritten with 150-word hook, implicit "Momentum alternative" entity clustering, 9 search engines listed (including ChatGPT, Claude, Grok, Perplexity), per-permission justification block, and Clipboard History feature. Saved to `store/cws_long_description.txt`. Copy-paste into the Developer Dashboard at submission time.
 
 ### Compliance & Legal
-*   **Privacy Policy:** Comprehensive zero-collection privacy policy created at `PRIVACY_POLICY.md`. Covers data storage, permissions justification, network requests, children's privacy, and data export/deletion rights.
+*   **Privacy Policy:** NLP-optimized privacy policy at `PRIVACY_POLICY.md`. Contains 12-category explicit data denial list, per-permission justification table with "Data Transmission" column (7 static + 2 optional + host permissions), Google-mandated Limited Use compliance string (§6), and GitHub Pages hosting infrastructure disclaimer (§10). Synchronized 1:1 against `manifest.json`.
 *   **MIT License:** Standard MIT license file created at `LICENSE` (copyright 2026, Shreyash Gupta). README badge now links to a real file.
 *   **Manifest V3 Compliance:** Extension is natively MV3 — `"manifest_version": 3` confirmed.
 
@@ -37,38 +37,12 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 *   **RTL Shadow Inversion:** Added `--shadow-x-sm` / `--shadow-x-lg` CSS variables to `:root` and a `[dir="rtl"]` block that inverts them. Glassmorphism light-source direction stays consistent in Arabic/Hebrew.
 *   **Zen Mode Date Fix:** Removed `.toUpperCase()` from Zen Mode date — uppercasing breaks non-Latin scripts (Japanese, Arabic, Chinese).
 
----
+### Permission Optimization (CWS Conversion Rate)
+*   **`tabs` → Optional:** Moved from static `permissions` to `optional_permissions`. Created `modules/permissions.js` with `hasTabsPermission()` / `requestTabsPermission()` helpers. Added glassmorphism permission-gate UI to `panels/tabs.js` — renders a lock icon + "Grant Permission" button when user first opens Tab Manager. Background service worker (`background.js`) `GET_TABS` and `CREATE_TAB` handlers wrapped in `chrome.permissions.contains()` guard. Eliminates the "Read your browsing history" install warning.
+*   **`search` → Removed:** Phantom permission — declared in manifest but never used in codebase (search bar uses `window.location.href`, not `chrome.search.query()`). Removed from `manifest.json`, `PRIVACY_POLICY.md`, and `Launching.md` to eliminate shadowban risk.
 
-## ⏳ REMAINING TASKS — BEFORE CWS SUBMISSION
-
-These must be done before you click "Publish" in the Developer Dashboard.
-
-### 1. Host the Privacy Policy at a Public URL
-The `PRIVACY_POLICY.md` file exists but Google requires a **live, publicly accessible URL** in the Developer Dashboard.
-*   **Recommended:** Enable GitHub Pages on the repo → host at `yourusername.github.io/Acrylic/privacy`
-*   **Quick alternative:** Use the raw GitHub URL: `https://raw.githubusercontent.com/YOUR_USERNAME/Acrylic/main/PRIVACY_POLICY.md`
-*   Paste the chosen URL into the CWS Developer Dashboard under "Privacy practices" → "Privacy Policy URL"
-
-### 2. Create Visual Assets
-These are uploaded directly to the Developer Dashboard — not part of the codebase.
-
-*   **Store Icon (128x128):** Already exists at `icons/icon128.png` ✅ — verify it is crisp at small sizes
-*   **Screenshots (1280x800):** Create up to 5 screenshots showing:
-    1.  Main dashboard with glassmorphism theme and clock
-    2.  Floating glass to-do panel with tasks
-    3.  Quick Links sidebar dock + Manage panel
-    4.  Pomodoro timer in action
-    5.  Theme showcase (e.g., Aurora vs. Midnight)
-*   **Small Promo Tile (440x280):** Saturated colors, no text clutter, must be legible at 50% scale
-*   **Large Promo Tile (920x680):** Optional but recommended
-*   **Marquee Image (1400x560):** Required for Featured badge eligibility — well-defined edges, minimal text
-*   **YouTube Promo Video (optional):** 15-30 second screen recording of entry animations, theme switching, and Pomodoro flow
-
-### 3. Paste Long Description into Developer Dashboard
-*   Open `store/cws_long_description.txt` and copy-paste the full text into the "Detailed description" field in the CWS Developer Dashboard
-
-### 4. Review Permissions Before Submission
-Current static permissions in `manifest.json`:
+### Final Permission State
+Static permissions:
 ```
 storage, topSites, notifications, alarms, contextMenus, offscreen, management
 ```
@@ -76,9 +50,44 @@ Optional permissions (requested at runtime):
 ```
 tabs, declarativeNetRequestWithHostAccess
 ```
-*   ✅ `tabs` has been moved to `optional_permissions` with a runtime permission gate in `panels/tabs.js` — eliminates the "Read your browsing history" install warning
-*   ✅ `search` has been **removed entirely** — was a phantom permission (the search bar uses `window.location.href`, not `chrome.search.query()`)
 *   ⚠️ `management` triggers a "Manage your apps, extensions, and themes" warning — consider moving to `optional_permissions` in v1.1 (same pattern as `tabs`)
+
+---
+
+## ⏳ REMAINING TASKS — BEFORE CWS SUBMISSION
+
+These must be done before you click "Publish" in the Developer Dashboard. **All items are non-code — visual assets and Dashboard configuration only.**
+
+### 1. Host the Privacy Policy at a Public URL
+The `PRIVACY_POLICY.md` file exists but Google requires a **live, publicly accessible URL** in the Developer Dashboard.
+*   **Recommended:** Purchase a custom domain (`acrylictab.com`), map to GitHub Pages, host at `https://acrylictab.com/PRIVACY_POLICY`
+*   **Quick alternative:** Use the raw GitHub URL: `https://raw.githubusercontent.com/ZeroTrace7/Acrylic_NewTab/main/PRIVACY_POLICY.md`
+*   Paste the chosen URL into the CWS Developer Dashboard under "Privacy practices" → "Privacy Policy URL"
+
+### 2. Design Visual Assets (Figma)
+These are uploaded directly to the Developer Dashboard — not part of the codebase.
+
+*   **Store Icon (128x128):** Already exists at `icons/icon128.png` ✅ — 96×96 safe zone with 16px transparent padding, verified clean at 16×16 downscale
+*   **Screenshots (1280×800) — 5 required, full-bleed, zero padding:**
+    1.  **Hero Shot:** Full dashboard on `midnight` or `deep-blue` theme — clock, greeting, search bar, sidebar dock, bottom row. Annotation: "Premium Glassmorphism Dashboard" (40px Geist)
+    2.  **Productivity Suite:** Quick Tools panel open showing Tasks with scribble-strike completion. Annotation: "Built-In Productivity Suite"
+    3.  **Quick Links Dock:** Sidebar dock + Manage panel with 50-app preset library visible. Annotation: "50+ App Presets · Drag to Reorder"
+    4.  **Pomodoro Focus:** Timer panel active mid-session with ambient sound selector visible. Annotation: "Integrated Pomodoro Timer"
+    5.  **Theme Showcase:** 2×4 grid composite of all 8 themes, or `aurora` theme with search bar. Annotation: "8 Premium Themes"
+*   **Small Promo Tile (440×280):** Aurora/Synthwave gradient, "Acrylic" in Geist 48px, subtitle 22px. No UI mockups — too small.
+*   **Marquee Image (1400×560):** Center safe zone = **980×336 px**. Dead zones: top 56px (breadcrumbs), bottom 112px (install button), left/right 210px (bleed). Place logotype + hero mockup in center safe zone only.
+
+### 3. Paste Long Description into Developer Dashboard
+*   Open `store/cws_long_description.txt` and copy-paste the full text into the "Detailed description" field
+*   In the "Privacy practices" tab, **uncheck all data collection boxes** — Acrylic collects none
+*   Check the **"Limited Use requirements"** certification checkbox
+
+### 4. Localized Store Listings (Dashboard Only — No Code)
+Paste these translated short descriptions into the CWS Developer Dashboard language tabs:
+
+*   🇩🇪 **German:** `Glassmorphismus-Startseite für neue Tabs. Produktiv mit Aufgaben, Pomodoro, Notizen und Themes. Schnell, kostenlos, ohne Tracking.`
+*   🇯🇵 **Japanese:** `美しいグラスモーフィズムの新しいタブ。タスク管理、ポモドーロ、メモ、カスタムテーマで生産性アップ。高速・無料・トラッキングゼロ。`
+*   🇪🇸 **Spanish:** `Página de nueva pestaña con glassmorphism premium. Tareas, Pomodoro, notas y temas personalizados. Rápida, gratuita y sin rastreo.`
 
 ---
 
@@ -125,10 +134,10 @@ The pitch is ready at `store/featured_badge_pitch.txt`.
 *   **Note:** You can only self-nominate once every 6 months — make sure the listing is flawless before submitting
 
 ### 8. Identity Verification (Established Publisher Badge)
-*   Navigate to the CWS Developer Dashboard account settings
-*   Submit government-issued photo ID (Aadhaar/PAN/Passport) + proof of address (utility bill/bank statement)
+*   Purchase custom domain (`acrylictab.com`), map to GitHub Pages, verify in Google Search Console
+*   Register as "Official URL" in CWS Developer Dashboard → Account → Publisher information
+*   Submit government-issued photo ID (Aadhaar/PAN/Passport) + proof of address
 *   The "Established Publisher" checkmark is granted algorithmically after verification + several months of clean track record
-*   This badge significantly increases install conversion rates for privacy-sensitive users
 
 ### 9. Software Directory Listings
 Create profiles on high-domain-authority directories for backlinks and AI citation:
@@ -145,7 +154,9 @@ The CWS does *not* auto-translate your SEO data.
 
 ---
 
-## ⏳ REMAINING TASKS — LONG-TERM GROWTH (v2.0+)
+## 📋 POST-LAUNCH ROADMAP — v2.0+ (Code Changes Deferred)
+
+All items below require code changes and are explicitly deferred to post-launch. They do not block the v1.0 CWS submission.
 
 ### 11. Deep In-Extension Localization (v2.1)
 *   Scaffold `_locales/` directory with `chrome.i18n` API integration
