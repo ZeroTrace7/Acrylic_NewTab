@@ -2,7 +2,6 @@ import { Prefs } from '../modules/storage.js';
 import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
 import { bus } from '../modules/event-bus.js';
-import { UI_CONFIG } from '../modules/ui-config.js';
 import { DOM } from '../modules/dom.js';
 import { resetLayoutOffsets, setLayoutEditMode, setTextDepth } from '../modules/preferences.js';
 
@@ -818,10 +817,6 @@ async function openSettings(callback) {
     closeModalTimer = 0;
   }
   prefs = await Prefs.getAll();
-  document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
-  document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
-  document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
-  document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
   modalEl = buildModal();
   (DOM.settingsModalMount || document.body).appendChild(modalEl);
   if (openModalRaf) {

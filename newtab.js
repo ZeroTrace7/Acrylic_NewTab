@@ -7,7 +7,6 @@ import { Prefs }          from './modules/storage.js';
 import { toast }          from './modules/toast.js';
 import { DOM }            from './modules/dom.js';
 import { bus }            from './modules/event-bus.js';
-import { UI_CONFIG }      from './modules/ui-config.js';
 import { initPreferences } from './modules/preferences.js';
 
 let settingsOpen = false;
@@ -48,11 +47,6 @@ function armEntryAnimation() {
 
 async function initApp() {
   try {
-    document.documentElement.style.setProperty('--clock-top', UI_CONFIG.clockTop);
-    document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
-    document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
-    document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
-
     // Step 1 — Background first (theme/wallpaper before UI paints)
     await initBackground();
 
