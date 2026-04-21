@@ -205,10 +205,38 @@ function syncAssistantMode() {
   syncPromptExpansion();
 }
 
+let _promptExpansionTimer = 0;
+
 function syncPromptExpansion() {
   const isAssistant = isAssistantEngine(currentEngine);
   const hasText = DOM.searchInput?.value.trim().length > 0;
-  document.body.classList.toggle('ai-prompt-active', isAssistant && hasText);
+  const shouldExpand = isAssistant && hasText;
+  const isExpanded = document.body.classList.contains('ai-prompt-active');
+
+  /* No change needed */
+  if (shouldExpand === isExpanded) return;
+
+  const wrapper = DOM.searchWrapper;
+  if (!wrapper) {
+    document.body.classList.toggle('ai-prompt-active', shouldExpand);
+    return;
+  }
+
+  /* Cancel any in-flight transition */
+  clearTimeout(_promptExpansionTimer);
+
+  /* Phase 1 — fade out the inner content (140ms) */
+  wrapper.classList.add('mode-transitioning');
+
+  _promptExpansionTimer = setTimeout(() => {
+    /* Phase 2 — apply layout change while invisible */
+    document.body.classList.toggle('ai-prompt-active', shouldExpand);
+
+    /* Phase 3 — fade back in (180ms via CSS) */
+    requestAnimationFrame(() => {
+      wrapper.classList.remove('mode-transitioning');
+    });
+  }, 150);
 }
 
 function clearOptionHighlight() {
