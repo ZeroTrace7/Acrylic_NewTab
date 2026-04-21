@@ -9,7 +9,7 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 ### Store SEO — Text Assets
 *   **Title:** Executive decision — kept as `"Acrylic - New Tab"`. Front-loaded brand with primary keyword ("New Tab") for CWS TF-IDF indexing.
 *   **Summary (132-char):** Manifest `description` updated to: `"Premium glassmorphism New Tab. Tasks, Pomodoro timer, notes, and 8 themes built in. Sub-100ms load. Free forever. Zero tracking."` (128 chars). Optimized for entity density ("Pomodoro timer" > "Pomodoro", "8 themes" > "custom themes", "Sub-100ms" > "Fast").
-*   **Long Description:** Semantic long description rewritten with 150-word hook, implicit "Momentum alternative" entity clustering, 11 search engines listed (including ChatGPT, Claude, Grok, Perplexity, DeepSeek), per-permission justification block, and Clipboard History feature. Saved to `store/cws_long_description.txt`. Copy-paste into the Developer Dashboard at submission time.
+*   **Long Description:** Semantic long description rewritten with 150-word hook, implicit "Momentum alternative" entity clustering, 12 search engines listed (including Gemini, ChatGPT, Claude, Perplexity, Grok, DeepSeek), per-permission justification block, and Clipboard History feature. Saved to `store/cws_long_description.txt`. Copy-paste into the Developer Dashboard at submission time.
 
 ### Compliance & Legal
 *   **Privacy Policy:** NLP-optimized privacy policy at `PRIVACY_POLICY.md`. Contains 12-category explicit data denial list, per-permission justification table with "Data Transmission" column (7 static + 2 optional + host permissions), Google-mandated Limited Use compliance string (§6), and GitHub Pages hosting infrastructure disclaimer (§10). Synchronized 1:1 against `manifest.json`.

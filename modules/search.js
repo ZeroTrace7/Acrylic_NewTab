@@ -17,9 +17,10 @@ const ENGINE_GROUPS = [
 ];
 
 const ENGINES = [
-  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
+  { id: 'gemini', name: 'Gemini', group: 'assistants', url: 'https://gemini.google.com/app?q=', icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', iconSize: 22 },
   { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
+  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
   { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
   { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/', icon: 'icons/deepseek.png' },
   { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://api.iconify.design/logos:google-icon.svg' },
@@ -182,6 +183,8 @@ function setEngine(engine) {
       };
       icon.src = engine.icon;
       icon.alt = engine.name;
+      icon.width = engine.iconSize || 18;
+      icon.height = engine.iconSize || 18;
       icon.style.transform = 'scale(1.1)';
       setTimeout(() => { icon.style.transform = ''; }, 120);
     }, 100);
@@ -388,8 +391,8 @@ function buildPicker() {
         const img = document.createElement('img');
         img.src = engine.icon;
         img.alt = engine.name;
-        img.width = 18;
-        img.height = 18;
+        img.width = engine.iconSize || 18;
+        img.height = engine.iconSize || 18;
 
         const span = document.createElement('span');
         span.textContent = engine.name;
@@ -399,7 +402,7 @@ function buildPicker() {
         opt.addEventListener('click', () => {
           setEngine(engine);
           closePicker();
-          DOM.engineBtn?.focus();
+          DOM.searchInput?.focus();
         });
 
         list.appendChild(opt);
@@ -511,7 +514,10 @@ export async function initSearch() {
 
   if (input) {
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') triggerSearch(input.value);
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerSearch(input.value);
+      }
       if (e.key === 'Escape') closeHistoryPanel();
       if (e.key === 'ArrowDown' && getHistoryPanel()?.classList.contains('is-open')) {
         const firstSuggestion = getHistoryPanel()?.querySelector('.search-history-item');

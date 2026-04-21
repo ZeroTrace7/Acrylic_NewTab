@@ -246,6 +246,10 @@
   transform: translate(0, -24px) scale(0.915);
 }
 
+#app-body.ai-prompt-active .engine-picker-grid {
+  max-height: min(150px, calc(100vh - 380px));
+}
+
 .search-engine-btn {
   min-width: 42px;
   height: 38px;
