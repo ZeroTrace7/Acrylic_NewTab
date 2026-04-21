@@ -149,7 +149,7 @@
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 16px;
   box-shadow: 0 10px 34px rgba(0, 0, 0, 0.36);
-  min-height: 0;
+  min-height: 52px;
 }
 
 /* Expansion transitions — enabled by JS after entry animation completes */
@@ -170,13 +170,19 @@
   align-items: center;
   gap: var(--space-sm);
   padding: 6px 8px 6px 6px;
-  transition: opacity 180ms ease, padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search-input, .search-engine-btn, .search-submit {
+  transition: opacity 180ms ease, transform var(--dur-mid) var(--ease-glass);
 }
 
 /* Fade mask during mode switch — hides the layout reorganization */
-.search-wrapper.mode-transitioning {
-  opacity: 0;
-  transition: opacity 140ms ease;
+.search-wrapper.mode-transitioning .search-input,
+.search-wrapper.mode-transitioning .search-engine-btn,
+.search-wrapper.mode-transitioning .search-submit {
+  opacity: 0 !important;
+  transition: opacity 140ms ease !important;
 }
 
 #search-wrapper:focus-within {
