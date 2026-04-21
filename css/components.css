@@ -189,8 +189,11 @@
 }
 
 .search-engine-btn:hover {
-  background: transparent;
-  transform: none;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.search-engine-btn:active {
+  transform: scale(0.95);
 }
 
 .search-engine-btn img {
@@ -467,6 +470,28 @@
   opacity: 1;
   transform: translateY(0);
   transition-delay: var(--engine-option-delay, 0ms);
+}
+
+/* ── Exit choreography — smooth reverse cascade on close ── */
+.engine-picker:not(.is-open) .engine-option {
+  opacity: 0;
+  transform: translateY(6px);
+  transition-delay: 0ms;
+  transition-duration: 180ms;
+}
+
+.engine-picker:not(.is-open) .engine-picker-grid {
+  opacity: 0;
+  transform: translateY(6px);
+  transition-delay: 0ms;
+  transition-duration: 200ms;
+}
+
+.engine-picker:not(.is-open) .engine-picker-title {
+  opacity: 0;
+  transform: translateY(6px);
+  transition-delay: 0ms;
+  transition-duration: 160ms;
 }
 
 .search-history-panel {

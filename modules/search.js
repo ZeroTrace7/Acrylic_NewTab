@@ -19,7 +19,7 @@ const ENGINES = [
   { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
   { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
-  { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/search?q=', icon: 'icons/deepseek.png' },
+  { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/', icon: 'icons/deepseek.png' },
   { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://api.iconify.design/logos:google-icon.svg' },
   { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
   { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'icons/duckduckgo_color.png' },
@@ -169,12 +169,19 @@ function setEngine(engine) {
   currentEngine = engine;
   const icon = DOM.engineIcon;
   if (icon) {
-    icon.onerror = () => {
-      icon.onerror = null;
-      icon.src = FALLBACK_ENGINE_ICON;
-    };
-    icon.src = engine.icon;
-    icon.alt = engine.name;
+    /* Premium icon-swap micro-animation: shrink → swap → spring back */
+    icon.style.transition = 'transform 120ms ease';
+    icon.style.transform = 'scale(0.7)';
+    setTimeout(() => {
+      icon.onerror = () => {
+        icon.onerror = null;
+        icon.src = FALLBACK_ENGINE_ICON;
+      };
+      icon.src = engine.icon;
+      icon.alt = engine.name;
+      icon.style.transform = 'scale(1.1)';
+      setTimeout(() => { icon.style.transform = ''; }, 120);
+    }, 100);
   }
   Prefs.set('searchEngine', engine.id);
   updatePickerSelection();
