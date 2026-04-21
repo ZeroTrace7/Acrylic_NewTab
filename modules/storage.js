@@ -14,7 +14,7 @@ export const Prefs = {
     grainOpacity:    0.035,
     userName:        '',
     searchEngine:    'google',
-    searchHistory:   true,
+    searchHistory:   false,
     clockFormat:     '12h',
     dashboardFont:   'gloria',
     textDepth:       true,

@@ -561,6 +561,7 @@
 }
 
 .search-history-panel {
+  display: none !important;   /* Search history feature disabled */
   position: absolute;
   top: calc(100% + 12px);
   left: 0;

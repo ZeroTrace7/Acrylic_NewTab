@@ -34,7 +34,7 @@ let highlightedIndex = 0;
 let pickerOpenRaf = 0;
 let pickerOpenRaf2 = 0;
 let pickerFocusTimer = 0;
-let searchHistoryEnabled = true;
+let searchHistoryEnabled = false;
 let searchHistoryItems = [];
 
 function setSearchPickerUiState(isOpen) {
@@ -447,8 +447,8 @@ async function performSearch(query) {
 /** Initializes the search bar, engine picker, and all related event listeners. */
 export async function initSearch() {
   const savedId = await Prefs.get('searchEngine');
-  searchHistoryEnabled = await Prefs.get('searchHistory');
-  searchHistoryItems = await Store.getSearchHistory();
+  searchHistoryEnabled = false;          /* Search history permanently disabled */
+  searchHistoryItems = [];
   setEngine(getEngine(savedId));
   buildPicker();
 
