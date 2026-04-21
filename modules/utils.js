@@ -166,11 +166,13 @@ export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-/** Returns true if the string is a valid http: or https: URL, false otherwise. */
+/** Returns true if the string is a plausible http/https URL with a real domain, false otherwise. */
 export function isValidUrl(url) {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    /* A real domain must have at least one dot (e.g. google.com, example.org) */
+    return parsed.hostname.includes('.');
   } catch {
     return false;
   }
