@@ -386,11 +386,11 @@ async function focusTab(tabId) {
 
 async function closeTab(tabId) {
   try {
+    await chrome.tabs.remove(tabId);
     openTabs = openTabs.filter((tab) => tab.id !== tabId);
     renderAll({
       preserveSearchFocus: document.activeElement?.classList.contains('qt-search-input') === true,
     });
-    await chrome.tabs.remove(tabId);
   } catch {
     await refreshOpenTabs({
       preserveSearchFocus: document.activeElement?.classList.contains('qt-search-input') === true,
@@ -560,7 +560,7 @@ export async function initTabs(container) {
     Store.getTabGroups(),
   ]);
 
-  if (!containerEl || containerEl !== container) return undefined;
+  if (!containerEl || containerEl !== container) return () => { stopLiveSync(); };
 
   renderAll();
   startLiveSync();

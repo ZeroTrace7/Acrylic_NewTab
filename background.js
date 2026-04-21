@@ -178,39 +178,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
     respondWith(resetTimer(msg.mode), respond, 'resetTimer');
     return true;
   }
-  if (msg.type === 'GET_TABS') {
-    chrome.permissions.contains({ permissions: ['tabs'] }, (has) => {
-      if (!has) {
-        respond({ status: 'error', message: 'tabs permission not granted' });
-        return;
-      }
-      try {
-        chrome.tabs.query({ currentWindow: true }, (tabs) => {
-          if (chrome.runtime?.lastError) {
-            respond({ status: 'error', message: chrome.runtime.lastError.message });
-            return;
-          }
-          respond({ status: 'ok', tabs });
-        });
-      } catch (error) {
-        respond({ status: 'error', message: error?.message || 'GET_TABS failed' });
-      }
-    });
-    return true;
-  }
-  if (msg.type === 'CREATE_TAB') {
-    chrome.permissions.contains({ permissions: ['tabs'] }, (has) => {
-      if (!has) {
-        respond({ status: 'error', message: 'tabs permission not granted' });
-        return;
-      }
-      chrome.tabs
-        .create({ url: msg.url })
-        .then(() => respond({ status: 'ok' }))
-        .catch((error) => respond({ status: 'error', message: error?.message || 'CREATE_TAB failed' }));
-    });
-    return true;
-  }
+
   if (msg.command === 'syncYouTubeRule') {
     syncYouTubeEmbedRefererRule()
       .then(() => respond({ status: 'ok' }))

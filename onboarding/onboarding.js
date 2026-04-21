@@ -25,6 +25,7 @@ const ENGINES = [
   { id: 'chatgpt', group: 'assistants', name: 'ChatGPT', desc: 'Use ChatGPT as your primary assistant for open-ended queries' },
   { id: 'claude', group: 'assistants', name: 'Claude', desc: 'Thoughtful long-form responses and deep writing support' },
   { id: 'grok', group: 'assistants', name: 'Grok', desc: 'Fast conversational search with a live-web leaning workflow' },
+  { id: 'deepseek', group: 'assistants', name: 'DeepSeek', desc: 'Open-source AI with deep reasoning and transparent chain-of-thought' },
   { id: 'google', group: 'search', name: 'Google', desc: "The world's most popular search engine" },
   { id: 'bing', group: 'search', name: 'Bing', desc: "Microsoft's search engine with strong image and Copilot integration" },
   { id: 'duckduckgo', group: 'search', name: 'DuckDuckGo', desc: 'Privacy-first search with no tracking by default' },

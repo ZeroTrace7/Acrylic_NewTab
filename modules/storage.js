@@ -58,6 +58,7 @@ export const Prefs = {
     merged.clockFormat = normalizeClockFormat(merged.clockFormat);
     merged.dashboardFont = normalizeDashboardFont(merged.dashboardFont);
     merged.quickLinksMax = normalizeQuickLinksMax(merged.quickLinksMax);
+    merged.searchEngine = normalizeSearchEngine(merged.searchEngine);
     return merged;
   },
 
@@ -75,6 +76,10 @@ export const Prefs = {
       await chrome.storage.sync.set({ [key]: normalizeQuickLinksMax(value) });
       return;
     }
+    if (key === 'searchEngine') {
+      await chrome.storage.sync.set({ [key]: normalizeSearchEngine(value) });
+      return;
+    }
     await chrome.storage.sync.set({ [key]: value });
   },
 
@@ -84,6 +89,7 @@ export const Prefs = {
     if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
     if ('dashboardFont' in next) next.dashboardFont = normalizeDashboardFont(next.dashboardFont);
     if ('quickLinksMax' in next) next.quickLinksMax = normalizeQuickLinksMax(next.quickLinksMax);
+    if ('searchEngine' in next) next.searchEngine = normalizeSearchEngine(next.searchEngine);
     await chrome.storage.sync.set(next);
   },
 
@@ -113,6 +119,12 @@ function normalizeQuickLinksMax(value) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return 6;
   return Math.min(9, Math.max(4, Math.round(numeric)));
+}
+
+const VALID_ENGINE_IDS = ['perplexity', 'chatgpt', 'claude', 'grok', 'deepseek', 'google', 'bing', 'duckduckgo', 'brave', 'youtube'];
+
+function normalizeSearchEngine(value) {
+  return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'google';
 }
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────

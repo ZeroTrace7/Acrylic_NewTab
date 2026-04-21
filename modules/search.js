@@ -5,6 +5,9 @@ import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
 
 const DEFAULT_ENGINE_ID = 'google';
+const FALLBACK_ENGINE_ICON = 'data:image/svg+xml,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
+);
 
 const ENGINE_GROUPS = [
   { id: 'assistants', label: 'AI Assistants' },
@@ -165,7 +168,14 @@ function getEngine(id) {
 function setEngine(engine) {
   currentEngine = engine;
   const icon = DOM.engineIcon;
-  if (icon) { icon.src = engine.icon; icon.alt = engine.name; }
+  if (icon) {
+    icon.onerror = () => {
+      icon.onerror = null;
+      icon.src = FALLBACK_ENGINE_ICON;
+    };
+    icon.src = engine.icon;
+    icon.alt = engine.name;
+  }
   Prefs.set('searchEngine', engine.id);
   updatePickerSelection();
 }
@@ -223,7 +233,7 @@ function openPicker(focusList = false) {
   setSearchPickerUiState(true);
   DOM.engineBtn?.classList.add('is-open');
   DOM.engineBtn?.setAttribute('aria-expanded', 'true');
-  const activeIdx = ENGINES.findIndex((engine) => engine.id === currentEngine.id);
+  const activeIdx = getEngineOptions().findIndex((el) => el.dataset.engineId === currentEngine.id);
   highlightedIndex = activeIdx >= 0 ? activeIdx : 0;
 
   pickerOpenRaf = requestAnimationFrame(() => {
