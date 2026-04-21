@@ -152,8 +152,8 @@
   min-height: 0;
 }
 
-/* Expansion transitions — only after the entry animation completes */
-body.acrylic-loaded #search-wrapper {
+/* Expansion transitions — enabled by JS after entry animation completes */
+#search-wrapper.transitions-ready {
   transition:
     min-height 480ms cubic-bezier(0.16, 1, 0.3, 1),
     width 480ms cubic-bezier(0.16, 1, 0.3, 1),

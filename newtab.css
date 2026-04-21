@@ -266,7 +266,7 @@ button:disabled {
 }
 
 /* ────────────────────────────────────────────────────────────
-   SECTION 3.5 — Premium Entry Animation (sub-800ms)
+   SECTION 3.5 — Premium Entry Animation (~1.5s cinematic stagger)
    ──────────────────────────────────────────────────────────── */
 .anim-hidden {
   opacity: 0;
@@ -288,8 +288,8 @@ button:disabled {
 @keyframes acrylic-bg-bloom-in {
   from {
     opacity: 0;
-    transform: scale(1.085);
-    filter: blur(calc(var(--bg-blur-amount) + 1px));
+    transform: scale(1.10);
+    filter: blur(calc(var(--bg-blur-amount) + 2px));
   }
   to {
     opacity: 1;
@@ -299,56 +299,58 @@ button:disabled {
 }
 
 @keyframes acrylic-drop-in {
-  from { transform: translateY(-12px); }
+  from { transform: translateY(-20px); }
   to   { transform: translateY(0); }
 }
 
 @keyframes acrylic-rise-in {
-  from { transform: translateY(8px); }
+  from { transform: translateY(16px); }
   to   { transform: translateY(0); }
 }
 
 @keyframes acrylic-scale-in {
-  from { transform: scale(0.95); }
+  from { transform: scale(0.92); }
   to   { transform: scale(1); }
 }
 
 @keyframes acrylic-slide-left-in {
-  from { transform: translateX(-16px); }
+  from { transform: translateX(-20px); }
   to   { transform: translateX(0); }
 }
 
+/* ── Cinematic stagger: BG → Clock → Greeting → Search → Sidebar ── */
+
 body.acrylic-loaded #bg-layer.anim-bg {
-  animation: acrylic-bg-bloom-in 200ms ease 0ms both;
+  animation: acrylic-bg-bloom-in 700ms cubic-bezier(0.16, 1, 0.3, 1) 0ms both;
 }
 
 body.acrylic-loaded #bg-overlay.anim-bg {
-  animation: acrylic-fade-in 200ms ease 0ms both;
+  animation: acrylic-fade-in 600ms ease 80ms both;
 }
 
 body.acrylic-loaded .anim-clock {
   animation:
-    acrylic-fade-in 400ms ease 50ms both,
-    acrylic-drop-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 50ms both;
+    acrylic-fade-in 600ms ease 250ms both,
+    acrylic-drop-in 700ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
 }
 
 body.acrylic-loaded .anim-greeting {
   animation:
-    acrylic-fade-in 350ms ease 150ms both,
-    acrylic-rise-in 350ms cubic-bezier(0.16, 1, 0.3, 1) 150ms both;
+    acrylic-fade-in 550ms ease 480ms both,
+    acrylic-rise-in 650ms cubic-bezier(0.16, 1, 0.3, 1) 480ms both;
 }
 
 body.acrylic-loaded .anim-search {
   transform-origin: center center;
   animation:
-    acrylic-fade-in 350ms ease 200ms both,
-    acrylic-scale-in 350ms cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+    acrylic-fade-in 550ms ease 680ms both,
+    acrylic-scale-in 650ms cubic-bezier(0.16, 1, 0.3, 1) 680ms both;
 }
 
 body.acrylic-loaded .anim-sidebar {
   animation:
-    acrylic-fade-in 400ms ease 250ms both,
-    acrylic-slide-left-in 400ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+    acrylic-fade-in 600ms ease 860ms both,
+    acrylic-slide-left-in 700ms cubic-bezier(0.16, 1, 0.3, 1) 860ms both;
 }
 
 @media (prefers-reduced-motion: reduce) {

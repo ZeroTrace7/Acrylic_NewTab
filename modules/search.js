@@ -547,4 +547,7 @@ export async function initSearch() {
     closePicker();
     closeHistoryPanel();
   });
+
+  /* Enable smooth expansion transitions after entry animation completes */
+  setTimeout(() => searchWrapper?.classList.add('transitions-ready'), 1600);
 }
