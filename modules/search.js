@@ -8,6 +8,8 @@ const DEFAULT_ENGINE_ID = 'google';
 const FALLBACK_ENGINE_ICON = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
 );
+const SEARCH_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>';
+const SEND_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
 const ENGINE_GROUPS = [
   { id: 'assistants', label: 'AI Assistants' },
@@ -185,6 +187,28 @@ function setEngine(engine) {
   }
   Prefs.set('searchEngine', engine.id);
   updatePickerSelection();
+  syncAssistantMode();
+}
+
+function isAssistantEngine(engine) {
+  return engine?.group === 'assistants';
+}
+
+function syncAssistantMode() {
+  const isAssistant = isAssistantEngine(currentEngine);
+  const input = DOM.searchInput;
+  const submit = DOM.searchSubmit;
+  if (submit) submit.innerHTML = isAssistant ? SEND_ICON_SVG : SEARCH_ICON_SVG;
+  if (input && !input.value.startsWith('http')) {
+    input.placeholder = isAssistant ? `Message ${currentEngine.name}...` : 'Search anything...';
+  }
+  syncPromptExpansion();
+}
+
+function syncPromptExpansion() {
+  const isAssistant = isAssistantEngine(currentEngine);
+  const hasText = DOM.searchInput?.value.trim().length > 0;
+  document.body.classList.toggle('ai-prompt-active', isAssistant && hasText);
 }
 
 function clearOptionHighlight() {
@@ -469,7 +493,14 @@ export async function initSearch() {
       }
     });
     input.addEventListener('input', () => {
+      if (isAssistantEngine(currentEngine)) {
+        input.placeholder = `Message ${currentEngine.name}...`;
+        syncPromptExpansion();
+        closeHistoryPanel();
+        return;
+      }
       input.placeholder = input.value.startsWith('http') ? 'Press Enter to navigate...' : 'Search anything...';
+      syncPromptExpansion();
       if (!searchHistoryEnabled) return;
       if (!input.value.trim()) {
         openHistoryPanel('');
@@ -478,10 +509,15 @@ export async function initSearch() {
       openHistoryPanel(input.value);
     });
     input.addEventListener('focus', () => {
+      if (isAssistantEngine(currentEngine)) {
+        syncPromptExpansion();
+        return;
+      }
       if (!searchHistoryEnabled) return;
       openHistoryPanel(input.value);
     });
     input.addEventListener('click', () => {
+      if (isAssistantEngine(currentEngine)) return;
       if (!searchHistoryEnabled) return;
       openHistoryPanel(input.value);
     });
