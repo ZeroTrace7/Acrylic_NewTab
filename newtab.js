@@ -12,24 +12,7 @@ import { initPreferences } from './modules/preferences.js';
 
 let settingsOpen = false;
 
-function debugStylesheetBinding() {
-  const loadedStylesheets = [...document.styleSheets].map((s) => s.href);
 
-  const hasNewtabCss = loadedStylesheets.some(
-    (href) => typeof href === 'string' && href.includes('newtab.css')
-  );
-
-  if (!hasNewtabCss) {
-    const style = document.createElement('style');
-    style.textContent = `
-body.test-force-bg {
-  background: red !important;
-}
-`;
-    document.head.appendChild(style);
-    document.body.classList.add('test-force-bg');
-  }
-}
 
 function armEntryAnimation() {
   const apply = () => {

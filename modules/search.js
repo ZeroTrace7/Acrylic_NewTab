@@ -26,6 +26,7 @@ const ENGINES = [
   { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
   { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'icons/duckduckgo_color.png' },
   { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'icons/brave_color.png' },
+  { id: 'yandex', name: 'Yandex', group: 'search', url: 'https://yandex.com/search/?text=', icon: 'https://yandex.com/favicon.ico' },
   { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'icons/youtube_color.png' },
 ];
 

@@ -529,16 +529,7 @@ function buildDisplaySection() {
           renderDisplay();
         }
       ),
-      toggleRow(
-        'Search history',
-        'Show recent searches below the search bar',
-        prefs.searchHistory !== false,
-        async () => {
-          prefs.searchHistory = prefs.searchHistory === false;
-          await Prefs.set('searchHistory', prefs.searchHistory);
-          renderDisplay();
-        }
-      ),
+
       toggleRow(
         'Edit layout',
         'Open a drag editor for widgets and corner controls',

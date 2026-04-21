@@ -496,4 +496,14 @@ export async function initNotes(container) {
   }
 
   renderList();
+
+  return () => {
+    if (typeof noteMenuCleanup === 'function') {
+      noteMenuCleanup();
+      noteMenuCleanup = null;
+    }
+    if (containerEl === container) {
+      containerEl = null;
+    }
+  };
 }
