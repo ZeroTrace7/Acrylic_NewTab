@@ -10,7 +10,7 @@ export const Prefs = {
     theme:           'midnight',
     wallpaperUrl:    '',
     wallpaperBlur:   0,
-    wallpaperDarken: 0.45,
+    wallpaperDarken: 0.3,
     grainOpacity:    0.035,
     userName:        '',
     searchEngine:    'google',

@@ -75,12 +75,12 @@ function measureImageBrightness(imageUrl) {
 /**
  * Reads the current wallpaper darken factor from the CSS custom property.
  * Returns a value between 0 (no darkening) and ~0.9 (nearly black).
- * Default is 0.45 if the property is missing or invalid.
+ * Default is 0.3 if the property is missing or invalid.
  */
 function getCurrentDarkenFactor() {
   const raw = getComputedStyle(document.documentElement).getPropertyValue('--bg-darken');
   const parsed = parseFloat(raw);
-  return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : 0.45;
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(1, parsed)) : 0.3;
 }
 
 /**

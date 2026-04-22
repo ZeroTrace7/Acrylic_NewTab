@@ -197,10 +197,10 @@ async function resolveWallpaperSource(rawUrl, { requestPermission = false } = {}
   }
 }
 
-function applyWallpaperAppearance(blur = 0, darken = 0.45) {
+function applyWallpaperAppearance(blur = 0, darken = 0.3) {
   const root = document.documentElement.style;
   root.setProperty('--bg-blur-amount', `${Number.isFinite(blur) ? blur : 0}px`);
-  root.setProperty('--bg-darken', Number.isFinite(darken) ? darken : 0.45);
+  root.setProperty('--bg-darken', Number.isFinite(darken) ? darken : 0.3);
 }
 
 function getWallpaperLayer() {
@@ -265,7 +265,7 @@ function createWallpaperYouTubeShell(embedUrl) {
       currentWallpaperUrl = '';
 
       // Clear persisted wallpaper so it doesn't retry on next tab load
-      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 }).catch(() => {});
+      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
 
       // Restore the theme background
       const body = getBodyEl();
@@ -278,7 +278,7 @@ function createWallpaperYouTubeShell(embedUrl) {
   return container;
 }
 
-function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
+function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3) {
   const root = document.documentElement.style;
   const body = getBodyEl();
   if (!source) {
@@ -312,7 +312,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.45) {
   }
 }
 
-async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.45, { persist = false, silent = false, requestPermission = false } = {}) {
+async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist = false, silent = false, requestPermission = false } = {}) {
   const requestId = ++wallpaperRequestId;
   let source;
 
@@ -370,7 +370,7 @@ export async function initBackground() {
       if (changes.wallpaperUrl === currentWallpaperUrl) return;
       const root = document.documentElement.style;
       const blur = parseFloat(root.getPropertyValue('--bg-blur-amount')) || 0;
-      const darken = parseFloat(root.getPropertyValue('--bg-darken')) || 0.45;
+      const darken = parseFloat(root.getPropertyValue('--bg-darken')) || 0.3;
       if (changes.wallpaperUrl) {
         loadAndApplyWallpaper(changes.wallpaperUrl, blur, darken, { silent: false }).catch((error) => {
           reportBackgroundError('Wallpaper change apply failed:', error);
@@ -391,19 +391,19 @@ export async function setTheme(themeId) {
   await Prefs.set('theme', nextTheme);
 }
 
-export async function setWallpaper(url, blur = 0, darken = 0.45) {
+export async function setWallpaper(url, blur = 0, darken = 0.3) {
   return loadAndApplyWallpaper(url, blur, darken, { persist: true, silent: true, requestPermission: true });
 }
 
 export function clearWallpaper() {
   wallpaperRequestId++;
   applyWallpaperSourceToDom(null);
-  Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 }).catch((error) => {
+  Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch((error) => {
     reportBackgroundError('Failed to persist wallpaper clear:', error);
   });
 }
 
-export function setWallpaperAppearance(blur = 0, darken = 0.45) {
+export function setWallpaperAppearance(blur = 0, darken = 0.3) {
   applyWallpaperAppearance(blur, darken);
 }
 
