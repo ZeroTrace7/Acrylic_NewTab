@@ -39,23 +39,19 @@ async function initApp() {
     // Step 1 — Background first (theme/wallpaper before UI paints)
     await initBackground();
 
-    // Step 2 — Onboarding check
-    const onboardingDone = await Prefs.get('onboardingDone');
-    if (!onboardingDone) {
-      const { initOnboarding } = await import('./onboarding/onboarding.js');
-      await initOnboarding();
-    }
-
-    // Step 3 — Apply persisted dashboard preferences before UI init
+    // Step 2 — Apply persisted dashboard preferences before UI init
     await initPreferences();
 
-    // Step 4 — Initialize UI modules in parallel
+    // Step 3 — Initialize UI modules in parallel
     await Promise.all([
       initClock(),
       initSearch(),
       initQuickLinks(),
       initTasks(),
     ]);
+
+    // Step 4 — Non-blocking welcome card (first install only, after UI is fully loaded)
+    import('./onboarding/onboarding.js').then(m => m.initOnboarding()).catch(() => {});
 
     // Step 5 — Preferences button (lazy-loaded)
     DOM.settingsBtn?.addEventListener('click', async () => {

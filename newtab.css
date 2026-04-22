@@ -10,21 +10,21 @@
    ──────────────────────────────────────────────────────────── */
 :root {
   /* Glass */
-  --glass-bg:            rgba(255, 255, 255, 0.04);
+  --glass-bg:            rgba(0, 0, 0, 0.15);
   --glass-bg-hover:      rgba(255, 255, 255, 0.10);
   --glass-bg-active:     rgba(255, 255, 255, 0.14);
   --glass-subtle:        rgba(255, 255, 255, 0.04);
-  --glass-border:        rgba(255, 255, 255, 0.08);
-  --glass-border-panel:  rgba(255, 255, 255, 0.18);
-  --glass-border-soft:   rgba(255, 255, 255, 0.08);
-  --glass-blur:          16px;
+  --glass-border:        rgba(255, 255, 255, 0.2);
+  --glass-border-panel:  rgba(255, 255, 255, 0.2);
+  --glass-border-soft:   rgba(255, 255, 255, 0.12);
+  --glass-blur:          40px;
   --glass-radius:        14px;
   --glass-radius-sm:     12px;
   --glass-radius-lg:     14px;
   --shadow-x-sm:         -5px;
   --shadow-x-lg:         -8px;
-  --glass-shadow:        var(--shadow-x-sm) 8px 32px rgba(0, 0, 0, 0.20);
-  --glass-shadow-lg:     var(--shadow-x-lg) 20px 60px rgba(0, 0, 0, 0.30);
+  --glass-shadow:        var(--shadow-x-sm) 8px 32px rgba(0, 0, 0, 0.30);
+  --glass-shadow-lg:     var(--shadow-x-lg) 20px 60px rgba(0, 0, 0, 0.40);
   --glass-inset:         inset 0 1px 0 rgba(255, 255, 255, 0.15);
   --control-radius:      12px;
   --control-blur:        16px;

@@ -1,236 +1,298 @@
 import { Prefs } from '../modules/storage.js';
-import { setTheme, getAvailableThemes } from '../modules/background.js';
-import { toast } from '../modules/toast.js';
-import { DOM } from '../modules/dom.js';
 
-let overlayEl = null;
-let currentStep = 0;
-let selections = { name: '', theme: 'midnight', searchEngine: 'google' };
-
-const STEPS = [
-  { id: 'welcome',     title: 'Welcome to Acrylic',  subtitle: "The most beautiful new tab for Chrome. Let's get you set up in 30 seconds." },
-  { id: 'personalize', title: 'Make it yours',        subtitle: 'Choose a name and pick your favorite theme.' },
-  { id: 'search',      title: 'Where should search go?', subtitle: 'Pick a default destination. You can switch between AI assistants and search engines any time.' },
-];
-
-const THEME_COLORS = { midnight:'#0f0f23','deep-blue':'#021b37',aurora:'#003840','rose-noir':'#2d0320',jet:'#000',espresso:'#1c0f0a',slate:'#0f172a',forest:'#0d1f0f' };
-
-const ENGINE_GROUPS = [
-  { id: 'assistants', label: 'AI Assistants' },
-  { id: 'search', label: 'Search Engines' },
-];
-
-const ENGINES = [
-  { id: 'perplexity', group: 'assistants', name: 'Perplexity', desc: 'Answer-first research with citations and web grounding' },
-  { id: 'chatgpt', group: 'assistants', name: 'ChatGPT', desc: 'Use ChatGPT as your primary assistant for open-ended queries' },
-  { id: 'claude', group: 'assistants', name: 'Claude', desc: 'Thoughtful long-form responses and deep writing support' },
-  { id: 'grok', group: 'assistants', name: 'Grok', desc: 'Fast conversational search with a live-web leaning workflow' },
-  { id: 'deepseek', group: 'assistants', name: 'DeepSeek', desc: 'Open-source AI with deep reasoning and transparent chain-of-thought' },
-  { id: 'google', group: 'search', name: 'Google', desc: "The world's most popular search engine" },
-  { id: 'bing', group: 'search', name: 'Bing', desc: "Microsoft's search engine with strong image and Copilot integration" },
-  { id: 'duckduckgo', group: 'search', name: 'DuckDuckGo', desc: 'Privacy-first search with no tracking by default' },
-  { id: 'brave', group: 'search', name: 'Brave', desc: 'Independent private search with a clean results page' },
-  { id: 'youtube', group: 'search', name: 'YouTube', desc: 'Jump straight into video discovery and visual how-tos' },
-];
-
-let contentEl = null;
-let dotsEls = [];
-let backBtn = null;
-let nextBtn = null;
-let skipLink = null;
-
-function buildOverlay() {
-  const ov = document.createElement('div');
-  ov.setAttribute('style', 'position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);');
-
-  const card = document.createElement('div');
-  card.setAttribute('style', 'width:min(520px,92vw);background:rgba(255,255,255,0.10);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.18);border-radius:28px;box-shadow:0 32px 80px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15);padding:48px;display:flex;flex-direction:column;gap:32px;animation:slide-in-up 0.4s cubic-bezier(0.34,1.56,0.64,1) both;');
-
-  // Dots
-  const dots = document.createElement('div');
-  dots.setAttribute('style', 'display:flex;justify-content:center;gap:8px;');
-  dotsEls = STEPS.map((_, i) => {
-    const d = document.createElement('div');
-    const active = i === 0;
-    d.setAttribute('style', `width:8px;height:8px;border-radius:50%;transition:all 300ms ease;background:rgba(255,255,255,${active ? '0.9' : '0.25'});${active ? 'transform:scale(1.3);' : ''}`);
-    dots.appendChild(d);
-    return d;
-  });
-
-  // Content
-  contentEl = document.createElement('div');
-  contentEl.id = 'onboarding-step-content';
-  contentEl.setAttribute('style', 'transition:opacity 150ms ease;min-height:260px;');
-
-  // Nav
-  const nav = document.createElement('div');
-  nav.setAttribute('style', 'display:flex;justify-content:space-between;align-items:center;');
-
-  backBtn = document.createElement('button');
-  backBtn.textContent = '← Back';
-  backBtn.setAttribute('style', 'padding:10px 20px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);font-size:0.9rem;cursor:pointer;visibility:hidden;');
-  backBtn.onclick = () => goToStep(currentStep - 1);
-
-  const mid = document.createElement('div');
-  skipLink = document.createElement('span');
-  skipLink.textContent = 'Skip setup';
-  skipLink.setAttribute('style', 'font-size:0.8rem;color:var(--text-muted);cursor:pointer;text-decoration:underline;text-underline-offset:3px;display:none;');
-  skipLink.onclick = finishOnboarding;
-  mid.appendChild(skipLink);
-
-  nextBtn = document.createElement('button');
-  nextBtn.textContent = 'Get Started';
-  nextBtn.setAttribute('style', 'padding:10px 28px;border-radius:12px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);color:var(--text-primary);font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 150ms ease;');
-  nextBtn.onclick = () => { if (currentStep === STEPS.length - 1) finishOnboarding(); else goToStep(currentStep + 1); };
-
-  nav.append(backBtn, mid, nextBtn);
-  card.append(dots, contentEl, nav);
-  ov.appendChild(card);
-  return ov;
-}
-
-function goToStep(step) {
-  currentStep = step;
-  dotsEls.forEach((d, i) => {
-    d.style.background = `rgba(255,255,255,${i === step ? '0.9' : '0.25'})`;
-    d.style.transform = i === step ? 'scale(1.3)' : 'scale(1)';
-  });
-  backBtn.style.visibility = step === 0 ? 'hidden' : 'visible';
-  skipLink.style.display = step > 0 ? 'inline' : 'none';
-  nextBtn.textContent = step === 0 ? 'Get Started' : step === STEPS.length - 1 ? "Let's go! →" : 'Next →';
-  contentEl.style.opacity = '0';
-  setTimeout(() => { renderStep(); contentEl.style.opacity = '1'; }, 150);
-}
-
-function renderStep() {
-  contentEl.innerHTML = '';
-  const s = STEPS[currentStep];
-
-  if (currentStep === 0) {
-    const logo = document.createElement('div');
-    logo.setAttribute('style', 'width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.20);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;');
-    logo.innerHTML = `<span style="font-family:var(--font-mono),monospace;font-size:3rem;font-weight:700;color:var(--text-primary);">A</span>`;
-    const h = document.createElement('h1');
-    h.textContent = s.title;
-    h.setAttribute('style', 'font-size:1.8rem;font-weight:800;color:var(--text-primary);text-align:center;font-family:var(--font-ui),sans-serif;line-height:1.2;margin:8px 0;');
-    const sub = document.createElement('p');
-    sub.textContent = s.subtitle;
-    sub.setAttribute('style', 'font-size:0.95rem;color:var(--text-secondary);text-align:center;line-height:1.6;margin-bottom:16px;');
-    const feats = document.createElement('div');
-    feats.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;align-items:center;');
-    ['⚡ Flip clock with live time', '🔍 Multi-engine search bar', '📝 Notes, Pomodoro & Tab Manager'].forEach(f => {
-      const row = document.createElement('div');
-      row.setAttribute('style', 'display:flex;align-items:center;gap:10px;font-size:0.85rem;color:var(--text-secondary);');
-      row.textContent = f;
-      feats.appendChild(row);
-    });
-    contentEl.append(logo, h, sub, feats);
-  }
-
-  if (currentStep === 1) {
-    const h = document.createElement('h2');
-    h.textContent = s.title;
-    h.setAttribute('style', 'font-size:1.4rem;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:4px;');
-    const sub = document.createElement('p');
-    sub.textContent = s.subtitle;
-    sub.setAttribute('style', 'font-size:0.9rem;color:var(--text-secondary);text-align:center;margin-bottom:16px;');
-
-    const lbl = document.createElement('label');
-    lbl.textContent = 'What should we call you?';
-    lbl.setAttribute('style', 'font-size:0.8rem;color:var(--text-muted);margin-bottom:6px;display:block;');
-    const nameIn = document.createElement('input');
-    nameIn.type = 'text'; nameIn.placeholder = 'Your name (optional)'; nameIn.value = selections.name;
-    nameIn.setAttribute('style', 'width:100%;padding:12px 16px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:14px;font-size:1rem;color:var(--text-primary);font-family:var(--font-ui),sans-serif;outline:none;box-sizing:border-box;');
-    nameIn.oninput = () => { selections.name = nameIn.value; };
-    nameIn.onkeydown = (e) => { if (e.key === 'Enter') goToStep(2); };
-    setTimeout(() => nameIn.focus(), 50);
-
-    const tLbl = document.createElement('div');
-    tLbl.textContent = 'Pick a theme';
-    tLbl.setAttribute('style', 'font-size:0.8rem;color:var(--text-muted);margin-top:20px;margin-bottom:8px;');
-    const grid = document.createElement('div');
-    grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;');
-    getAvailableThemes().forEach(t => {
-      const active = selections.theme === t.id;
-      const btn = document.createElement('button');
-      btn.setAttribute('style', `padding:6px 4px;border-radius:10px;cursor:pointer;transition:all 150ms ease;display:flex;flex-direction:column;align-items:center;gap:4px;border:1px solid ${active ? 'rgba(255,255,255,0.4)' : 'transparent'};background:${active ? 'var(--glass-subtle)' : 'transparent'};`);
-      btn.innerHTML = `<div style="width:100%;height:28px;border-radius:7px;background:${THEME_COLORS[t.id] || '#111'};"></div><span style="font-size:0.65rem;color:var(--text-secondary);">${t.label}</span>`;
-      btn.onclick = () => { selections.theme = t.id; setTheme(t.id); renderStep(); };
-      grid.appendChild(btn);
-    });
-    contentEl.append(h, sub, lbl, nameIn, tLbl, grid);
-  }
-
-  if (currentStep === 2) {
-    const h = document.createElement('h2');
-    h.textContent = s.title;
-    h.setAttribute('style', 'font-size:1.4rem;font-weight:700;color:var(--text-primary);text-align:center;margin-bottom:4px;');
-    const sub = document.createElement('p');
-    sub.textContent = s.subtitle;
-    sub.setAttribute('style', 'font-size:0.9rem;color:var(--text-secondary);text-align:center;margin-bottom:16px;');
-    const groups = document.createElement('div');
-    groups.setAttribute('style', 'display:flex;flex-direction:column;gap:14px;');
-
-    ENGINE_GROUPS.forEach((group) => {
-      const section = document.createElement('section');
-      section.setAttribute('style', 'display:flex;flex-direction:column;gap:8px;');
-
-      const title = document.createElement('div');
-      title.textContent = group.label.toUpperCase();
-      title.setAttribute('style', 'padding:0 4px;font-size:0.7rem;font-weight:700;letter-spacing:0.14em;color:var(--text-muted);');
-
-      const list = document.createElement('div');
-      list.setAttribute('style', 'display:flex;flex-direction:column;gap:10px;');
-
-      ENGINES.filter((eng) => eng.group === group.id).forEach((eng) => {
-        const active = selections.searchEngine === eng.id;
-        const row = document.createElement('div');
-        row.setAttribute('style', `display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:14px;cursor:pointer;transition:all 150ms ease;background:${active ? 'var(--glass-bg)' : 'var(--glass-subtle)'};border:1px solid ${active ? 'var(--glass-border)' : 'transparent'};`);
-        row.innerHTML = `<div><div style="font-weight:600;font-size:0.9rem;color:${active ? 'var(--text-primary)' : 'var(--text-secondary)'};">${eng.name}</div><div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">${eng.desc}</div></div>`;
-        const radio = document.createElement('div');
-        radio.setAttribute('style', `width:18px;height:18px;border-radius:50%;border:2px solid ${active ? 'rgba(255,255,255,0.8)' : 'var(--glass-border)'};background:${active ? 'rgba(255,255,255,0.8)' : 'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;`);
-        if (active) {
-          const dot = document.createElement('div');
-          dot.setAttribute('style', 'width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.6);');
-          radio.appendChild(dot);
-        }
-        row.appendChild(radio);
-        row.onclick = () => { selections.searchEngine = eng.id; renderStep(); };
-        list.appendChild(row);
-      });
-
-      section.append(title, list);
-      groups.appendChild(section);
-    });
-
-    contentEl.append(h, sub, groups);
-  }
-}
-
-async function finishOnboarding() {
-  await Prefs.setMany({
-    userName: selections.name.trim(),
-    theme: selections.theme,
-    searchEngine: selections.searchEngine,
-    onboardingDone: true,
-  });
-  await new Promise(r => setTimeout(r, 100));
-  setTheme(selections.theme);
-  if (overlayEl) {
-    overlayEl.style.transition = 'opacity 300ms ease';
-    overlayEl.style.opacity = '0';
-    setTimeout(() => { overlayEl?.remove(); overlayEl = null; }, 300);
-  }
-  toast.success('Welcome to Acrylic! 🎉');
-}
-
+/**
+ * Non-blocking welcome card — slides in over the loaded dashboard
+ * on first install only. The full UI remains interactive behind it.
+ */
 export async function initOnboarding() {
   const done = await Prefs.get('onboardingDone');
   if (done) return;
-  currentStep = 0;
-  selections = { name: '', theme: 'midnight', searchEngine: 'google' };
-  overlayEl = buildOverlay();
-  renderStep();
-  (DOM.onboardingMount || document.body).appendChild(overlayEl);
-}
 
+  /* Mark done immediately so it never shows again, even on crash */
+  await Prefs.set('onboardingDone', true);
+
+  /* Wait for the entry animation stagger to complete (~1.6s) */
+  await new Promise(r => setTimeout(r, 2000));
+
+  /* ── Inject scoped styles ───────────────────────────────── */
+  const style = document.createElement('style');
+  style.textContent = `
+    .welcome-card {
+      position: fixed;
+      bottom: 28px;
+      left: 28px;
+      z-index: 900;
+      width: min(370px, calc(100vw - 56px));
+      padding: 28px 26px 22px;
+      background: rgba(0, 0, 0, 0.15); /* highly transparent for glassmorphism */
+      backdrop-filter: blur(40px) saturate(1.5);
+      -webkit-backdrop-filter: blur(40px) saturate(1.5);
+      border: 1px solid;
+      border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
+      border-radius: 22px;
+      box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.92);
+      font-family: var(--font-ui), 'Poppins', sans-serif;
+
+      /* Entry animation */
+      opacity: 0;
+      transform: translateY(30px) scale(0.96);
+      animation: welcome-slide-in 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes welcome-slide-in {
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .welcome-card.dismissing {
+      animation: welcome-slide-out 400ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+    }
+
+    @keyframes welcome-slide-out {
+      to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+      }
+    }
+
+    .welcome-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .welcome-close {
+      position: absolute;
+      top: -12px;
+      right: -12px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 1.1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 150ms ease;
+    }
+
+    .welcome-close:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .welcome-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono), monospace;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      flex-shrink: 0;
+    }
+
+    .welcome-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .welcome-subtitle {
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 18px;
+    }
+
+    .welcome-tips {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .welcome-tip {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid;
+      border-color: rgba(255, 255, 255, 0.12) rgba(255, 255, 255, 0.03) rgba(255, 255, 255, 0.03) rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: welcome-tip-in 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .welcome-tip:nth-child(1) { animation-delay: 200ms; }
+    .welcome-tip:nth-child(2) { animation-delay: 350ms; }
+    .welcome-tip:nth-child(3) { animation-delay: 500ms; }
+
+    @keyframes welcome-tip-in {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .welcome-tip-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+    }
+
+    .welcome-tip-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .welcome-tip-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .welcome-tip-desc {
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.5);
+      line-height: 1.45;
+    }
+
+    .welcome-tip-kbd {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      font-size: 0.66rem;
+      font-family: var(--font-ui), sans-serif;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 5px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+    }
+
+    .welcome-badge-important {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: rgba(239, 68, 68, 0.22);
+      color: rgba(252, 165, 165, 0.95);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 6px;
+      margin-inline-start: 6px;
+      vertical-align: middle;
+    }
+
+    .welcome-dismiss {
+      width: 100%;
+      padding: 11px 20px;
+      border: none;
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 180ms ease, transform 120ms ease;
+      opacity: 0;
+      animation: welcome-tip-in 500ms cubic-bezier(0.16, 1, 0.3, 1) 650ms forwards;
+    }
+
+    .welcome-dismiss:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .welcome-dismiss:active {
+      transform: scale(0.97);
+    }
+
+    @media (max-width: 640px) {
+      .welcome-card {
+        bottom: 16px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  /* ── Build the card ─────────────────────────────────────── */
+  const card = document.createElement('div');
+  card.className = 'welcome-card';
+
+  const header = document.createElement('div');
+  header.className = 'welcome-header';
+  header.innerHTML = '<div class="welcome-logo">A</div><div><div class="welcome-title">Welcome to Acrylic! ✨</div><div class="welcome-subtitle">Let\u2019s clean up your browser for the best experience.</div></div><button class="welcome-close">&times;</button>';
+
+  const tips = document.createElement('div');
+  tips.className = 'welcome-tips';
+
+  const tipData = [
+    {
+      icon: '🖥️',
+      label: 'Hide the footer <span class="welcome-badge-important">Important</span>',
+      desc: '<strong>Right click</strong> on the footer (bottom bar) and select <strong>\u201cHide footer on New tab page\u2026\u201d</strong>'
+    },
+    {
+      icon: '📑',
+      label: 'Hide Bookmarks Bar',
+      desc: 'Press <span class="welcome-tip-kbd">Ctrl</span> + <span class="welcome-tip-kbd">Shift</span> + <span class="welcome-tip-kbd">B</span> to toggle visibility.'
+    },
+    {
+      icon: '🔎',
+      label: 'Adjust UI Scale',
+      desc: 'If the layout feels too big or cramped, press <span class="welcome-tip-kbd">Ctrl</span> + <span class="welcome-tip-kbd">\u2212</span> or <span class="welcome-tip-kbd">+</span> to zoom.'
+    }
+  ];
+
+  tipData.forEach(t => {
+    const tip = document.createElement('div');
+    tip.className = 'welcome-tip';
+    tip.innerHTML = '<div class="welcome-tip-icon">' + t.icon + '</div><div class="welcome-tip-text"><div class="welcome-tip-label">' + t.label + '</div><div class="welcome-tip-desc">' + t.desc + '</div></div>';
+    tips.appendChild(tip);
+  });
+
+  const btn = document.createElement('button');
+  btn.className = 'welcome-dismiss';
+  btn.textContent = 'Got it, looks clean!';
+  const dismissFn = () => {
+    card.classList.add('dismissing');
+    setTimeout(() => card.remove(), 400);
+  };
+
+  btn.addEventListener('click', dismissFn);
+  header.querySelector('.welcome-close').addEventListener('click', dismissFn);
+
+  card.append(header, tips, btn);
+  document.body.appendChild(card);
+}
