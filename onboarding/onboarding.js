@@ -24,7 +24,7 @@ export async function initOnboarding() {
       z-index: 900;
       width: min(370px, calc(100vw - 56px));
       padding: 28px 26px 22px;
-      background: rgba(0, 0, 0, 0.15); /* highly transparent for glassmorphism */
+      background: rgba(0, 0, 0, 0.15);
       backdrop-filter: blur(40px) saturate(1.5);
       -webkit-backdrop-filter: blur(40px) saturate(1.5);
       border: 1px solid;
@@ -36,28 +36,36 @@ export async function initOnboarding() {
       color: rgba(255, 255, 255, 0.92);
       font-family: var(--font-ui), 'Poppins', sans-serif;
 
-      /* Entry animation */
+      /* Premium entry — soft spring, slight scale-up, gentle blur-in */
       opacity: 0;
-      transform: translateY(30px) scale(0.96);
-      animation: welcome-slide-in 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(36px) scale(0.92);
+      filter: blur(4px);
+      animation: welcome-slide-in 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes welcome-slide-in {
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
+        filter: blur(0px);
       }
     }
 
+    /* Dismiss — buttery melt-away: scale down, blur, float away */
     .welcome-card.dismissing {
-      animation: welcome-slide-out 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: welcome-slide-out 600ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
 
     @keyframes welcome-slide-out {
-      to {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+      }
+      100% {
         opacity: 0;
-        transform: translateY(40px) scale(0.92);
-        filter: blur(8px);
+        transform: translateY(24px) scale(0.94);
+        filter: blur(6px);
       }
     }
 
@@ -84,7 +92,7 @@ export async function initOnboarding() {
       font-size: 1.1rem;
       cursor: pointer;
       border-radius: 50%;
-      transition: all 150ms ease;
+      transition: all 200ms ease;
     }
 
     .welcome-close:hover {
@@ -138,18 +146,21 @@ export async function initOnboarding() {
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
       border-radius: 14px;
       opacity: 0;
-      transform: translateY(8px);
-      animation: welcome-tip-in 500ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(10px);
+      filter: blur(2px);
+      animation: welcome-tip-in 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .welcome-tip:nth-child(1) { animation-delay: 200ms; }
-    .welcome-tip:nth-child(2) { animation-delay: 350ms; }
-    .welcome-tip:nth-child(3) { animation-delay: 500ms; }
+    /* Wider stagger for a cinematic cascade feel */
+    .welcome-tip:nth-child(1) { animation-delay: 300ms; }
+    .welcome-tip:nth-child(2) { animation-delay: 500ms; }
+    .welcome-tip:nth-child(3) { animation-delay: 700ms; }
 
     @keyframes welcome-tip-in {
       to {
         opacity: 1;
         transform: translateY(0);
+        filter: blur(0px);
       }
     }
 
@@ -223,9 +234,10 @@ export async function initOnboarding() {
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 180ms ease, transform 120ms ease;
+      transition: background 200ms ease, transform 200ms cubic-bezier(0.16, 1, 0.3, 1);
       opacity: 0;
-      animation: welcome-tip-in 500ms cubic-bezier(0.16, 1, 0.3, 1) 650ms forwards;
+      filter: blur(2px);
+      animation: welcome-tip-in 600ms cubic-bezier(0.16, 1, 0.3, 1) 850ms forwards;
     }
 
     .welcome-dismiss:hover {
@@ -288,7 +300,8 @@ export async function initOnboarding() {
   btn.textContent = 'Got it, looks clean!';
   const dismissFn = () => {
     card.classList.add('dismissing');
-    setTimeout(() => card.remove(), 600);
+    /* Wait for the full melt-away animation (600ms) + extra 50ms buffer */
+    setTimeout(() => card.remove(), 650);
   };
 
   btn.addEventListener('click', dismissFn);
