@@ -50,13 +50,14 @@ export async function initOnboarding() {
     }
 
     .welcome-card.dismissing {
-      animation: welcome-slide-out 400ms cubic-bezier(0.55, 0, 1, 0.45) forwards;
+      animation: welcome-slide-out 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes welcome-slide-out {
       to {
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        transform: translateY(40px) scale(0.92);
+        filter: blur(8px);
       }
     }
 
@@ -287,7 +288,7 @@ export async function initOnboarding() {
   btn.textContent = 'Got it, looks clean!';
   const dismissFn = () => {
     card.classList.add('dismissing');
-    setTimeout(() => card.remove(), 400);
+    setTimeout(() => card.remove(), 600);
   };
 
   btn.addEventListener('click', dismissFn);
