@@ -16,12 +16,12 @@ export function showToast(message, type = 'default', duration = 2500) {
   return el;
 }
 
-/** Adds the dismissing class to trigger slide-out, then removes the element after 200ms. */
+/** Adds the dismissing class to trigger slide-out, then removes the element. */
 export function dismissToast(el) {
   el.classList.add('dismissing');
   setTimeout(() => {
     if (el.parentNode) el.parentNode.removeChild(el);
-  }, 200);
+  }, 400);
 }
 
 /** Convenience object with success, error, and info shorthand methods. */

@@ -89,6 +89,7 @@ async function startTimer(mode) {
   await chrome.alarms.create('pomodoroTimer', { delayInMinutes: duration / 60 });
   const state = { mode, isRunning: true, timeLeft: duration, endTime: Date.now() + duration * 1000 };
   await chrome.storage.local.set({ timerState: state });
+  await playSound('sounds/start.mp3');
   return state;
 }
 
@@ -104,6 +105,7 @@ async function resumeTimer(timerState) {
   await chrome.alarms.create('pomodoroTimer', { delayInMinutes: timerState.timeLeft / 60 });
   const state = { ...timerState, isRunning: true, endTime: Date.now() + timerState.timeLeft * 1000 };
   await chrome.storage.local.set({ timerState: state });
+  await playSound('sounds/start.mp3');
   return state;
 }
 

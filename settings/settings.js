@@ -449,7 +449,7 @@ function buildProfileSection() {
   nameIn.setAttribute('style', 'width:100%;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;box-sizing:border-box;');
   nameIn.onfocus = () => nameIn.style.borderColor = 'var(--glass-border)';
   nameIn.onblur = () => nameIn.style.borderColor = 'var(--glass-border-soft)';
-  const saveName = debounce((v) => { Prefs.set('userName', v); toast.success('Name saved!'); }, 500);
+  const saveName = debounce((v) => { Prefs.set('userName', v); }, 800);
   nameIn.oninput = () => saveName(nameIn.value);
   sec1.append(nameLabel, nameIn);
   return sec1;
