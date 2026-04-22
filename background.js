@@ -39,7 +39,7 @@ async function syncYouTubeEmbedRefererRule() {
             {
               header: 'referer',
               operation: 'set',
-              value: chrome.runtime.id,
+              value: 'https://www.youtube.com/',
             },
           ],
         },

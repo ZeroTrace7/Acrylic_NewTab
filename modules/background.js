@@ -95,7 +95,8 @@ function buildYouTubeEmbedUrl(videoId) {
     rel: '0',
   });
 
-  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+  // Use youtube-nocookie.com for better privacy-browser compatibility (Brave, etc.)
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 }
 
 function getImageLoadError() {
@@ -222,8 +223,9 @@ function createWallpaperYouTubeShell(embedUrl) {
   frame.title = 'YouTube wallpaper';
   frame.tabIndex = -1;
   frame.loading = 'eager';
-  frame.allow = 'autoplay; encrypted-media; picture-in-picture';
-  frame.referrerPolicy = 'strict-origin-when-cross-origin';
+  // Must include src origin for cross-origin autoplay permission policy
+  frame.allow = 'autoplay; encrypted-media';
+  frame.referrerPolicy = 'no-referrer';
   frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
 
@@ -232,6 +234,42 @@ function createWallpaperYouTubeShell(embedUrl) {
   mask.setAttribute('aria-hidden', 'true');
 
   container.append(frame, mask);
+
+  // Auto-detect embed failure (Brave Shields, network errors, etc.)
+  // If YouTube's player can't initialize, it renders an error page inside the
+  // iframe. We can't read cross-origin content, but we can listen for the
+  // YouTube IFrame API's state message. If no 'playing' message arrives within
+  // 8 seconds, assume failure and gracefully remove the embed.
+  const EMBED_TIMEOUT_MS = 8000;
+  let videoConfirmed = false;
+
+  const onYTMessage = (e) => {
+    if (!e.data || typeof e.data !== 'string') return;
+    try {
+      const msg = JSON.parse(e.data);
+      // YouTube's IFrame API sends state changes via postMessage
+      if (msg?.event === 'onStateChange' || msg?.event === 'initialDelivery' || msg?.info) {
+        videoConfirmed = true;
+        window.removeEventListener('message', onYTMessage);
+      }
+    } catch { /* not a YouTube message — ignore */ }
+  };
+  window.addEventListener('message', onYTMessage);
+
+  setTimeout(() => {
+    window.removeEventListener('message', onYTMessage);
+    if (!videoConfirmed && container.isConnected) {
+      // Embed failed — remove the YouTube shell and fall back to theme
+      console.warn('Acrylic: YouTube embed did not respond in time — falling back to theme background.');
+      container.remove();
+      // If there's no image wallpaper either, remove has-wallpaper class
+      const bgImage = getComputedStyle(document.documentElement).getPropertyValue('--bg-image').trim();
+      if (!bgImage || bgImage === 'none') {
+        document.body?.classList.remove('has-wallpaper');
+      }
+    }
+  }, EMBED_TIMEOUT_MS);
+
   return container;
 }
 

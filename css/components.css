@@ -1,8 +1,8 @@
 /* Components layer: reusable UI blocks without page-zone positioning */
 .glass {
   background: var(--glass-bg);
-   saturate(1.5));
-  -webkit- saturate(1.5));
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid;
   border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
   border-radius: var(--glass-radius);
@@ -11,18 +11,14 @@
 
 .glass-subtle {
   background: var(--glass-subtle);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid var(--glass-border-soft);
   border-radius: var(--glass-radius-sm);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
 }
 
-.glass:hover {
-  background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.24);
-  box-shadow: var(--glass-shadow-lg), var(--glass-inset);
-}
+
 
 :where(button) {
   transition:
@@ -47,8 +43,8 @@
   justify-content: center;
   border-radius: 16px;
   background: var(--control-bg);
-   saturate(1.5));
-  -webkit- saturate(1.5));
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid var(--control-border);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   color: var(--text-secondary);
@@ -603,8 +599,8 @@
     filter 420ms cubic-bezier(0.16, 1, 0.3, 1),
     visibility 0s linear 420ms;
   background: rgba(15, 23, 42, 0.68);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid;
   border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
   border-radius: 18px;
@@ -806,8 +802,8 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
@@ -914,8 +910,8 @@
   border-radius: 18px;
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.12);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   display: flex;
   align-items: center;
@@ -958,8 +954,8 @@
   height: 48px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.07);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid;
   border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
   box-shadow:
@@ -1051,8 +1047,8 @@
   justify-content: center;
   border-radius: var(--control-radius);
   background: var(--control-bg);
-   saturate(1.5));
-  -webkit- saturate(1.5));
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid var(--control-border);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
   color: var(--text-muted);
@@ -1086,8 +1082,8 @@
   color: var(--text-secondary);
   border-radius: 16px;
   background: var(--control-bg);
-   saturate(1.5));
-  -webkit- saturate(1.5));
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid var(--control-border);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
   cursor: pointer;
@@ -1224,8 +1220,8 @@
   font-weight: 500;
   color: var(--text-primary);
   background: rgba(255, 255, 255, 0.15);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid rgba(255, 255, 255, 0.20);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
   pointer-events: auto;
@@ -1248,9 +1244,10 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: rgba(0, 0, 0, 0.55);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  /* Task 1 — Global overlay: light dim + 4px world-blur so wallpaper stays vivid */
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1272,20 +1269,21 @@
   animation: modal-slide-in var(--dur-mid) var(--ease-spring) both;
 }
 
-/* Settings modal: smoother transition driven by JS class toggling */
+/* Settings modal: JS-driven slide-in drawer, NOT a centred modal */
 .modal-overlay.settings-overlay {
   opacity: 0;
   pointer-events: none;
   align-items: stretch;
   justify-content: flex-end;
   padding: 0;
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  /* Task 1 — Settings overlay inherits the 4px world-blur from .modal-overlay */
+  /* Override the base's heavy blur — 4px is correct for a subtle side drawer */
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   animation: none;
-  transition:
-    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
-    backdrop-filter 680ms cubic-bezier(0.16, 1, 0.3, 1),
-    -webkit-backdrop-filter 680ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Task 3 — Smooth overlay fade: 0.4s ease */
+  transition: opacity 0.4s ease;
 }
 
 .modal-overlay.settings-overlay .modal-box.settings-box {
@@ -1294,43 +1292,49 @@
   max-height: 100vh;
   padding: 36px 18px 24px;
   opacity: 0;
-  transform: translateX(100%);
+  /* GPU layer: 3D translate prevents black compositing artifact */
+  transform: translate3d(100%, 0, 0);
   filter: blur(3px);
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
   border-right: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
   animation: none;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  will-change: scroll-position;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   contain: layout paint;
+  /* Task 3 — Premium spring: 500ms on transform, 500ms on opacity */
   transition:
-    opacity 520ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 720ms cubic-bezier(0.16, 1, 0.3, 1),
-    filter 640ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s ease;
 }
 
 .modal-overlay.settings-overlay.is-open {
   opacity: 1;
   pointer-events: auto;
-   saturate(1.5);
-  -webkit- saturate(1.5);
 }
 
 .modal-overlay.settings-overlay.is-open .modal-box.settings-box {
   opacity: 1;
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
   filter: blur(0);
 }
 
 .settings-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px) saturate(1.5);
-  -webkit-backdrop-filter: blur(40px) saturate(1.5);
-  border: 1px solid;
-  border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
+  /* Task 2 — True glass: must stay translucent regardless of active theme */
+  /* !important prevents any .theme-* rule from overriding with a solid color */
+  background: rgba(8, 12, 22, 0.18) !important;
+  backdrop-filter: blur(40px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(1.5) !important;
+  /* Directional rim: bright left/top edge, dark right/bottom */
+  border: 1px solid !important;
+  border-color: rgba(255, 255, 255, 0.18) rgba(255, 255, 255, 0.04) rgba(255, 255, 255, 0.04) rgba(255, 255, 255, 0.18) !important;
   box-shadow:
-    0 34px 88px rgba(0, 0, 0, 0.42),
+    -8px 0 48px rgba(0, 0, 0, 0.30),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
@@ -1895,8 +1899,8 @@
   inset: 0;
   z-index: 210;
   background: rgba(0, 0, 0, 0.48);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1920,8 +1924,8 @@
   overflow-y: auto;
   border-radius: 22px;
   background: rgba(20, 28, 41, 0.84);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
     0 32px 80px rgba(0, 0, 0, 0.44),
@@ -2043,8 +2047,8 @@
   box-shadow:
     0 24px 60px rgba(0, 0, 0, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
-   saturate(1.5);
-  -webkit- saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
   opacity: 0;
   transform: translateY(-10px) scale(0.97);
   pointer-events: none;

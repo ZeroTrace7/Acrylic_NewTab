@@ -236,12 +236,7 @@ function scheduleTaskReorder() {
 }
 
 function scheduleInputFocus() {
-  cleanupInputFocusTimer();
-  inputFocusTimeout = setTimeout(() => {
-    inputFocusTimeout = 0;
-    if (!isOpen || !panelEl?.classList.contains('open') || panelEl.classList.contains('is-success')) return;
-    inputEl?.focus();
-  }, TASK_INPUT_FOCUS_DELAY_MS);
+  // Auto-focus disabled per user request to prevent highlighting
 }
 
 function resetSuccessStateClass() {

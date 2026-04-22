@@ -662,12 +662,9 @@
   pointer-events: auto;
 }
 
-#tasks-btn.is-active {
-  background: var(--glass-bg-active);
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: var(--control-shadow);
-}
+#tasks-btn.is-active { color: var(--text-primary); }
+
+#tasks-btn:hover { background: var(--control-bg); border-color: var(--control-border); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); transform: none; }
 
 .tasks-header {
   display: flex;
@@ -760,8 +757,8 @@
 }
 
 .tasks-input:focus {
-  border-color: rgba(110, 231, 183, 0.62);
-  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: var(--glass-bg-active);
   outline: none;
 }
 
