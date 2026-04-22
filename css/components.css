@@ -1325,9 +1325,9 @@
 }
 
 .settings-panel {
-  /* Task 2 — True glass: must stay translucent regardless of active theme */
+  /* Frosted glass: white tint instead of dark tint for a premium milky look */
   /* !important prevents any .theme-* rule from overriding with a solid color */
-  background: rgba(8, 12, 22, 0.18) !important;
+  background: rgba(255, 255, 255, 0.10) !important;
   backdrop-filter: blur(40px) saturate(1.5) !important;
   -webkit-backdrop-filter: blur(40px) saturate(1.5) !important;
   /* Directional rim: bright left/top edge, dark right/bottom */
@@ -1344,7 +1344,7 @@
   gap: 14px;
   padding: 18px 20px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid;
   border-color: rgba(255, 255, 255, 0.12) rgba(255, 255, 255, 0.03) rgba(255, 255, 255, 0.03) rgba(255, 255, 255, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
