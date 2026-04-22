@@ -238,9 +238,9 @@ function createWallpaperYouTubeShell(embedUrl) {
   // Auto-detect embed failure (Brave Shields, network errors, etc.)
   // If YouTube's player can't initialize, it renders an error page inside the
   // iframe. We can't read cross-origin content, but we can listen for the
-  // YouTube IFrame API's state message. If no 'playing' message arrives within
-  // 8 seconds, assume failure and gracefully remove the embed.
-  const EMBED_TIMEOUT_MS = 8000;
+  // YouTube IFrame API's state message. If no message arrives within
+  // 6 seconds, assume failure and gracefully remove the embed.
+  const EMBED_TIMEOUT_MS = 6000;
   let videoConfirmed = false;
 
   const onYTMessage = (e) => {
@@ -260,13 +260,18 @@ function createWallpaperYouTubeShell(embedUrl) {
     window.removeEventListener('message', onYTMessage);
     if (!videoConfirmed && container.isConnected) {
       // Embed failed — remove the YouTube shell and fall back to theme
-      console.warn('Acrylic: YouTube embed did not respond in time — falling back to theme background.');
+      console.warn('Acrylic: YouTube embed did not respond — removing and restoring theme.');
       container.remove();
-      // If there's no image wallpaper either, remove has-wallpaper class
-      const bgImage = getComputedStyle(document.documentElement).getPropertyValue('--bg-image').trim();
-      if (!bgImage || bgImage === 'none') {
-        document.body?.classList.remove('has-wallpaper');
-      }
+      currentWallpaperUrl = '';
+
+      // Clear persisted wallpaper so it doesn't retry on next tab load
+      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.45 }).catch(() => {});
+
+      // Restore the theme background
+      const body = getBodyEl();
+      if (body) body.classList.remove('has-wallpaper');
+      document.documentElement.style.setProperty('--bg-image', 'none');
+      applyTheme(currentTheme);
     }
   }, EMBED_TIMEOUT_MS);
 
