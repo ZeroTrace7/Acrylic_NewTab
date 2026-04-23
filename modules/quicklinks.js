@@ -93,6 +93,8 @@ const ICON_KEY_ALIASES = {
   stackoverflow: ['stackoverflow.com'],
   notebooklm: ['notebooklm.google.com', 'notebooklm.google'],
   perplexity: ['perplexity.ai'],
+  whatsapp: ['web.whatsapp.com', 'whatsapp.com'],
+  claude: ['claude.ai'],
 };
 
 const QUICKLINK_LABEL_FONT_FAMILY = "'Geist', 'Inter', system-ui, sans-serif";
@@ -118,14 +120,6 @@ function getDefaultLinks() {
   return [
     {
       id: generateId(),
-      key: 'youtube',
-      title: 'YouTube',
-      url: 'https://youtube.com',
-      favicon: getFaviconUrl('https://youtube.com'),
-      isApp: true
-    },
-    {
-      id: generateId(),
       key: 'gmail',
       title: 'Gmail',
       url: 'https://mail.google.com',
@@ -134,10 +128,34 @@ function getDefaultLinks() {
     },
     {
       id: generateId(),
+      key: 'youtube',
+      title: 'YouTube',
+      url: 'https://youtube.com',
+      favicon: getFaviconUrl('https://youtube.com'),
+      isApp: true
+    },
+    {
+      id: generateId(),
+      key: 'whatsapp',
+      title: 'WhatsApp',
+      url: 'https://web.whatsapp.com',
+      favicon: getFaviconUrl('https://web.whatsapp.com'),
+      isApp: true
+    },
+    {
+      id: generateId(),
       key: 'chatgpt',
       title: 'ChatGPT',
       url: 'https://chat.openai.com',
       favicon: getFaviconUrl('https://chat.openai.com'),
+      isApp: true
+    },
+    {
+      id: generateId(),
+      key: 'claude',
+      title: 'Claude',
+      url: 'https://claude.ai',
+      favicon: getFaviconUrl('https://claude.ai'),
       isApp: true
     }
   ];
