@@ -19,11 +19,19 @@ let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
 let currentBlobUrl = '';
+let backgroundTransitionToken = 0;
+let themeRevealTimer = 0;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
+const WALLPAPER_FADE_MS = 400;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+const THEME_CROSSFADE_MS = 600;
 
 function getBodyEl() { return document.body; }
+function getWallpaperFadeDuration() {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 0 : WALLPAPER_FADE_MS;
+}
+
 function normalizeTheme(themeId) {
   return THEMES.some((t) => t.id === themeId) ? themeId : 'midnight';
 }
@@ -39,6 +47,67 @@ function applyTheme(themeId) {
   body.classList.add(`theme-${nextTheme}`);
   if (!currentWallpaperUrl) body.classList.remove('has-wallpaper');
   bus.dispatchEvent(new CustomEvent('themeChanged'));
+}
+
+/**
+ * Cinematic ghost-layer crossfade for palette-to-palette transitions.
+ * Snapshots the current #theme-layer computed background, swaps the class
+ * underneath, and fades the snapshot away to reveal the new theme.
+ */
+function crossfadeTheme(newThemeId) {
+  const body = getBodyEl();
+  const themeLayer = document.getElementById('theme-layer');
+  if (!body || !themeLayer) {
+    applyTheme(newThemeId);
+    return;
+  }
+
+  // Skip cinematic if wallpaper is active (theme layer is opacity:0 anyway)
+  if (body.classList.contains('has-wallpaper')) {
+    applyTheme(newThemeId);
+    return;
+  }
+
+  // Skip cinematic if reduced motion is preferred
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    applyTheme(newThemeId);
+    return;
+  }
+
+  // Skip if the theme isn't actually changing
+  if (currentTheme === normalizeTheme(newThemeId)) {
+    return;
+  }
+
+  // 1. Snapshot the current computed background
+  const computed = window.getComputedStyle(themeLayer);
+  const oldBgImage = computed.backgroundImage;
+  const oldBgColor = computed.backgroundColor;
+
+  // 2. Create ghost element
+  const ghost = document.createElement('div');
+  ghost.id = 'theme-ghost';
+  ghost.style.backgroundImage = oldBgImage;
+  ghost.style.backgroundColor = oldBgColor;
+  ghost.style.opacity = '1';
+
+  // 3. Insert ghost AFTER #theme-layer (correct z-index stacking by DOM order)
+  themeLayer.insertAdjacentElement('afterend', ghost);
+
+  // 4. Swap the real theme class underneath (instant, hidden by ghost)
+  applyTheme(newThemeId);
+
+  // 5. Double-rAF ensures browser has painted the ghost and new theme
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      ghost.style.opacity = '0';
+
+      // 6. Cleanup after transition completes
+      setTimeout(() => {
+        ghost.remove();
+      }, THEME_CROSSFADE_MS);
+    });
+  });
 }
 
 function normalizeWallpaperUrl(value) {
@@ -243,6 +312,35 @@ function getWallpaperLayer() {
   return document.getElementById('bg-layer');
 }
 
+function getWallpaperOverlay() {
+  return document.getElementById('bg-overlay');
+}
+
+function setWallpaperFadeOutState(isFading) {
+  getWallpaperLayer()?.classList.toggle('wp-fade-out', isFading);
+  getWallpaperOverlay()?.classList.toggle('wp-fade-out', isFading);
+}
+
+function clearThemeRevealHold() {
+  if (themeRevealTimer) {
+    clearTimeout(themeRevealTimer);
+    themeRevealTimer = 0;
+  }
+  getBodyEl()?.classList.remove('theme-layer-hold');
+}
+
+function holdThemeReveal() {
+  const fadeDuration = getWallpaperFadeDuration();
+  clearThemeRevealHold();
+  const body = getBodyEl();
+  if (!body) return;
+  body.classList.add('theme-layer-hold');
+  themeRevealTimer = setTimeout(() => {
+    themeRevealTimer = 0;
+    body.classList.remove('theme-layer-hold');
+  }, fadeDuration);
+}
+
 function clearWallpaperMedia() {
   getWallpaperLayer()?.querySelectorAll('[data-wallpaper-media="true"]').forEach((el) => el.remove());
 }
@@ -314,10 +412,15 @@ function createWallpaperYouTubeShell(embedUrl) {
   return container;
 }
 
-function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic = false } = {}) {
+function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic = false, holdThemeReveal: shouldHoldThemeReveal = false } = {}) {
   const root = document.documentElement.style;
   const body = getBodyEl();
   const previousBlobUrl = currentBlobUrl;
+  const transitionToken = ++backgroundTransitionToken;
+  const layer = getWallpaperLayer();
+
+  clearThemeRevealHold();
+  setWallpaperFadeOutState(false);
 
   if (!source) {
     // Revoke blob on clear
@@ -328,6 +431,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
     currentWallpaperUrl = '';
     clearBrightnessAdaptation();
     applyTheme(currentTheme);
+    if (shouldHoldThemeReveal) holdThemeReveal();
     return;
   }
 
@@ -335,9 +439,9 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   const renderUrl = source.blobUrl || source.url;
   const bgImageValue = source.type === 'image' ? `url(${JSON.stringify(renderUrl)})` : 'none';
 
-  const layer = getWallpaperLayer();
-
   const applySource = () => {
+    if (transitionToken !== backgroundTransitionToken) return;
+
     // Revoke old blob now that we're swapping (old image no longer displayed)
     if (previousBlobUrl && previousBlobUrl !== source.blobUrl) {
       URL.revokeObjectURL(previousBlobUrl);
@@ -370,20 +474,23 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   // 2. While invisible → swap --bg-image to the blob URL (instant, in memory)
   // 3. Double-rAF → fade back in (browser has committed the new image)
   if (cinematic && layer && source.type === 'image' && source.blobUrl) {
-    layer.classList.add('wp-fade-out');
+    const fadeDuration = getWallpaperFadeDuration();
+    setWallpaperFadeOutState(true);
 
-    // Wait for CSS fade-out to finish (400ms matches the CSS transition)
+    // Wait for the fade-out to finish, or skip it entirely for reduced motion.
     setTimeout(() => {
+      if (transitionToken !== backgroundTransitionToken) return;
       applySource();
 
       // Double-rAF: guarantees the browser has painted the new bg-image
       // before we remove the fade-out class and reveal it.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          layer.classList.remove('wp-fade-out');
+          if (transitionToken !== backgroundTransitionToken) return;
+          setWallpaperFadeOutState(false);
         });
       });
-    }, 420);
+    }, fadeDuration);
   } else {
     applySource();
   }
@@ -442,7 +549,7 @@ export async function initBackground() {
   }
 
   Prefs.onChange((changes) => {
-    if ('theme' in changes) applyTheme(changes.theme);
+    if ('theme' in changes) crossfadeTheme(changes.theme);
     if ('wallpaperUrl' in changes) {
       if (changes.wallpaperUrl === currentWallpaperUrl) return;
       const root = document.documentElement.style;
@@ -464,7 +571,7 @@ export async function initBackground() {
 
 export async function setTheme(themeId) {
   const nextTheme = normalizeTheme(themeId);
-  applyTheme(nextTheme);
+  crossfadeTheme(nextTheme);
   await Prefs.set('theme', nextTheme);
 }
 
@@ -474,7 +581,7 @@ export async function setWallpaper(url, blur = 0, darken = 0.3) {
 
 export function clearWallpaper() {
   wallpaperRequestId++;
-  applyWallpaperSourceToDom(null);
+  applyWallpaperSourceToDom(null, 0, 0.3, { holdThemeReveal: true });
   Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch((error) => {
     reportBackgroundError('Failed to persist wallpaper clear:', error);
   });

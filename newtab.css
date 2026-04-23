@@ -126,9 +126,7 @@ body {
   min-height: 100vh;
   font-family: var(--font-ui);
   color: var(--text-primary);
-  background:
-    radial-gradient(ellipse at 80% 50%, rgba(51,65,85,0.5) 0%, transparent 60%),
-    linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: #000;
   background-attachment: fixed;
   overflow: hidden;
   user-select: none;
@@ -141,9 +139,7 @@ body {
 }
 
 #app-body {
-  background:
-          radial-gradient(ellipse at 80% 50%, rgba(51,65,85,0.5) 0%, transparent 60%),
-          linear-gradient(to bottom, #0f172a 0%, #1e293b 50%, #334155 100%);
+  background: #000;
 }
 
 button {
@@ -188,13 +184,37 @@ button:disabled {
   border-radius: var(--glass-radius-sm);
 }
 
+#theme-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  background: var(--theme-background, none);
+  transition: opacity 0.4s ease-in-out;
+}
+
+#app-body.has-wallpaper #theme-layer,
+#app-body.theme-layer-hold #theme-layer {
+  opacity: 0;
+}
+
+/* ── Theme Ghost: cinematic crossfade snapshot ── */
+#theme-ghost {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease-in-out;
+}
+
 /* ────────────────────────────────────────────────────────────
    SECTION 3 — Background System
    ──────────────────────────────────────────────────────────── */
 #bg-layer {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   overflow: hidden;
   background-image: var(--bg-image);
   background-size: cover;
@@ -258,9 +278,11 @@ button:disabled {
 #bg-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   pointer-events: none;
   background: none;
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out;
 }
 
 #app-body.has-wallpaper #bg-overlay {
@@ -271,10 +293,17 @@ button:disabled {
     linear-gradient(to bottom, rgba(0, 0, 0, calc(var(--bg-darken) * 0.62)) 0%, rgba(0, 0, 0, calc(var(--bg-darken) * 1.02)) 100%);
 }
 
+/* Neutralize the overlay glow during wallpaper swaps */
+#bg-layer.wp-fade-out + #bg-overlay,
+#bg-overlay.wp-fade-out {
+  opacity: 0 !important;
+  transition: opacity 0.4s ease-in-out;
+}
+
 #bg-grain {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   opacity: var(--bg-grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
@@ -373,6 +402,13 @@ body.acrylic-loaded .anim-sidebar {
     opacity: 1 !important;
   }
 
+  #theme-layer,
+  #bg-layer,
+  #bg-overlay,
+  #theme-ghost {
+    transition: none !important;
+  }
+
   body.acrylic-loaded .anim-bg,
   body.acrylic-loaded .anim-clock,
   body.acrylic-loaded .anim-greeting,
@@ -386,56 +422,56 @@ body.acrylic-loaded .anim-sidebar {
    SECTION 4 — Theme Presets
    ──────────────────────────────────────────────────────────── */
 #app-body.theme-midnight {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 50% 52%, rgba(56, 117, 223, 0.18) 0%, transparent 46%),
     radial-gradient(ellipse at 18% 22%, rgba(59, 130, 246, 0.10) 0%, transparent 52%),
     linear-gradient(168deg, #050b18 0%, #0a1328 48%, #111f3a 100%);
 }
 
 #app-body.theme-deep-blue {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 30% 70%, rgba(14, 50, 100, 0.20) 0%, transparent 55%),
     radial-gradient(ellipse at 78% 24%, rgba(37, 99, 235, 0.11) 0%, transparent 52%),
     linear-gradient(160deg, #021b37 0%, #031541 50%, #0e1421 100%);
 }
 
 #app-body.theme-aurora {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 70% 30%, rgba(0, 150, 136, 0.15) 0%, transparent 55%),
     radial-gradient(ellipse at 24% 74%, rgba(20, 184, 166, 0.10) 0%, transparent 52%),
     linear-gradient(160deg, #003840 0%, #005a5b 50%, #007369 100%);
 }
 
 #app-body.theme-rose-noir {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 50% 50%, rgba(120, 30, 80, 0.20) 0%, transparent 55%),
     radial-gradient(ellipse at 20% 24%, rgba(236, 72, 153, 0.10) 0%, transparent 50%),
     linear-gradient(160deg, #2d0320 0%, #4a154b 50%, #5d3a5f 100%);
 }
 
 #app-body.theme-espresso {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 40% 60%, rgba(80, 40, 20, 0.15) 0%, transparent 55%),
     radial-gradient(ellipse at 76% 18%, rgba(180, 83, 9, 0.10) 0%, transparent 52%),
     linear-gradient(160deg, #1c0f0a 0%, #2a1a12 50%, #3d2015 100%);
 }
 
 #app-body.theme-forest {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 50% 50%, rgba(34, 80, 34, 0.15) 0%, transparent 55%),
     radial-gradient(ellipse at 24% 20%, rgba(74, 222, 128, 0.09) 0%, transparent 50%),
     linear-gradient(160deg, #0d1f0f 0%, #1a2e1c 50%, #1e3320 100%);
 }
 
 #app-body.theme-carbon {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 50% 50%, rgba(30, 58, 138, 0.08) 0%, transparent 55%),
     radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 48%),
     linear-gradient(165deg, #050505 0%, #0a0a0a 52%, #111111 100%);
 }
 
 #app-body.theme-synthwave {
-  background:
+  --theme-background:
     radial-gradient(ellipse at 30% 70%, rgba(168, 85, 247, 0.18) 0%, transparent 55%),
     radial-gradient(ellipse at 78% 24%, rgba(236, 72, 153, 0.14) 0%, transparent 52%),
     radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
