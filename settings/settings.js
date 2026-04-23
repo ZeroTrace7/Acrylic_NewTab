@@ -1174,14 +1174,15 @@ async function openSettings(callback) {
   document.addEventListener('keydown', escHandler);
   themeChangedHandler = async () => {
     prefs.theme = await Prefs.get('theme');
-    Array.from(modalEl?.getElementsByTagName('button') || []).forEach((btn) => {
-      if (!btn.textContent) return;
-      const theme = getAvailableThemes().find((t) => t.label === btn.textContent.trim());
+    const paletteBtns = modalEl?.querySelectorAll('.palette-swatch-btn') || [];
+    paletteBtns.forEach((btn) => {
+      const label = btn.querySelector('.palette-label');
+      if (!label) return;
+      const theme = getAvailableThemes().find((t) => t.label === label.textContent.trim());
       if (!theme) return;
       const active = prefs.theme === theme.id;
-      btn.style.borderColor = active ? 'var(--glass-border)' : 'transparent';
-      btn.style.background = active ? 'var(--glass-subtle)' : 'transparent';
-      btn.style.color = active ? 'var(--text-primary)' : 'var(--text-secondary)';
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
     });
   };
   bus.addEventListener('themeChanged', themeChangedHandler);
