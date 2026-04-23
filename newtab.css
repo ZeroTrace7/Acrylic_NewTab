@@ -266,8 +266,12 @@ button:disabled {
   left: 50%;
   width: max(100vw, 177.7778vh);
   height: max(56.25vw, 100vh);
-  transform: translate(-50%, -50%);
+  /* Overscan: scale up 15% so YouTube's edge UI (title bar, logo,
+     pause icon) bleeds off-screen. translate centers the scaled frame. */
+  transform: translate(-50%, -50%) scale(1.15);
+  transform-origin: center center;
   pointer-events: none;
+  border: 0;
 }
 
 .acrylic-video-mask {

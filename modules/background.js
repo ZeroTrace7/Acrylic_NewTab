@@ -161,9 +161,11 @@ function buildYouTubeEmbedUrl(videoId) {
     fs: '0',
     iv_load_policy: '3',
     loop: '1',
+    modestbranding: '1',
     playsinline: '1',
     playlist: videoId,
     rel: '0',
+    showinfo: '0',
   });
 
   // Use youtube-nocookie.com for better privacy-browser compatibility (Brave, etc.)
@@ -372,24 +374,35 @@ function createWallpaperYouTubeShell(embedUrl) {
 
   // Auto-detect embed failure (Brave Shields, network errors, etc.)
   // If YouTube's player can't initialize, it renders an error page inside the
-  // iframe. We can't read cross-origin content, but we can listen for the
-  // YouTube IFrame API's state message. If no message arrives within
-  // 6 seconds, assume failure and gracefully remove the embed.
-  const EMBED_TIMEOUT_MS = 6000;
+  // iframe. We use two methods to confirm the embed loaded:
+  //   1. postMessage events from the YouTube IFrame API
+  //   2. iframe 'load' event (fires when embed page loads, even without API messages)
+  // If neither confirms within 10 seconds, remove the embed gracefully
+  // but preserve persisted storage so the user can retry on next tab load.
+  const EMBED_TIMEOUT_MS = 10000;
   let videoConfirmed = false;
 
+  const confirmEmbed = () => {
+    if (videoConfirmed) return;
+    videoConfirmed = true;
+    window.removeEventListener('message', onYTMessage);
+  };
+
+  // Method 1: Listen for any postMessage from the YouTube embed
   const onYTMessage = (e) => {
     if (!e.data || typeof e.data !== 'string') return;
     try {
       const msg = JSON.parse(e.data);
-      // YouTube's IFrame API sends state changes via postMessage
-      if (msg?.event === 'onStateChange' || msg?.event === 'initialDelivery' || msg?.info) {
-        videoConfirmed = true;
-        window.removeEventListener('message', onYTMessage);
+      // Accept any YouTube API message as confirmation
+      if (msg?.event || msg?.info || msg?.id) {
+        confirmEmbed();
       }
     } catch { /* not a YouTube message — ignore */ }
   };
   window.addEventListener('message', onYTMessage);
+
+  // Method 2: iframe load event — more reliable than postMessage on privacy browsers
+  frame.addEventListener('load', confirmEmbed);
 
   setTimeout(() => {
     window.removeEventListener('message', onYTMessage);
@@ -399,14 +412,14 @@ function createWallpaperYouTubeShell(embedUrl) {
       container.remove();
       currentWallpaperUrl = '';
 
-      // Clear persisted wallpaper so it doesn't retry on next tab load
-      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
-
-      // Restore the theme background
+      // Restore the theme background visually
       const body = getBodyEl();
       if (body) body.classList.remove('has-wallpaper');
       document.documentElement.style.setProperty('--bg-image', 'none');
       applyTheme(currentTheme);
+
+      // NOTE: Do NOT clear persisted storage here — let the user retry on next
+      // tab load. They can manually clear via the Clear Wallpaper button.
     }
   }, EMBED_TIMEOUT_MS);
 
@@ -424,15 +437,39 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   setWallpaperFadeOutState(false);
 
   if (!source) {
-    // Revoke blob on clear
-    if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = ''; }
-    clearWallpaperMedia();
-    root.setProperty('--bg-image', 'none');
-    if (body) body.classList.remove('has-wallpaper');
+    const fadeDuration = getWallpaperFadeDuration();
+    const wasWallpaperActive = body?.classList.contains('has-wallpaper');
+
+    // Immediate state cleanup (non-visual)
     currentWallpaperUrl = '';
     clearBrightnessAdaptation();
+
+    if (fadeDuration === 0 || !wasWallpaperActive) {
+      // Reduced motion or no wallpaper to fade — instant cleanup
+      if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = ''; }
+      clearWallpaperMedia();
+      root.setProperty('--bg-image', 'none');
+      if (body) body.classList.remove('has-wallpaper');
+      applyTheme(currentTheme);
+      return;
+    }
+
+    // ── Cinematic Clear: crossfade wallpaper out, theme in ──
+    // 1. Wallpaper + overlay start fading to opacity 0 (0.4s CSS transition)
+    setWallpaperFadeOutState(true);
+    // 2. Theme-layer starts fading to opacity 1 simultaneously
+    if (body) body.classList.remove('has-wallpaper');
     applyTheme(currentTheme);
-    if (shouldHoldThemeReveal) holdThemeReveal();
+
+    // 3. After fade completes, clean up DOM and revoke blob
+    setTimeout(() => {
+      if (transitionToken !== backgroundTransitionToken) return;
+      if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = ''; }
+      clearWallpaperMedia();
+      root.setProperty('--bg-image', 'none');
+      setWallpaperFadeOutState(false);
+    }, fadeDuration);
+
     return;
   }
 
