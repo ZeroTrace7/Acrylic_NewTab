@@ -363,8 +363,9 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   };
 
   // Cinematic fade: fast fade-out → swap → smooth fade-in
-  // Only for user-triggered wallpaper changes, not initial page load.
-  if (cinematic && layer && source.type === 'image') {
+  // Only when image is pre-buffered in memory (blobUrl available).
+  // Without blob, the remote URL hasn't downloaded yet — fading would show black.
+  if (cinematic && layer && source.type === 'image' && source.blobUrl) {
     layer.style.transition = 'opacity 0.15s ease-out';
     layer.style.opacity = '0';
     setTimeout(() => {

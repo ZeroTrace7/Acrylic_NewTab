@@ -449,7 +449,7 @@ function buildProfileSection() {
   nameIn.setAttribute('style', 'width:100%;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;box-sizing:border-box;');
   nameIn.onfocus = () => nameIn.style.borderColor = 'var(--glass-border)';
   nameIn.onblur = () => nameIn.style.borderColor = 'var(--glass-border-soft)';
-  const saveName = debounce((v) => { Prefs.set('userName', v); }, 800);
+  const saveName = debounce((v) => { Prefs.set('userName', v); toast.success('Name saved!'); }, 800);
   nameIn.oninput = () => saveName(nameIn.value);
   sec1.append(nameLabel, nameIn);
   return sec1;
@@ -709,6 +709,24 @@ function buildAppearanceSection() {
       btn.addEventListener('click', () => {
         setTheme(t.id);
         prefs.theme = t.id;
+
+        // If a wallpaper is currently active, clear it so the solid theme shows
+        if (prefs.wallpaperUrl) {
+          clearWallpaper();
+          prefs.wallpaperUrl = '';
+          
+          // Clear active state on preset cards
+          const activePresets = document.querySelectorAll('.wallpaper-preset-card.is-active');
+          activePresets.forEach(p => p.classList.remove('is-active'));
+          
+          // Clear custom URL input and remove custom sliders
+          const urlInput = document.querySelector('.custom-wallpaper-input');
+          if (urlInput) urlInput.value = '';
+          
+          const customControls = document.querySelector('.custom-controls-group');
+          if (customControls) customControls.remove();
+        }
+
         renderPalette();
       });
 
