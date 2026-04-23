@@ -26,6 +26,7 @@ const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const WALLPAPER_FADE_MS = 400;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
 const THEME_CROSSFADE_MS = 600;
+const WALLPAPER_CROSSFADE_MS = 600;
 
 function getBodyEl() { return document.body; }
 function getWallpaperFadeDuration() {
@@ -468,29 +469,62 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
     }
   };
 
-  // ── Cinematic "Hold and Swap" ────────────────────────────
-  // Only when image is pre-buffered in memory (blobUrl available).
-  // 1. Fade out old image (CSS class drives the 0.4s transition)
-  // 2. While invisible → swap --bg-image to the blob URL (instant, in memory)
-  // 3. Double-rAF → fade back in (browser has committed the new image)
-  if (cinematic && layer && source.type === 'image' && source.blobUrl) {
+  // ── Cinematic Wallpaper Crossfade ─────────────────────────
+  // Two paths depending on whether a wallpaper already exists:
+  //   PATH A: No existing wallpaper → skip fade-out, apply + fade-in
+  //   PATH B: Existing wallpaper → ghost snapshot crossfade (no black flash)
+  if (cinematic && layer && source.type === 'image') {
+    const hasExistingWallpaper = !!currentWallpaperUrl;
     const fadeDuration = getWallpaperFadeDuration();
-    setWallpaperFadeOutState(true);
+    const isReducedMotion = fadeDuration === 0;
 
-    // Wait for the fade-out to finish, or skip it entirely for reduced motion.
-    setTimeout(() => {
-      if (transitionToken !== backgroundTransitionToken) return;
-      applySource();
-
-      // Double-rAF: guarantees the browser has painted the new bg-image
-      // before we remove the fade-out class and reveal it.
-      requestAnimationFrame(() => {
+    if (!hasExistingWallpaper) {
+      // ── PATH A: Palette → First Wallpaper ──────────────────
+      if (isReducedMotion) {
+        applySource();
+      } else {
+        setWallpaperFadeOutState(true);
+        applySource();
         requestAnimationFrame(() => {
-          if (transitionToken !== backgroundTransitionToken) return;
-          setWallpaperFadeOutState(false);
+          requestAnimationFrame(() => {
+            if (transitionToken !== backgroundTransitionToken) return;
+            setWallpaperFadeOutState(false);
+          });
         });
-      });
-    }, fadeDuration);
+      }
+
+    } else {
+      // ── PATH B: Wallpaper → Wallpaper (Ghost Crossfade) ────
+      const oldBgImage = root.getPropertyValue('--bg-image').trim();
+
+      if (isReducedMotion) {
+        applySource();
+      } else {
+        const ghost = document.createElement('div');
+        ghost.id = 'wallpaper-ghost';
+        ghost.style.backgroundImage = oldBgImage;
+        ghost.style.opacity = '1';
+        layer.appendChild(ghost);
+
+        applySource();
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // If interrupted by a rapid click, instantly kill this ghost
+            // to prevent it staying at opacity:1 and blocking the real layer
+            if (transitionToken !== backgroundTransitionToken) {
+              ghost.remove();
+              return;
+            }
+            ghost.style.opacity = '0';
+            setTimeout(() => {
+              ghost.remove();
+            }, WALLPAPER_CROSSFADE_MS);
+          });
+        });
+      }
+    }
+
   } else {
     applySource();
   }

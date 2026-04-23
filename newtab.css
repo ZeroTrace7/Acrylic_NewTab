@@ -231,6 +231,17 @@ button:disabled {
   opacity: 0 !important;
 }
 
+/* ── Wallpaper Ghost: cinematic crossfade snapshot ── */
+#wallpaper-ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.6s ease-in-out;
+}
+
 .wallpaper-media {
   position: absolute;
   inset: 0;
@@ -405,7 +416,8 @@ body.acrylic-loaded .anim-sidebar {
   #theme-layer,
   #bg-layer,
   #bg-overlay,
-  #theme-ghost {
+  #theme-ghost,
+  #wallpaper-ghost {
     transition: none !important;
   }
 
