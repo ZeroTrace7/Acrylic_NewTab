@@ -462,7 +462,7 @@ function buildAppearanceSection() {
   // Header with icon
   const header = document.createElement('div');
   header.className = 'appearance-section-label';
-  header.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17.5 10.5c2.5 0 4.5 2 4.5 4.5a4.5 4.5 0 0 1-4.5 4.5H7A5 5 0 0 1 7 9.5h.5"/><circle cx="7" cy="14.5" r="0"/></svg>Appearance`;
+  header.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2v2"/><path d="M14 2v4"/><path d="M17 2a1 1 0 0 1 1 1v9H6V3a1 1 0 0 1 1-1z"/><path d="M6 12a1 1 0 0 0-1 1v1a2 2 0 0 0 2 2h2a1 1 0 0 1 1 1v2.9a2 2 0 1 0 4 0V17a1 1 0 0 1 1-1h2a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1"/></svg>Appearance`;
   sec.appendChild(header);
 
   // ── Tab bar ─────────────────────────────────────────────
@@ -793,8 +793,6 @@ function buildAppearanceSection() {
       setGrain(v);
     }));
 
-    customControls.appendChild(group);
-
     const clrBtn = document.createElement('button');
     clrBtn.type = 'button';
     clrBtn.className = 'custom-clear-btn';
@@ -807,7 +805,9 @@ function buildAppearanceSection() {
       rebuildCustomControls();
       renderPresets();
     });
-    customControls.appendChild(clrBtn);
+    group.appendChild(clrBtn);
+
+    customControls.appendChild(group);
   };
   rebuildCustomControls();
   customPane.appendChild(customControls);
