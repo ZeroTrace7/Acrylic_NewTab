@@ -156,7 +156,7 @@ function buildYouTubeEmbedUrl(videoId) {
   const params = new URLSearchParams({
     autoplay: '1',
     mute: '1',
-    controls: '0',
+    controls: '1',
     disablekb: '1',
     fs: '0',
     iv_load_policy: '3',
@@ -380,12 +380,21 @@ function createWallpaperYouTubeShell(embedUrl) {
   // If neither confirms within 10 seconds, remove the embed gracefully
   // but preserve persisted storage so the user can retry on next tab load.
   const EMBED_TIMEOUT_MS = 10000;
+  const CURTAIN_DELAY_MS = 2500;
   let videoConfirmed = false;
 
   const confirmEmbed = () => {
     if (videoConfirmed) return;
     videoConfirmed = true;
     window.removeEventListener('message', onYTMessage);
+
+    // Wait for YouTube's native UI (play button, title) to auto-hide,
+    // then pull the curtain to reveal the pristine video
+    setTimeout(() => {
+      if (mask.isConnected) {
+        mask.classList.add('curtain-open');
+      }
+    }, CURTAIN_DELAY_MS);
   };
 
   // Method 1: Listen for any postMessage from the YouTube embed
@@ -412,14 +421,14 @@ function createWallpaperYouTubeShell(embedUrl) {
       container.remove();
       currentWallpaperUrl = '';
 
+      // Clear persisted wallpaper so it doesn't retry on next tab load
+      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
+
       // Restore the theme background visually
       const body = getBodyEl();
       if (body) body.classList.remove('has-wallpaper');
       document.documentElement.style.setProperty('--bg-image', 'none');
       applyTheme(currentTheme);
-
-      // NOTE: Do NOT clear persisted storage here — let the user retry on next
-      // tab load. They can manually clear via the Clear Wallpaper button.
     }
   }, EMBED_TIMEOUT_MS);
 

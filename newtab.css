@@ -279,15 +279,15 @@ button:disabled {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /* Start fully opaque to hide any embed errors (Brave Shields, etc.).
-     The JS fallback will remove the entire YouTube container if the
-     embed fails, so this mask just buys time. */
+  /* Solid black curtain — hides YouTube's native UI (play button, title)
+     during load. JS adds .curtain-open after video confirmed + 2.5s delay. */
   background: #000;
-  animation: acrylic-video-reveal 1.2s ease 3s forwards;
+  transition: background 1.5s ease-in-out;
 }
 
-@keyframes acrylic-video-reveal {
-  to { background: rgba(0, 0, 0, 0.4); }
+/* JS-controlled reveal: fades from solid black to semi-transparent darken overlay */
+.acrylic-video-mask.curtain-open {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 #bg-overlay {
