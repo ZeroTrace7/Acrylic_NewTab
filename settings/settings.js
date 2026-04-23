@@ -455,29 +455,367 @@ function buildProfileSection() {
   return sec1;
 }
 
-function buildThemeSection() {
-  const sec2 = document.createElement('div');
-  sec2.className = 'settings-card';
-  sec2.appendChild(sectionLabel('Theme'));
-  const grid = document.createElement('div');
-  grid.setAttribute('style', 'display:grid;grid-template-columns:repeat(4,1fr);gap:8px;');
-  const renderThemes = () => {
-    grid.innerHTML = '';
-    getAvailableThemes().forEach(t => {
-      const btn = document.createElement('button');
-      const active = prefs.theme === t.id;
-      btn.ariaLabel = `Apply ${t.label} theme`;
-      btn.setAttribute('style', `padding:8px 4px;border-radius:12px;font-size:0.72rem;font-weight:500;cursor:pointer;transition:all 150ms ease;border:1px solid ${active ? 'var(--glass-border)' : 'transparent'};background:${active ? 'var(--glass-subtle)' : 'transparent'};color:${active ? 'var(--text-primary)' : 'var(--text-secondary)'};text-align:center;`);
-      const swatch = document.createElement('div');
-      swatch.setAttribute('style', `height:24px;border-radius:8px;margin-bottom:4px;background:${THEME_COLORS[t.id] || '#111'};`);
-      btn.append(swatch, document.createTextNode(t.label));
-      btn.onclick = () => { setTheme(t.id); prefs.theme = t.id; renderThemes(); };
-      grid.appendChild(btn);
+function buildAppearanceSection() {
+  const sec = document.createElement('div');
+  sec.className = 'settings-card';
+
+  // Header with icon
+  const header = document.createElement('div');
+  header.className = 'appearance-section-label';
+  header.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17.5 10.5c2.5 0 4.5 2 4.5 4.5a4.5 4.5 0 0 1-4.5 4.5H7A5 5 0 0 1 7 9.5h.5"/><circle cx="7" cy="14.5" r="0"/></svg>Appearance`;
+  sec.appendChild(header);
+
+  // ── Tab bar ─────────────────────────────────────────────
+  const tabBar = document.createElement('div');
+  tabBar.className = 'appearance-tabs';
+
+  const TAB_DEFS = [
+    {
+      id: 'wallpapers',
+      label: 'Wallpapers',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>`
+    },
+    {
+      id: 'palette',
+      label: 'Palette',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="7" r="1" fill="currentColor" stroke="none"/><circle cx="16.5" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="7.5" cy="10" r="1" fill="currentColor" stroke="none"/></svg>`
+    },
+    {
+      id: 'custom',
+      label: 'Custom',
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`
+    },
+  ];
+
+  let activeTab = 'wallpapers';
+  const tabBtns = [];
+  const panes = {};
+
+  TAB_DEFS.forEach(def => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `appearance-tab${def.id === activeTab ? ' is-active' : ''}`;
+    btn.innerHTML = `${def.icon}${def.label}`;
+    btn.setAttribute('aria-label', `${def.label} tab`);
+    btn.addEventListener('click', () => switchTab(def.id));
+    tabBar.appendChild(btn);
+    tabBtns.push({ id: def.id, btn });
+  });
+
+  sec.appendChild(tabBar);
+
+  function switchTab(id) {
+    activeTab = id;
+    tabBtns.forEach(t => {
+      t.btn.classList.toggle('is-active', t.id === id);
+    });
+    Object.keys(panes).forEach(k => {
+      panes[k].classList.toggle('is-active', k === id);
+    });
+  }
+
+  // ── WALLPAPERS PANE ─────────────────────────────────────
+  const WALLPAPER_PRESETS = [
+    {
+      id: 'alpine',
+      label: 'Alpine',
+      url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=60',
+    },
+    {
+      id: 'starry',
+      label: 'Starry Night',
+      url: 'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=400&q=60',
+    },
+    {
+      id: 'dark-ocean',
+      label: 'Dark Ocean',
+      url: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=400&q=60',
+    },
+    {
+      id: 'abstract-blue',
+      label: 'Silk Blue',
+      url: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1557682250-33bd709cbe85?w=400&q=60',
+    },
+    {
+      id: 'northern-lights',
+      label: 'Aurora',
+      url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=400&q=60',
+    },
+    {
+      id: 'misty-forest',
+      label: 'Misty Forest',
+      url: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=400&q=60',
+    },
+    {
+      id: 'sunset',
+      label: 'Sunset',
+      url: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=400&q=60',
+    },
+    {
+      id: 'city-night',
+      label: 'City Night',
+      url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1920&q=80',
+      thumb: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=400&q=60',
+    },
+  ];
+
+  const wallpapersPane = document.createElement('div');
+  wallpapersPane.className = 'appearance-pane is-active';
+
+  // Presets header with darken slider
+  const presetsHeader = document.createElement('div');
+  presetsHeader.className = 'appearance-presets-header';
+
+  const presetsLabel = document.createElement('span');
+  presetsLabel.className = 'appearance-presets-label';
+  presetsLabel.textContent = 'Presets';
+
+  const darkenInline = document.createElement('div');
+  darkenInline.className = 'appearance-darken-inline';
+
+  const darkenVal = document.createElement('span');
+  darkenVal.className = 'appearance-darken-value';
+  darkenVal.textContent = `${Math.round(prefs.wallpaperDarken * 100)}%`;
+
+  const darkenSlider = document.createElement('input');
+  darkenSlider.type = 'range';
+  darkenSlider.className = 'appearance-darken-slider';
+  darkenSlider.min = '0';
+  darkenSlider.max = '90';
+  darkenSlider.step = '5';
+  darkenSlider.value = String(Math.round(prefs.wallpaperDarken * 100));
+  darkenSlider.setAttribute('aria-label', 'Wallpaper darken percentage');
+  darkenSlider.oninput = () => {
+    const v = parseFloat(darkenSlider.value) / 100;
+    darkenVal.textContent = `${darkenSlider.value}%`;
+    prefs.wallpaperDarken = v;
+    setWallpaperAppearance(prefs.wallpaperBlur, v);
+    Prefs.set('wallpaperDarken', v);
+  };
+
+  darkenInline.append(darkenVal, darkenSlider);
+  presetsHeader.append(presetsLabel, darkenInline);
+  wallpapersPane.appendChild(presetsHeader);
+
+  // Preset grid
+  const presetsGrid = document.createElement('div');
+  presetsGrid.className = 'wallpaper-presets-grid';
+
+  const renderPresets = () => {
+    presetsGrid.innerHTML = '';
+    WALLPAPER_PRESETS.forEach(preset => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'wallpaper-preset-card';
+      if (prefs.wallpaperUrl && prefs.wallpaperUrl.includes(preset.url.split('?')[0].split('/').pop())) {
+        card.classList.add('is-active');
+      }
+      card.setAttribute('aria-label', `Apply ${preset.label} wallpaper`);
+
+      const img = document.createElement('img');
+      img.src = preset.thumb;
+      img.alt = preset.label;
+      img.loading = 'lazy';
+
+      const check = document.createElement('div');
+      check.className = 'preset-check';
+      check.innerHTML = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+      card.append(img, check);
+
+      card.addEventListener('click', async () => {
+        card.style.opacity = '0.7';
+        try {
+          const appliedUrl = await setWallpaper(preset.url, prefs.wallpaperBlur, prefs.wallpaperDarken);
+          prefs.wallpaperUrl = appliedUrl;
+          renderPresets();
+          toast.success(`${preset.label} wallpaper applied`);
+        } catch (err) {
+          if (err?.message !== 'Wallpaper request was superseded') {
+            toast.error(err?.message || 'Failed to apply wallpaper');
+          }
+        } finally {
+          card.style.opacity = '1';
+        }
+      });
+
+      presetsGrid.appendChild(card);
     });
   };
-  renderThemes();
-  sec2.appendChild(grid);
-  return sec2;
+  renderPresets();
+  wallpapersPane.appendChild(presetsGrid);
+
+  // Random wallpaper button
+  const randomBtn = document.createElement('button');
+  randomBtn.type = 'button';
+  randomBtn.className = 'random-wallpaper-btn';
+  randomBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg><span>Random Wallpaper</span>`;
+  randomBtn.setAttribute('aria-label', 'Apply a random wallpaper');
+  randomBtn.addEventListener('click', async () => {
+    const randomIndex = Math.floor(Math.random() * WALLPAPER_PRESETS.length);
+    const preset = WALLPAPER_PRESETS[randomIndex];
+    randomBtn.querySelector('span').textContent = 'Shuffling…';
+    try {
+      const appliedUrl = await setWallpaper(preset.url, prefs.wallpaperBlur, prefs.wallpaperDarken);
+      prefs.wallpaperUrl = appliedUrl;
+      renderPresets();
+      toast.success(`Random: ${preset.label}`);
+    } catch (err) {
+      if (err?.message !== 'Wallpaper request was superseded') {
+        toast.error(err?.message || 'Random wallpaper failed');
+      }
+    } finally {
+      randomBtn.querySelector('span').textContent = 'Random Wallpaper';
+    }
+  });
+  wallpapersPane.appendChild(randomBtn);
+
+  panes.wallpapers = wallpapersPane;
+  sec.appendChild(wallpapersPane);
+
+  // ── PALETTE PANE ────────────────────────────────────────
+  const palettePane = document.createElement('div');
+  palettePane.className = 'appearance-pane';
+
+  const paletteGrid = document.createElement('div');
+  paletteGrid.className = 'palette-grid';
+
+  const renderPalette = () => {
+    paletteGrid.innerHTML = '';
+    getAvailableThemes().forEach(t => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const isActive = prefs.theme === t.id;
+      btn.className = `palette-swatch-btn${isActive ? ' is-active' : ''}`;
+      btn.setAttribute('aria-label', `Apply ${t.label} theme`);
+      btn.setAttribute('aria-pressed', String(isActive));
+
+      const swatch = document.createElement('div');
+      swatch.className = 'palette-swatch';
+      swatch.style.background = THEME_COLORS[t.id] || '#111';
+
+      const label = document.createElement('span');
+      label.className = 'palette-label';
+      label.textContent = t.label;
+
+      btn.append(swatch, label);
+      btn.addEventListener('click', () => {
+        setTheme(t.id);
+        prefs.theme = t.id;
+        renderPalette();
+      });
+
+      paletteGrid.appendChild(btn);
+    });
+  };
+  renderPalette();
+  palettePane.appendChild(paletteGrid);
+
+  panes.palette = palettePane;
+  sec.appendChild(palettePane);
+
+  // ── CUSTOM PANE ─────────────────────────────────────────
+  const customPane = document.createElement('div');
+  customPane.className = 'appearance-pane';
+
+  const desc = document.createElement('div');
+  desc.className = 'custom-wallpaper-desc';
+  desc.textContent = 'Paste any image URL or YouTube link to use as your wallpaper.';
+  customPane.appendChild(desc);
+
+  const urlRow = document.createElement('div');
+  urlRow.className = 'custom-wallpaper-row';
+
+  const urlInput = document.createElement('input');
+  urlInput.type = 'text';
+  urlInput.className = 'custom-wallpaper-input';
+  urlInput.placeholder = 'Paste image URL or YouTube link';
+  urlInput.value = prefs.wallpaperUrl || '';
+
+  const applyBtn = document.createElement('button');
+  applyBtn.type = 'button';
+  applyBtn.className = 'custom-wallpaper-apply';
+  applyBtn.textContent = 'Apply';
+  applyBtn.setAttribute('aria-label', 'Apply wallpaper URL');
+  applyBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Checking…';
+    try {
+      const appliedUrl = await setWallpaper(url, prefs.wallpaperBlur, prefs.wallpaperDarken);
+      prefs.wallpaperUrl = appliedUrl;
+      urlInput.value = appliedUrl;
+      rebuildCustomControls();
+      renderPresets();
+      toast.success('Wallpaper applied');
+    } catch (err) {
+      if (err?.message !== 'Wallpaper request was superseded') {
+        toast.error(err?.message || 'Wallpaper failed to load');
+      }
+    } finally {
+      applyBtn.disabled = false;
+      applyBtn.textContent = 'Apply';
+    }
+  });
+
+  urlRow.append(urlInput, applyBtn);
+  customPane.appendChild(urlRow);
+
+  const customControls = document.createElement('div');
+  const rebuildCustomControls = () => {
+    customControls.innerHTML = '';
+    if (!prefs.wallpaperUrl) return;
+
+    const group = document.createElement('div');
+    group.className = 'custom-controls-group';
+
+    group.appendChild(slider('Blur', prefs.wallpaperBlur, 0, 20, 1, 'px', (v) => {
+      prefs.wallpaperBlur = v;
+      setWallpaperAppearance(v, prefs.wallpaperDarken);
+      Prefs.set('wallpaperBlur', v);
+    }));
+    group.appendChild(slider('Darken', prefs.wallpaperDarken, 0, 0.9, 0.05, '', (v) => {
+      prefs.wallpaperDarken = v;
+      setWallpaperAppearance(prefs.wallpaperBlur, v);
+      Prefs.set('wallpaperDarken', v);
+      darkenSlider.value = String(Math.round(v * 100));
+      darkenVal.textContent = `${Math.round(v * 100)}%`;
+    }));
+    group.appendChild(slider('Grain', prefs.grainOpacity, 0, 0.1, 0.005, '', (v) => {
+      prefs.grainOpacity = v;
+      setGrain(v);
+    }));
+
+    customControls.appendChild(group);
+
+    const clrBtn = document.createElement('button');
+    clrBtn.type = 'button';
+    clrBtn.className = 'custom-clear-btn';
+    clrBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear wallpaper`;
+    clrBtn.setAttribute('aria-label', 'Clear wallpaper');
+    clrBtn.addEventListener('click', () => {
+      clearWallpaper();
+      prefs.wallpaperUrl = '';
+      urlInput.value = '';
+      rebuildCustomControls();
+      renderPresets();
+    });
+    customControls.appendChild(clrBtn);
+  };
+  rebuildCustomControls();
+  customPane.appendChild(customControls);
+
+  panes.custom = customPane;
+  sec.appendChild(customPane);
+
+  return sec;
 }
 
 function buildFontSection() {
@@ -783,11 +1121,10 @@ function buildModal() {
   header.append(h2, closeBtn);
 
   const sec1 = buildProfileSection();
-  const sec2 = buildThemeSection();
+  const secAppearance = buildAppearanceSection();
   const secFont = buildFontSection();
   const sec3 = buildDisplaySection();
   const sec4 = buildWidgetsSection();
-  const sec5 = buildWallpaperSection();
   const sec6 = buildClockSection();
   const sec7 = buildQuickLinksSection();
 
@@ -797,7 +1134,7 @@ function buildModal() {
   // Footer
   const footer = buildAboutFooter();
 
-  box.append(header, sec1, sec2, sec5, secFont, sec3, sec4, sec6, sec7, sec8, footer);
+  box.append(header, sec1, secAppearance, secFont, sec3, sec4, sec6, sec7, sec8, footer);
   overlay.appendChild(box);
   return overlay;
 }

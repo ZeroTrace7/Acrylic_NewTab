@@ -1358,6 +1358,497 @@
   color: rgba(226, 232, 240, 0.68);
 }
 
+/* ── Appearance Card — Tabbed Section ──────────────────────── */
+
+.appearance-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.68);
+}
+
+.appearance-section-label svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.72;
+}
+
+.appearance-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.appearance-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 11px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 220ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.appearance-tab svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.68;
+  transition: opacity 200ms ease;
+}
+
+.appearance-tab:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+}
+
+.appearance-tab.is-active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text-primary);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+.appearance-tab.is-active svg {
+  opacity: 1;
+}
+
+/* Tab panes */
+.appearance-pane {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 280ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.appearance-pane.is-active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Wallpapers Pane ─────────────────────────────────────── */
+
+.appearance-presets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.appearance-presets-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(226, 232, 240, 0.52);
+}
+
+/* Darken slider inline */
+.appearance-darken-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.appearance-darken-value {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: rgba(226, 232, 240, 0.58);
+  min-width: 28px;
+  text-align: right;
+}
+
+.appearance-darken-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  border-radius: 99px;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 255, 0.10),
+    rgba(255, 255, 255, 0.30));
+  outline: none;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.appearance-darken-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.appearance-darken-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+}
+
+.appearance-darken-slider::-webkit-slider-thumb:active {
+  transform: scale(0.96);
+}
+
+/* Wallpaper preset grid */
+.wallpaper-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.wallpaper-preset-card {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.04);
+  transition:
+    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wallpaper-preset-card:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.30);
+}
+
+.wallpaper-preset-card:active {
+  transform: scale(0.97);
+}
+
+.wallpaper-preset-card.is-active {
+  border-color: rgba(147, 197, 253, 0.64);
+  box-shadow:
+    0 0 0 2px rgba(96, 165, 250, 0.20),
+    0 4px 16px rgba(96, 165, 250, 0.16);
+}
+
+.wallpaper-preset-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.wallpaper-preset-card .preset-check {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(96, 165, 250, 0.88);
+  border: 1.5px solid rgba(255, 255, 255, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.wallpaper-preset-card.is-active .preset-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.wallpaper-preset-card .preset-check svg {
+  width: 10px;
+  height: 10px;
+  stroke: #fff;
+  stroke-width: 3;
+  fill: none;
+}
+
+/* ── Random Wallpaper Button ──────────────────────────────── */
+
+.random-wallpaper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg,
+    rgba(236, 72, 153, 0.44) 0%,
+    rgba(168, 85, 247, 0.44) 50%,
+    rgba(96, 165, 250, 0.38) 100%);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 240ms ease;
+}
+
+.random-wallpaper-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg,
+    rgba(236, 72, 153, 0.20) 0%,
+    rgba(168, 85, 247, 0.14) 50%,
+    rgba(96, 165, 250, 0.12) 100%);
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+.random-wallpaper-btn:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 12px 32px rgba(168, 85, 247, 0.22);
+}
+
+.random-wallpaper-btn:hover::before {
+  opacity: 1;
+}
+
+.random-wallpaper-btn:active {
+  transform: scale(0.98);
+}
+
+.random-wallpaper-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.random-wallpaper-btn span {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Palette Pane ────────────────────────────────────────── */
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.palette-swatch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 4px 8px;
+  border-radius: 14px;
+  background: transparent;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition:
+    background 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.palette-swatch-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-1px);
+}
+
+.palette-swatch-btn.is-active {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.palette-swatch {
+  width: 100%;
+  height: 28px;
+  border-radius: 10px;
+  transition: box-shadow 180ms ease;
+}
+
+.palette-swatch-btn:hover .palette-swatch {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.30);
+}
+
+.palette-swatch-btn.is-active .palette-swatch {
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.30),
+    0 0 0 2px rgba(255, 255, 255, 0.18);
+}
+
+.palette-label {
+  font-size: 0.70rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 180ms ease;
+  white-space: nowrap;
+}
+
+.palette-swatch-btn:hover .palette-label {
+  color: var(--text-secondary);
+}
+
+.palette-swatch-btn.is-active .palette-label {
+  color: var(--text-primary);
+}
+
+/* ── Custom Pane ─────────────────────────────────────────── */
+
+.custom-wallpaper-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.custom-wallpaper-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.custom-wallpaper-input {
+  flex: 1;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  outline: none;
+  transition:
+    border-color 200ms ease,
+    background 200ms ease;
+}
+
+.custom-wallpaper-input:focus {
+  border-color: rgba(147, 197, 253, 0.44);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.custom-wallpaper-input::placeholder {
+  color: var(--text-ghost);
+}
+
+.custom-wallpaper-apply {
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(96, 165, 250, 0.46);
+  color: rgba(147, 197, 253, 0.94);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-wallpaper-apply:hover {
+  background: rgba(96, 165, 250, 0.14);
+  border-color: rgba(147, 197, 253, 0.60);
+  color: var(--text-primary);
+}
+
+.custom-wallpaper-apply:active {
+  transform: scale(0.97);
+}
+
+.custom-wallpaper-apply:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+/* Custom pane controls when wallpaper is active */
+.custom-controls-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+}
+
+.custom-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.20);
+  color: rgba(248, 113, 113, 0.90);
+  font-size: 0.80rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-clear-btn:hover {
+  background: rgba(248, 113, 113, 0.14);
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+.custom-clear-btn:active {
+  transform: scale(0.97);
+}
+
+.custom-clear-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
 .settings-font-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
