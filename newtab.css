@@ -202,8 +202,13 @@ button:disabled {
   filter: blur(var(--bg-blur-amount));
   transform: scale(1.05);
   transition:
-    background-image var(--dur-slow) var(--ease-glass),
-    filter var(--dur-mid) var(--ease-glass);
+    filter var(--dur-mid) var(--ease-glass),
+    opacity 0.4s ease-in-out;
+}
+
+/* Cinematic wallpaper swap: toggled via JS during hold-and-swap */
+#bg-layer.wp-fade-out {
+  opacity: 0 !important;
 }
 
 .wallpaper-media {

@@ -317,14 +317,11 @@ function createWallpaperYouTubeShell(embedUrl) {
 function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic = false } = {}) {
   const root = document.documentElement.style;
   const body = getBodyEl();
-
-  // Revoke previous blob URL to prevent memory leaks
-  if (currentBlobUrl) {
-    URL.revokeObjectURL(currentBlobUrl);
-    currentBlobUrl = '';
-  }
+  const previousBlobUrl = currentBlobUrl;
 
   if (!source) {
+    // Revoke blob on clear
+    if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = ''; }
     clearWallpaperMedia();
     root.setProperty('--bg-image', 'none');
     if (body) body.classList.remove('has-wallpaper');
@@ -337,11 +334,16 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   // Use blobUrl (in-memory) when available, fall back to remote URL
   const renderUrl = source.blobUrl || source.url;
   const bgImageValue = source.type === 'image' ? `url(${JSON.stringify(renderUrl)})` : 'none';
-  if (source.blobUrl) currentBlobUrl = source.blobUrl;
 
   const layer = getWallpaperLayer();
 
   const applySource = () => {
+    // Revoke old blob now that we're swapping (old image no longer displayed)
+    if (previousBlobUrl && previousBlobUrl !== source.blobUrl) {
+      URL.revokeObjectURL(previousBlobUrl);
+    }
+    if (source.blobUrl) currentBlobUrl = source.blobUrl;
+
     clearWallpaperMedia();
     root.setProperty('--bg-image', bgImageValue);
     applyWallpaperAppearance(blur, darken);
@@ -362,20 +364,26 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
     }
   };
 
-  // Cinematic fade: fast fade-out → swap → smooth fade-in
+  // ── Cinematic "Hold and Swap" ────────────────────────────
   // Only when image is pre-buffered in memory (blobUrl available).
-  // Without blob, the remote URL hasn't downloaded yet — fading would show black.
+  // 1. Fade out old image (CSS class drives the 0.4s transition)
+  // 2. While invisible → swap --bg-image to the blob URL (instant, in memory)
+  // 3. Double-rAF → fade back in (browser has committed the new image)
   if (cinematic && layer && source.type === 'image' && source.blobUrl) {
-    layer.style.transition = 'opacity 0.15s ease-out';
-    layer.style.opacity = '0';
+    layer.classList.add('wp-fade-out');
+
+    // Wait for CSS fade-out to finish (400ms matches the CSS transition)
     setTimeout(() => {
       applySource();
+
+      // Double-rAF: guarantees the browser has painted the new bg-image
+      // before we remove the fade-out class and reveal it.
       requestAnimationFrame(() => {
-        layer.style.transition = 'opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
-        layer.style.opacity = '1';
-        setTimeout(() => { layer.style.transition = ''; layer.style.opacity = ''; }, 750);
+        requestAnimationFrame(() => {
+          layer.classList.remove('wp-fade-out');
+        });
       });
-    }, 160);
+    }, 420);
   } else {
     applySource();
   }
