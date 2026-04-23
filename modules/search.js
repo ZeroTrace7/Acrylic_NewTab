@@ -556,7 +556,6 @@ export async function initSearch() {
       if (!searchHistoryEnabled) return;
       openHistoryPanel(input.value);
     });
-    setTimeout(() => input.focus(), 100);
   }
 
   if (submit) {
