@@ -18,6 +18,7 @@ export { THEMES };
 let currentTheme = 'midnight';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
+let currentBlobUrl = '';
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
@@ -103,7 +104,48 @@ function getImageLoadError() {
   return new Error('That link did not load as an image');
 }
 
-function validateWallpaperImage(url) {
+/**
+ * Blob Pre-Load Buffer — fetches the image as a binary blob, then creates
+ * a local objectURL. The image is fully in memory before the DOM renders it,
+ * eliminating the white flash and double-download of the old pipeline.
+ * Falls back to direct Image() validation if CORS blocks fetch().
+ */
+async function fetchWallpaperBlob(url) {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), WALLPAPER_LOAD_TIMEOUT_MS);
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      referrerPolicy: 'no-referrer',
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) throw new Error('HTTP error');
+
+    const blob = await response.blob();
+    if (blob.size === 0) throw getImageLoadError();
+
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Verify the blob actually decodes as a real image
+    await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => (img.naturalWidth > 0 && img.naturalHeight > 0) ? resolve() : reject();
+      img.onerror = () => reject();
+      img.src = blobUrl;
+    });
+
+    return { blobUrl, originalUrl: url };
+  } catch {
+    // CORS or network failure — fall back to direct validation (no blob buffer)
+    await validateImageDirect(url);
+    return { blobUrl: null, originalUrl: url };
+  }
+}
+
+/** Fallback validator for CORS-blocked URLs (custom user URLs). */
+function validateImageDirect(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     let settled = false;
@@ -118,16 +160,10 @@ function validateWallpaperImage(url) {
     };
 
     const confirmImage = () => {
-      const decoded = typeof img.decode === 'function'
-        ? img.decode()
-        : Promise.resolve();
-
+      const decoded = typeof img.decode === 'function' ? img.decode() : Promise.resolve();
       decoded
         .then(() => {
-          if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-            finish(resolve, url);
-            return;
-          }
+          if (img.naturalWidth > 0 && img.naturalHeight > 0) { finish(resolve, url); return; }
           finish(reject, getImageLoadError());
         })
         .catch(() => finish(reject, getImageLoadError()));
@@ -190,8 +226,8 @@ async function resolveWallpaperSource(rawUrl, { requestPermission = false } = {}
   }
 
   try {
-    await validateWallpaperImage(url);
-    return { type: 'image', url };
+    const { blobUrl, originalUrl } = await fetchWallpaperBlob(url);
+    return { type: 'image', url: originalUrl, blobUrl };
   } catch {
     throw new Error('Use a direct image URL or a standard YouTube link');
   }
@@ -278,9 +314,16 @@ function createWallpaperYouTubeShell(embedUrl) {
   return container;
 }
 
-function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3) {
+function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic = false } = {}) {
   const root = document.documentElement.style;
   const body = getBodyEl();
+
+  // Revoke previous blob URL to prevent memory leaks
+  if (currentBlobUrl) {
+    URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl = '';
+  }
+
   if (!source) {
     clearWallpaperMedia();
     root.setProperty('--bg-image', 'none');
@@ -291,28 +334,53 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3) {
     return;
   }
 
-  clearWallpaperMedia();
-  root.setProperty('--bg-image', source.type === 'image' ? `url(${JSON.stringify(source.url)})` : 'none');
-  applyWallpaperAppearance(blur, darken);
+  // Use blobUrl (in-memory) when available, fall back to remote URL
+  const renderUrl = source.blobUrl || source.url;
+  const bgImageValue = source.type === 'image' ? `url(${JSON.stringify(renderUrl)})` : 'none';
+  if (source.blobUrl) currentBlobUrl = source.blobUrl;
 
   const layer = getWallpaperLayer();
-  if (layer && source.type === 'youtube') {
-    layer.appendChild(createWallpaperYouTubeShell(source.embedUrl));
-  }
 
-  if (body) body.classList.add('has-wallpaper');
-  currentWallpaperUrl = source.url;
+  const applySource = () => {
+    clearWallpaperMedia();
+    root.setProperty('--bg-image', bgImageValue);
+    applyWallpaperAppearance(blur, darken);
 
-  // Brightness adaptation: analyze image wallpapers for text legibility.
-  // YouTube embeds are cross-origin iframes — skip analysis, default to light text.
-  if (source.type === 'image') {
-    detectAndApplyBrightness(source.url);
+    if (layer && source.type === 'youtube') {
+      layer.appendChild(createWallpaperYouTubeShell(source.embedUrl));
+    }
+
+    if (body) body.classList.add('has-wallpaper');
+    currentWallpaperUrl = source.url;
+
+    // Brightness adaptation: analyze image wallpapers for text legibility.
+    // blobUrl is same-origin so canvas reads always succeed (better than remote URLs).
+    if (source.type === 'image') {
+      detectAndApplyBrightness(renderUrl);
+    } else {
+      clearBrightnessAdaptation();
+    }
+  };
+
+  // Cinematic fade: fast fade-out → swap → smooth fade-in
+  // Only for user-triggered wallpaper changes, not initial page load.
+  if (cinematic && layer && source.type === 'image') {
+    layer.style.transition = 'opacity 0.15s ease-out';
+    layer.style.opacity = '0';
+    setTimeout(() => {
+      applySource();
+      requestAnimationFrame(() => {
+        layer.style.transition = 'opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
+        layer.style.opacity = '1';
+        setTimeout(() => { layer.style.transition = ''; layer.style.opacity = ''; }, 750);
+      });
+    }, 160);
   } else {
-    clearBrightnessAdaptation();
+    applySource();
   }
 }
 
-async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist = false, silent = false, requestPermission = false } = {}) {
+async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist = false, silent = false, requestPermission = false, cinematic = false } = {}) {
   const requestId = ++wallpaperRequestId;
   let source;
 
@@ -329,7 +397,7 @@ async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist =
     throw new Error('Wallpaper request was superseded');
   }
 
-  applyWallpaperSourceToDom(source, blur, darken);
+  applyWallpaperSourceToDom(source, blur, darken, { cinematic });
 
   if (persist) {
     await Prefs.setMany({ wallpaperUrl: source.url, wallpaperBlur: blur, wallpaperDarken: darken });
@@ -392,7 +460,7 @@ export async function setTheme(themeId) {
 }
 
 export async function setWallpaper(url, blur = 0, darken = 0.3) {
-  return loadAndApplyWallpaper(url, blur, darken, { persist: true, silent: true, requestPermission: true });
+  return loadAndApplyWallpaper(url, blur, darken, { persist: true, silent: true, requestPermission: true, cinematic: true });
 }
 
 export function clearWallpaper() {
