@@ -25,6 +25,10 @@ let themeRevealTimer = 0;
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
 const WALLPAPER_FADE_MS = 400;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
+const YOUTUBE_EMBED_ORIGINS = new Set([
+  'https://www.youtube.com',
+  'https://www.youtube-nocookie.com',
+]);
 const THEME_CROSSFADE_MS = 600;
 const WALLPAPER_CROSSFADE_MS = 600;
 
@@ -158,10 +162,12 @@ function buildYouTubeEmbedUrl(videoId) {
     mute: '1',
     controls: '1',
     disablekb: '1',
+    enablejsapi: '1',
     fs: '0',
     iv_load_policy: '3',
     loop: '1',
     modestbranding: '1',
+    origin: window.location.origin,
     playsinline: '1',
     playlist: videoId,
     rel: '0',
@@ -360,8 +366,7 @@ function createWallpaperYouTubeShell(embedUrl) {
   frame.title = 'YouTube wallpaper';
   frame.tabIndex = -1;
   frame.loading = 'eager';
-  // Must include src origin for cross-origin autoplay permission policy
-  frame.allow = 'autoplay; encrypted-media';
+  frame.allow = 'autoplay; encrypted-media; picture-in-picture';
   frame.referrerPolicy = 'no-referrer';
   frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
@@ -381,12 +386,19 @@ function createWallpaperYouTubeShell(embedUrl) {
   // but preserve persisted storage so the user can retry on next tab load.
   const EMBED_TIMEOUT_MS = 10000;
   const CURTAIN_DELAY_MS = 2500;
+  const LOAD_FALLBACK_DELAY_MS = 1500;
   let videoConfirmed = false;
+  let iframeLoaded = false;
+
+  const cleanupEmbedListeners = () => {
+    window.removeEventListener('message', onYTMessage);
+    frame.removeEventListener('load', onIframeLoad);
+  };
 
   const confirmEmbed = () => {
     if (videoConfirmed) return;
     videoConfirmed = true;
-    window.removeEventListener('message', onYTMessage);
+    cleanupEmbedListeners();
 
     // Wait for YouTube's native UI (play button, title) to auto-hide,
     // then pull the curtain to reveal the pristine video
@@ -399,23 +411,51 @@ function createWallpaperYouTubeShell(embedUrl) {
 
   // Method 1: Listen for any postMessage from the YouTube embed
   const onYTMessage = (e) => {
-    if (!e.data || typeof e.data !== 'string') return;
-    try {
-      const msg = JSON.parse(e.data);
-      // Accept any YouTube API message as confirmation
-      if (msg?.event || msg?.info || msg?.id) {
-        confirmEmbed();
+    if (e.source !== frame.contentWindow || !YOUTUBE_EMBED_ORIGINS.has(e.origin)) return;
+
+    let payload = e.data;
+    if (typeof payload === 'string') {
+      try {
+        payload = JSON.parse(payload);
+      } catch {
+        return;
       }
-    } catch { /* not a YouTube message — ignore */ }
+    }
+
+    if (!payload || typeof payload !== 'object') return;
+
+    // Accept any YouTube API message as confirmation
+    if (payload.event || payload.info || payload.id) {
+      confirmEmbed();
+    }
   };
   window.addEventListener('message', onYTMessage);
 
-  // Method 2: iframe load event — more reliable than postMessage on privacy browsers
-  frame.addEventListener('load', confirmEmbed);
+  // Method 2: If the iframe loads but YouTube never sends an API message,
+  // reveal the wallpaper instead of treating it as a hard failure.
+  const onIframeLoad = () => {
+    iframeLoaded = true;
+    setTimeout(() => {
+      if (!videoConfirmed && container.isConnected) {
+        console.warn('Acrylic: YouTube iframe loaded without API handshake; revealing wallpaper anyway.');
+        confirmEmbed();
+      }
+    }, LOAD_FALLBACK_DELAY_MS);
+  };
+  frame.addEventListener('load', onIframeLoad);
 
+  // 10-second silent cleanup: only remove the embed if it never loaded at all.
   setTimeout(() => {
-    window.removeEventListener('message', onYTMessage);
-    if (!videoConfirmed && container.isConnected) {
+    if (videoConfirmed || !container.isConnected) return;
+    cleanupEmbedListeners();
+
+    if (iframeLoaded) {
+      console.warn('Acrylic: YouTube iframe loaded but sent no confirmation message; keeping wallpaper active.');
+      confirmEmbed();
+      return;
+    }
+
+    if (container.isConnected) {
       // Embed failed — remove the YouTube shell and fall back to theme
       console.warn('Acrylic: YouTube embed did not respond — removing and restoring theme.');
       container.remove();
