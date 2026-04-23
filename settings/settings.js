@@ -1,5 +1,5 @@
 import { Prefs } from '../modules/storage.js';
-import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance } from '../modules/background.js';
+import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance, getCurrentTheme } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
@@ -1190,8 +1190,8 @@ async function openSettings(callback) {
   });
   escHandler = (e) => { if (e.key === 'Escape') closeSettings(); };
   document.addEventListener('keydown', escHandler);
-  themeChangedHandler = async () => {
-    prefs.theme = await Prefs.get('theme');
+  themeChangedHandler = () => {
+    prefs.theme = getCurrentTheme();
     const paletteBtns = modalEl?.querySelectorAll('.palette-swatch-btn') || [];
     paletteBtns.forEach((btn) => {
       const label = btn.querySelector('.palette-label');
