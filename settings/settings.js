@@ -745,7 +745,7 @@ function buildAppearanceSection() {
 
   const desc = document.createElement('div');
   desc.className = 'custom-wallpaper-desc';
-  desc.textContent = 'Paste any image URL or YouTube link to use as your wallpaper.';
+  desc.textContent = 'Paste any image URL or YouTube link. Some YouTube videos block embedding and cannot be used as wallpapers.';
   customPane.appendChild(desc);
 
   const urlRow = document.createElement('div');

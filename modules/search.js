@@ -471,7 +471,12 @@ async function performSearch(query) {
   await rememberSearchQuery(q);
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
+  } else if (currentEngine.group === 'search' && currentEngine.id !== 'youtube') {
+    /* Use Chrome Search API for standard search engines — required by
+       Chrome Web Store policy ("respect the user's default search engine"). */
+    chrome.search.query({ text: q, disposition: 'CURRENT_TAB' });
   } else {
+    /* AI assistants & specialty engines (YouTube) use direct URL redirect. */
     window.location.href = currentEngine.url + encodeURIComponent(q);
   }
 }

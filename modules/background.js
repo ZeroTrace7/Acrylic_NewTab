@@ -178,6 +178,21 @@ function buildYouTubeEmbedUrl(videoId) {
   return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 }
 
+function getYouTubeEmbedErrorMessage(code) {
+  switch (Number(code)) {
+    case 100:
+      return 'That YouTube video is unavailable or private.';
+    case 101:
+    case 150:
+    case 152:
+      return 'That YouTube video cannot be used as a wallpaper because embedding is blocked by YouTube or the video owner.';
+    case 153:
+      return 'YouTube blocked playback because the embed request is missing app identity or referrer data.';
+    default:
+      return 'That YouTube video could not be embedded as a wallpaper.';
+  }
+}
+
 function getImageLoadError() {
   return new Error('That link did not load as an image');
 }
@@ -367,7 +382,6 @@ function createWallpaperYouTubeShell(embedUrl) {
   frame.tabIndex = -1;
   frame.loading = 'eager';
   frame.allow = 'autoplay; encrypted-media; picture-in-picture';
-  frame.referrerPolicy = 'no-referrer';
   frame.allowFullscreen = false;
   frame.setAttribute('aria-hidden', 'true');
 
@@ -389,16 +403,42 @@ function createWallpaperYouTubeShell(embedUrl) {
   const LOAD_FALLBACK_DELAY_MS = 1500;
   let videoConfirmed = false;
   let iframeLoaded = false;
+  let embedFailed = false;
+  let settleReady;
+
+  const ready = new Promise((resolve, reject) => {
+    settleReady = { resolve, reject };
+  });
 
   const cleanupEmbedListeners = () => {
     window.removeEventListener('message', onYTMessage);
     frame.removeEventListener('load', onIframeLoad);
   };
 
+  const failEmbed = (message, logLabel = message) => {
+    if (embedFailed) return;
+    embedFailed = true;
+    cleanupEmbedListeners();
+
+    if (!container.isConnected) return;
+
+    console.warn(`Acrylic: ${logLabel}`);
+    container.remove();
+    currentWallpaperUrl = '';
+    Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
+
+    const body = getBodyEl();
+    if (body) body.classList.remove('has-wallpaper');
+    document.documentElement.style.setProperty('--bg-image', 'none');
+    applyTheme(currentTheme);
+    settleReady?.reject(new Error(message));
+  };
+
   const confirmEmbed = () => {
-    if (videoConfirmed) return;
+    if (videoConfirmed || embedFailed) return;
     videoConfirmed = true;
     cleanupEmbedListeners();
+    settleReady?.resolve();
 
     // Wait for YouTube's native UI (play button, title) to auto-hide,
     // then pull the curtain to reveal the pristine video
@@ -424,7 +464,12 @@ function createWallpaperYouTubeShell(embedUrl) {
 
     if (!payload || typeof payload !== 'object') return;
 
-    // Accept any YouTube API message as confirmation
+    if (payload.event === 'onError') {
+      failEmbed(getYouTubeEmbedErrorMessage(payload.info), `YouTube embed error ${payload.info}`);
+      return;
+    }
+
+    // Accept non-error YouTube API messages as confirmation
     if (payload.event || payload.info || payload.id) {
       confirmEmbed();
     }
@@ -446,7 +491,7 @@ function createWallpaperYouTubeShell(embedUrl) {
 
   // 10-second silent cleanup: only remove the embed if it never loaded at all.
   setTimeout(() => {
-    if (videoConfirmed || !container.isConnected) return;
+    if (videoConfirmed || embedFailed || !container.isConnected) return;
     cleanupEmbedListeners();
 
     if (iframeLoaded) {
@@ -456,23 +501,11 @@ function createWallpaperYouTubeShell(embedUrl) {
     }
 
     if (container.isConnected) {
-      // Embed failed — remove the YouTube shell and fall back to theme
-      console.warn('Acrylic: YouTube embed did not respond — removing and restoring theme.');
-      container.remove();
-      currentWallpaperUrl = '';
-
-      // Clear persisted wallpaper so it doesn't retry on next tab load
-      Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
-
-      // Restore the theme background visually
-      const body = getBodyEl();
-      if (body) body.classList.remove('has-wallpaper');
-      document.documentElement.style.setProperty('--bg-image', 'none');
-      applyTheme(currentTheme);
+      failEmbed('YouTube wallpaper failed to initialize. Try a different video.', 'YouTube embed did not respond — removing and restoring theme.');
     }
   }, EMBED_TIMEOUT_MS);
 
-  return container;
+  return { container, ready };
 }
 
 function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic = false, holdThemeReveal: shouldHoldThemeReveal = false } = {}) {
@@ -481,6 +514,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   const previousBlobUrl = currentBlobUrl;
   const transitionToken = ++backgroundTransitionToken;
   const layer = getWallpaperLayer();
+  let mediaReady = Promise.resolve();
 
   clearThemeRevealHold();
   setWallpaperFadeOutState(false);
@@ -540,7 +574,9 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
     applyWallpaperAppearance(blur, darken);
 
     if (layer && source.type === 'youtube') {
-      layer.appendChild(createWallpaperYouTubeShell(source.embedUrl));
+      const youtubeShell = createWallpaperYouTubeShell(source.embedUrl);
+      layer.appendChild(youtubeShell.container);
+      mediaReady = youtubeShell.ready;
     }
 
     if (body) body.classList.add('has-wallpaper');
@@ -614,6 +650,8 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
   } else {
     applySource();
   }
+
+  return mediaReady;
 }
 
 async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist = false, silent = false, requestPermission = false, cinematic = false } = {}) {
@@ -633,7 +671,11 @@ async function loadAndApplyWallpaper(rawUrl, blur = 0, darken = 0.3, { persist =
     throw new Error('Wallpaper request was superseded');
   }
 
-  applyWallpaperSourceToDom(source, blur, darken, { cinematic });
+  await applyWallpaperSourceToDom(source, blur, darken, { cinematic });
+
+  if (requestId !== wallpaperRequestId) {
+    throw new Error('Wallpaper request was superseded');
+  }
 
   if (persist) {
     await Prefs.setMany({ wallpaperUrl: source.url, wallpaperBlur: blur, wallpaperDarken: darken });
