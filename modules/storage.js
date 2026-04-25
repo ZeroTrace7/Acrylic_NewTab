@@ -13,7 +13,7 @@ export const Prefs = {
     wallpaperDarken: 0.3,
     grainOpacity:    0.035,
     userName:        '',
-    searchEngine:    'google',
+    searchEngine:    'default',
     searchHistory:   false,
     clockFormat:     '12h',
     dashboardFont:   'gloria',
@@ -121,10 +121,10 @@ function normalizeQuickLinksMax(value) {
   return Math.min(9, Math.max(4, Math.round(numeric)));
 }
 
-const VALID_ENGINE_IDS = ['perplexity', 'chatgpt', 'claude', 'grok', 'deepseek', 'google', 'bing', 'duckduckgo', 'brave', 'youtube'];
+const VALID_ENGINE_IDS = ['default', 'gemini', 'perplexity', 'chatgpt', 'claude', 'grok', 'deepseek', 'youtube'];
 
 function normalizeSearchEngine(value) {
-  return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'google';
+  return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'default';
 }
 
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────

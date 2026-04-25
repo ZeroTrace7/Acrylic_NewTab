@@ -4,7 +4,7 @@ import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
 
-const DEFAULT_ENGINE_ID = 'google';
+const DEFAULT_ENGINE_ID = 'default';
 const FALLBACK_ENGINE_ICON = 'data:image/svg+xml,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>'
 );
@@ -12,23 +12,22 @@ const SEARCH_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" heig
 const SEND_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
 const ENGINE_GROUPS = [
+  { id: 'default', label: 'Web Search' },
   { id: 'assistants', label: 'AI Assistants' },
-  { id: 'search', label: 'Search Engines' },
+  { id: 'sites', label: 'Quick Launch' },
 ];
 
+/* The 'default' engine always uses chrome.search.query() — it respects the
+   user's browser-level default search engine (required by CWS policy). */
 const ENGINES = [
+  { id: 'default', name: 'Web Search', group: 'default', url: '', icon: 'icons/search.svg' },
   { id: 'gemini', name: 'Gemini', group: 'assistants', url: 'https://gemini.google.com/app?q=', icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', iconSize: 22 },
   { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
   { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
   { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
   { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
   { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/', icon: 'icons/deepseek.png' },
-  { id: 'google', name: 'Google', group: 'search', url: 'https://www.google.com/search?q=', icon: 'https://api.iconify.design/logos:google-icon.svg' },
-  { id: 'bing', name: 'Bing', group: 'search', url: 'https://www.bing.com/search?q=', icon: 'https://www.bing.com/favicon.ico' },
-  { id: 'duckduckgo', name: 'DuckDuckGo', group: 'search', url: 'https://duckduckgo.com/?q=', icon: 'icons/duckduckgo_color.png' },
-  { id: 'brave', name: 'Brave', group: 'search', url: 'https://search.brave.com/search?q=', icon: 'icons/brave_color.png' },
-  { id: 'yandex', name: 'Yandex', group: 'search', url: 'https://yandex.com/search/?text=', icon: 'https://yandex.com/favicon.ico' },
-  { id: 'youtube', name: 'YouTube', group: 'search', url: 'https://www.youtube.com/results?search_query=', icon: 'icons/youtube_color.png' },
+  { id: 'youtube', name: 'YouTube', group: 'sites', url: 'https://www.youtube.com/results?search_query=', icon: 'icons/youtube_color.png' },
 ];
 
 let currentEngine = ENGINES.find((engine) => engine.id === DEFAULT_ENGINE_ID) || ENGINES[0];
@@ -471,22 +470,30 @@ async function performSearch(query) {
   await rememberSearchQuery(q);
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
-  } else if (currentEngine.group === 'search' && currentEngine.id !== 'youtube') {
-    /* Use Chrome Search API for standard search engines — required by
-       Chrome Web Store policy ("respect the user's default search engine"). */
+  } else if (currentEngine.id === 'default') {
+    /* Chrome Search API — respects the user's default browser search engine.
+       Required by Chrome Web Store policy for New Tab extensions. */
     chrome.search.query({ text: q, disposition: 'CURRENT_TAB' });
   } else {
-    /* AI assistants & specialty engines (YouTube) use direct URL redirect. */
+    /* AI assistants & site-specific search (YouTube) use direct URL. */
     window.location.href = currentEngine.url + encodeURIComponent(q);
   }
 }
 
 /** Initializes the search bar, engine picker, and all related event listeners. */
 export async function initSearch() {
-  const savedId = await Prefs.get('searchEngine');
+  let savedId = await Prefs.get('searchEngine');
   searchHistoryEnabled = false;          /* Search history permanently disabled */
   searchHistoryItems = [];
-  setEngine(getEngine(savedId));
+
+  /* Ghost-data migration: if a previous version stored a now-removed engine
+     (e.g. 'google', 'bing', 'duckduckgo'), force it to 'default' so we always
+     use chrome.search.query() for web search (required by CWS policy). */
+  const resolved = getEngine(savedId);
+  if (resolved.id !== savedId) {
+    Prefs.set('searchEngine', resolved.id);
+  }
+  setEngine(resolved);
   buildPicker();
 
   const input = DOM.searchInput;
