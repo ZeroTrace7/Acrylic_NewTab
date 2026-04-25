@@ -706,8 +706,11 @@ export async function initBackground() {
   applyGrain(prefs.grainOpacity);
   if (prefs.wallpaperUrl) {
     loadAndApplyWallpaper(prefs.wallpaperUrl, prefs.wallpaperBlur, prefs.wallpaperDarken, { silent: true }).catch((error) => {
+      clearThemeRevealHold();
       reportBackgroundError('Initial wallpaper load failed:', error);
     });
+  } else {
+    clearThemeRevealHold();
   }
 
   Prefs.onChange((changes) => {

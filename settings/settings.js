@@ -614,7 +614,7 @@ function buildAppearanceSection() {
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'wallpaper-preset-card';
-      if (prefs.wallpaperUrl && prefs.wallpaperUrl.includes(preset.url.split('?')[0].split('/').pop())) {
+      if (prefs.wallpaperUrl && prefs.wallpaperUrl.split('?')[0] === preset.url.split('?')[0]) {
         card.classList.add('is-active');
       }
       card.setAttribute('aria-label', `Apply ${preset.label} wallpaper`);

@@ -12,22 +12,17 @@ const SEARCH_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" heig
 const SEND_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
 const ENGINE_GROUPS = [
-  { id: 'default', label: 'Web Search' },
-  { id: 'assistants', label: 'AI Assistants' },
-  { id: 'sites', label: 'Quick Launch' },
+  { id: 'destinations', label: 'Search & AI' },
 ];
 
-/* The 'default' engine always uses chrome.search.query() — it respects the
-   user's browser-level default search engine (required by CWS policy). */
 const ENGINES = [
-  { id: 'default', name: 'Web Search', group: 'default', url: '', icon: 'icons/search.svg' },
-  { id: 'gemini', name: 'Gemini', group: 'assistants', url: 'https://gemini.google.com/app?q=', icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', iconSize: 22 },
-  { id: 'chatgpt', name: 'ChatGPT', group: 'assistants', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
-  { id: 'claude', name: 'Claude', group: 'assistants', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
-  { id: 'perplexity', name: 'Perplexity', group: 'assistants', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
-  { id: 'grok', name: 'Grok', group: 'assistants', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
-  { id: 'deepseek', name: 'DeepSeek', group: 'assistants', url: 'https://chat.deepseek.com/', icon: 'icons/deepseek.png' },
-  { id: 'youtube', name: 'YouTube', group: 'sites', url: 'https://www.youtube.com/results?search_query=', icon: 'icons/youtube_color.png' },
+  { id: 'default', name: 'Web Search', group: 'destinations', type: 'search', url: '', icon: 'icons/search.svg' },
+  { id: 'chatgpt', name: 'ChatGPT', group: 'destinations', type: 'ai', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
+  { id: 'gemini', name: 'Gemini', group: 'destinations', type: 'ai', url: 'https://gemini.google.com/app?q=', icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', iconSize: 22 },
+  { id: 'claude', name: 'Claude', group: 'destinations', type: 'ai', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
+  { id: 'perplexity', name: 'Perplexity', group: 'destinations', type: 'ai', url: 'https://www.perplexity.ai/search?q=', icon: 'icons/perplexity-mark.png' },
+  { id: 'grok', name: 'Grok', group: 'destinations', type: 'ai', url: 'https://grok.com/?q=', icon: 'icons/grok.png' },
+  { id: 'deepseek', name: 'DeepSeek', group: 'destinations', type: 'ai', url: 'https://chat.deepseek.com/', icon: 'icons/deepseek.png' },
 ];
 
 let currentEngine = ENGINES.find((engine) => engine.id === DEFAULT_ENGINE_ID) || ENGINES[0];
@@ -170,6 +165,8 @@ function getEngine(id) {
 
 function setEngine(engine) {
   currentEngine = engine;
+  DOM.engineBtn?.setAttribute('aria-label', `Choose search destination. Current: ${engine.name}`);
+  DOM.engineBtn?.setAttribute('title', engine.name);
   const icon = DOM.engineIcon;
   if (icon) {
     /* Premium icon-swap micro-animation: shrink → swap → spring back */
@@ -194,14 +191,18 @@ function setEngine(engine) {
 }
 
 function isAssistantEngine(engine) {
-  return engine?.group === 'assistants';
+  return engine?.type === 'ai';
 }
 
 function syncAssistantMode() {
-  const isAssistant = isAssistantEngine(currentEngine);
   const input = DOM.searchInput;
   const submit = DOM.searchSubmit;
-  if (submit) submit.innerHTML = isAssistant ? SEND_ICON_SVG : SEARCH_ICON_SVG;
+  const isAssistant = isAssistantEngine(currentEngine);
+  if (submit) {
+    submit.innerHTML = isAssistant ? SEND_ICON_SVG : SEARCH_ICON_SVG;
+    submit.setAttribute('aria-label', isAssistant ? `Send to ${currentEngine.name}` : 'Search the web');
+    submit.setAttribute('title', currentEngine.name);
+  }
   if (input && !input.value.startsWith('http')) {
     input.placeholder = isAssistant ? `Message ${currentEngine.name}...` : 'Search anything...';
   }
@@ -470,12 +471,10 @@ async function performSearch(query) {
   await rememberSearchQuery(q);
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
-  } else if (currentEngine.id === 'default') {
-    /* Chrome Search API — respects the user's default browser search engine.
-       Required by Chrome Web Store policy for New Tab extensions. */
+  } else if (!isAssistantEngine(currentEngine)) {
     chrome.search.query({ text: q, disposition: 'CURRENT_TAB' });
   } else {
-    /* AI assistants & site-specific search (YouTube) use direct URL. */
+    /* AI assistants use direct destination URLs. */
     window.location.href = currentEngine.url + encodeURIComponent(q);
   }
 }
@@ -486,9 +485,8 @@ export async function initSearch() {
   searchHistoryEnabled = false;          /* Search history permanently disabled */
   searchHistoryItems = [];
 
-  /* Ghost-data migration: if a previous version stored a now-removed engine
-     (e.g. 'google', 'bing', 'duckduckgo'), force it to 'default' so we always
-     use chrome.search.query() for web search (required by CWS policy). */
+  /* Ghost-data migration: removed ids like 'youtube' should fall back to
+     the neutral web-search option instead of breaking picker state. */
   const resolved = getEngine(savedId);
   if (resolved.id !== savedId) {
     Prefs.set('searchEngine', resolved.id);
@@ -540,33 +538,18 @@ export async function initSearch() {
       }
     });
     input.addEventListener('input', () => {
-      if (isAssistantEngine(currentEngine)) {
-        input.placeholder = `Message ${currentEngine.name}...`;
-        syncPromptExpansion();
-        closeHistoryPanel();
-        return;
-      }
-      input.placeholder = input.value.startsWith('http') ? 'Press Enter to navigate...' : 'Search anything...';
+      input.placeholder = input.value.startsWith('http')
+        ? 'Press Enter to navigate...'
+        : (isAssistantEngine(currentEngine) ? `Message ${currentEngine.name}...` : 'Search anything...');
       syncPromptExpansion();
-      if (!searchHistoryEnabled) return;
-      if (!input.value.trim()) {
-        openHistoryPanel('');
-        return;
-      }
-      openHistoryPanel(input.value);
+      closeHistoryPanel();
     });
     input.addEventListener('focus', () => {
-      if (isAssistantEngine(currentEngine)) {
-        syncPromptExpansion();
-        return;
-      }
-      if (!searchHistoryEnabled) return;
-      openHistoryPanel(input.value);
+      syncPromptExpansion();
+      closeHistoryPanel();
     });
     input.addEventListener('click', () => {
-      if (isAssistantEngine(currentEngine)) return;
-      if (!searchHistoryEnabled) return;
-      openHistoryPanel(input.value);
+      closeHistoryPanel();
     });
   }
 

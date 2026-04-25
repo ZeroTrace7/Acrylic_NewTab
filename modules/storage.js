@@ -8,7 +8,7 @@
 export const Prefs = {
   defaults: {
     theme:           'midnight',
-    wallpaperUrl:    '',
+    wallpaperUrl:    'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80',
     wallpaperBlur:   0,
     wallpaperDarken: 0.3,
     grainOpacity:    0.035,
@@ -121,7 +121,7 @@ function normalizeQuickLinksMax(value) {
   return Math.min(9, Math.max(4, Math.round(numeric)));
 }
 
-const VALID_ENGINE_IDS = ['default', 'gemini', 'perplexity', 'chatgpt', 'claude', 'grok', 'deepseek', 'youtube'];
+const VALID_ENGINE_IDS = ['default', 'chatgpt', 'gemini', 'claude', 'perplexity', 'grok', 'deepseek'];
 
 function normalizeSearchEngine(value) {
   return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'default';

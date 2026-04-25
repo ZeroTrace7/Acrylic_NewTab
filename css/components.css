@@ -232,16 +232,16 @@
 
 #app-body.ai-prompt-active .engine-picker {
   top: calc(100% + 12px);
-  left: 8px;
+  left: 14px;
   transform-origin: bottom left;
 }
 
 #app-body.ai-prompt-active .engine-picker.is-open {
-  transform: translate(0, 0) scale(1);
+  transform: translateY(0) scale(1);
 }
 
 #app-body.ai-prompt-active .engine-picker:not(.is-open) {
-  transform: translate(0, -24px) scale(0.915);
+  transform: translateY(-24px) scale(0.915);
 }
 
 #app-body.ai-prompt-active .engine-picker-grid {
@@ -345,16 +345,17 @@
 .engine-picker {
   position: absolute;
   top: calc(100% + 16px);
-  left: 50%;
-  width: min(510px, calc(100vw - 36px));
+  left: 6px;
+  width: min(320px, calc(100vw - 36px));
+  max-width: calc(100% - 12px);
   padding: 12px;
   z-index: 100;
   display: block;
   isolation: isolate;
   opacity: 0;
   visibility: hidden;
-  transform: translate(-50%, -24px) scale(0.915);
-  transform-origin: top center;
+  transform: translateY(-24px) scale(0.915);
+  transform-origin: top left;
   filter: saturate(0.78);
   pointer-events: none;
   will-change: transform, opacity, filter;
@@ -377,7 +378,7 @@
 .engine-picker.is-open {
   opacity: 1;
   visibility: visible;
-  transform: translate(-50%, 0) scale(1);
+  transform: translateY(0) scale(1);
   filter: saturate(1);
   pointer-events: auto;
   transition:
@@ -414,11 +415,11 @@
 .engine-picker-grid {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-  padding-right: 8px;
-  max-height: min(236px, calc(100vh - 248px));
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-right: 4px;
+  max-height: min(248px, calc(100vh - 260px));
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
@@ -461,31 +462,15 @@
   transform: translateY(0);
 }
 
-.engine-picker-grid::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: calc(50% - 0.5px);
-  width: 1px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.1),
-    rgba(255, 255, 255, 0)
-  );
-  pointer-events: none;
-}
-
 .engine-picker-section {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .engine-picker-title {
-  padding: 0 10px;
+  padding: 0 6px;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -762,18 +747,13 @@
 
 @media (max-width: 640px) {
   .engine-picker {
-    width: min(398px, calc(100vw - 24px));
+    width: min(300px, calc(100vw - 24px));
     max-height: min(304px, calc(100vh - 220px));
     padding: 11px;
   }
 
   .engine-picker-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .engine-picker-grid::before {
-    display: none;
+    gap: 0;
   }
 
   #app-body.search-picker-open #middle-zone {
