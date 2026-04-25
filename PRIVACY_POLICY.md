@@ -1,6 +1,6 @@
 # Privacy Policy — Acrylic: New Tab
 
-**Last Updated:** April 20, 2026
+**Last Updated:** April 25, 2026
 **Extension Name:** Acrylic - New Tab
 **Developer:** Shreyash Gupta
 **Manifest Version:** 3
