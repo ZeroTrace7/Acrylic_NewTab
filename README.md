@@ -11,7 +11,7 @@
 </div>
 
 
-Premium glassmorphism new tab Chrome extension. Built from the ground up as the successor to *Glassy — New Tab* — faster, more capable, completely free.
+Premium glassmorphism new tab Chrome extension. Built from the ground up to be incredibly fast, feature-rich, and completely free.
 
 <div align="center">
   <br>
