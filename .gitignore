@@ -63,4 +63,6 @@ icon-paths.json
 # CWS submission reference materials
 store/
 
-
+# Extra untracked internal logs
+png_files.txt
+png_files_utf8.txt
