@@ -13,6 +13,16 @@
 
 Premium glassmorphism new tab Chrome extension. Built from the ground up as the successor to *Glassy — New Tab* — faster, more capable, completely free.
 
+<div align="center">
+  <br>
+  <a href="https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi">
+    <img src="https://storage.googleapis.com/chrome-gcs-uploader.appspot.com/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/UV4C4ybeBTsZt43U4ryd.png" alt="Available in the Chrome Web Store" height="68">
+  </a>
+  <br><br>
+  <i>Ready to upgrade your browser? Install Acrylic for free on Chrome, Edge, and Brave.</i>
+  <br><br>
+</div>
+
 ---
 
 ## Table of Contents
