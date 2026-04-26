@@ -17,17 +17,18 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up as the 
 
 ## Table of Contents
 
-- [Why Acrylic?](#why-acrylic)
-- [Architecture vs. Competitors](#architecture-vs-competitors)
-- [Features](#features)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [Stack](#stack)
-- [Local Development](#local-development)
+- [Why Acrylic?](#✨-why-acrylic)
+- [Architecture vs. Competitors](#⚡-architecture-vs-competitors)
+- [Features](#🚀-features)
+- [Keyboard Shortcuts](#⌨️-keyboard-shortcuts)
+- [Tech Stack](#🛠️-tech-stack)
+- [Manual Installation & Verification](#🛡️-manual-installation--verification)
 
 ---
 
-## Why Acrylic?
+## ✨ Why Acrylic?
 
+> [!NOTE]
 > The New Tab page is the most frequently rendered surface in any browser — opened dozens to hundreds of times daily. Chrome alone commands **~69% of global desktop market share** across **~178,000 active extensions**. This makes the New Tab the highest-visibility, most performance-sensitive real estate in the entire browser ecosystem.
 
 The current market forces users into a false choice:
@@ -47,7 +48,7 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
 
 ---
 
-## Architecture vs. Competitors
+## ⚡ Architecture vs. Competitors
 
 | Vector | Acrylic | Momentum | Tabliss | Bonjourr |
 |---|---|---|---|---|
@@ -64,7 +65,7 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
 
 ---
 
-## Features
+## 🚀 Features
 
 - **Dynamic Background Brightness Adaptation:** Automatically samples wallpaper luminosity (Canvas BT.709) and flips text/UI colors to dark mode on bright backgrounds to maintain legibility.
 - **Total Blackout Zen Mode:** Single-click distraction-free experience featuring a pure #000 background and a massive retro-mechanical flip clock.
@@ -104,7 +105,7 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 
 ---
 
-## Keyboard Shortcuts
+## ⌨️ Keyboard Shortcuts
 
 | Shortcut | Action |
 |---|---|
@@ -114,11 +115,12 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 | `Ctrl+,` / `⌘,` | Open preferences |
 | `Escape` | Exit Zen Mode / dismiss overlays / blur |
 
+> [!TIP]
 > All shortcuts are non-destructive and avoid Chrome-reserved bindings (`Ctrl+T`, `Ctrl+W`, etc.)
 
 ---
 
-## Stack
+## 🛠️ Tech Stack
 
 - **Runtime**: Manifest V3 Chrome Extension
 - **Language**: Pure ES modules (no TypeScript, no bundler, no transpiler)
@@ -129,7 +131,9 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 
 ---
 
-## Local Development
+## 🛡️ Manual Installation & Verification
+
+For security researchers, developers, or anyone who prefers to verify the code they run, Acrylic can be installed manually straight from the source. Because we use **zero bundlers** and **zero external dependencies**, the code you see here is the exact code that runs in your browser.
 
 1. Clone the repository:
    ```bash
@@ -144,4 +148,5 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 
 5. Open a new tab — Acrylic should appear immediately
 
-> **Note**: No `npm install` or build step is required. The extension loads directly from source files.
+> [!IMPORTANT]
+> **No build step is required.** There is no `npm install`, Webpack, or Vite. The extension runs purely on native ES modules and vanilla CSS directly from the source files.
