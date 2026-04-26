@@ -7,7 +7,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 <div align="center">
-  <img src="assets/marquee_promo.jpg" alt="Acrylic New Tab Dashboard" width="100%">
+  <img src="assets/marquee_promo.png" alt="Acrylic New Tab Dashboard" width="100%">
 </div>
 
 
