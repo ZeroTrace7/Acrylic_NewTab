@@ -1,3 +1,12 @@
+/*
+ * Acrylic - New Tab
+ * Copyright (C) 2026 Shreyash Gupta
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ */
+
 /* ============================================================
    ACRYLIC — modules/storage.js
    Unified storage abstraction: Prefs (sync) + Store (local)

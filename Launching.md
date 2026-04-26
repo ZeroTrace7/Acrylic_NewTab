@@ -19,7 +19,7 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 ### Code Cleanup
 *   **Uninstall URL:** Removed placeholder `example.com` uninstall URL from `background.js`. Comment left for v1.1 feedback form.
 *   **"Preferances" Typo:** Fixed in all 4 locations — `newtab.html` (aria-label), `newtab.js` (comment), `readfirst.md` (2 instances).
-*   **Rate Us Link:** Updated dead `#` link in `settings/settings.js` to CWS review URL template with `EXTENSION_ID_HERE` placeholder.
+*   **Rate Us Link:** Updated dead `#` link in `settings/settings.js` to CWS review URL template with `cfoafjghblbnolmmkglboeddfpohjihi` placeholder.
 *   **Debug Code:** `debugStylesheetBinding()` identified in `newtab.js` — flagged for removal (non-critical, only fires if CSS fails to load).
 
 ### Package Cleanliness
@@ -96,7 +96,7 @@ Paste these translated short descriptions into the CWS Developer Dashboard langu
 ### 5. Swap the Extension ID Placeholder
 After CWS assigns your extension ID:
 *   Open `settings/settings.js` line 297
-*   Replace `EXTENSION_ID_HERE` with the real extension ID
+*   Replace `EXTENSION_ID_HERE` with the real extension ID (`cfoafjghblbnolmmkglboeddfpohjihi`)
 *   This fixes the "Rate Acrylic" button so it opens the actual CWS review page
 *   Push a hotfix update immediately
 
