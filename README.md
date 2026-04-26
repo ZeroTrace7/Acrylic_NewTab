@@ -4,7 +4,12 @@
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Pure ES Modules](https://img.shields.io/badge/Pure%20ES%20Modules-No%20Bundler-brightgreen?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 [![Zero Telemetry](https://img.shields.io/badge/Telemetry-Zero-critical?style=flat-square)](./AGENTS.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](./LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
+
+<div align="center">
+  <img src="assets/marquee_promo.jpg" alt="Acrylic New Tab Dashboard" width="100%">
+</div>
+
 
 Premium glassmorphism new tab Chrome extension. Built from the ground up as the successor to *Glassy — New Tab* — faster, more capable, completely free.
 
