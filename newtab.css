@@ -191,11 +191,17 @@ button:disabled {
   pointer-events: none;
   opacity: 1;
   background: var(--theme-background, none);
-  transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #app-body.has-wallpaper #theme-layer,
 #app-body.theme-layer-hold #theme-layer {
+  opacity: 0;
+}
+
+/* Boot state: all background layers hidden behind black until JS reveals */
+#app-body.theme-layer-hold #bg-layer,
+#app-body.theme-layer-hold #bg-overlay {
   opacity: 0;
 }
 
@@ -223,7 +229,7 @@ button:disabled {
   transform: scale(1.05);
   transition:
     filter var(--dur-mid) var(--ease-glass),
-    opacity 0.4s ease-in-out;
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Cinematic wallpaper swap: toggled via JS during hold-and-swap */
@@ -297,7 +303,7 @@ button:disabled {
   pointer-events: none;
   background: none;
   opacity: 1;
-  transition: opacity 0.4s ease-in-out;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #app-body.has-wallpaper #bg-overlay {

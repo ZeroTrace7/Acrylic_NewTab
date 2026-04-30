@@ -32,7 +32,7 @@ let backgroundTransitionToken = 0;
 let themeRevealTimer = 0;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
-const WALLPAPER_FADE_MS = 400;
+const WALLPAPER_FADE_MS = 800;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
 const YOUTUBE_EMBED_ORIGINS = new Set([
   'https://www.youtube.com',
@@ -359,7 +359,14 @@ function clearThemeRevealHold() {
     clearTimeout(themeRevealTimer);
     themeRevealTimer = 0;
   }
-  getBodyEl()?.classList.remove('theme-layer-hold');
+  /* Double-rAF: force Chrome to paint the opacity:0 boot frame before
+     removing the hold class — otherwise the browser skips the transition
+     because it never actually rendered the initial state to screen. */
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      getBodyEl()?.classList.remove('theme-layer-hold');
+    });
+  });
 }
 
 function holdThemeReveal() {
