@@ -24,7 +24,7 @@ const THEMES = [
 ];
 export { THEMES };
 
-let currentTheme = 'midnight';
+let currentTheme = 'carbon';
 let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
 let currentBlobUrl = '';
@@ -46,7 +46,7 @@ function getWallpaperFadeDuration() {
 }
 
 function normalizeTheme(themeId) {
-  return THEMES.some((t) => t.id === themeId) ? themeId : 'midnight';
+  return THEMES.some((t) => t.id === themeId) ? themeId : 'carbon';
 }
 
 function applyTheme(themeId) {

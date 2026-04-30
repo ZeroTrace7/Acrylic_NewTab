@@ -16,7 +16,7 @@
 
 export const Prefs = {
   defaults: {
-    theme:           'midnight',
+    theme:           'carbon',
     wallpaperUrl:    'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80',
     wallpaperBlur:   0,
     wallpaperDarken: 0.3,

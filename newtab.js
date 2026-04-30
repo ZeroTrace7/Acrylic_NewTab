@@ -21,8 +21,6 @@ import { initPreferences } from './modules/preferences.js';
 
 let settingsOpen = false;
 
-
-
 function armEntryAnimation() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -37,6 +35,10 @@ async function initApp() {
     document.documentElement.style.setProperty('--center-top', UI_CONFIG.centerTop);
     document.documentElement.style.setProperty('--quicklinks-bottom', UI_CONFIG.quicklinksBottom);
     document.documentElement.style.setProperty('--sidebar-left', UI_CONFIG.sidebarLeft);
+
+    // Step 0 — Let the CSS boot curtain establish on the GPU before painting the DOM.
+    // Without this, JS injects the theme so fast it clashes with the fade animation.
+    await new Promise((resolve) => setTimeout(resolve, 180));
 
     // Step 1 — Background first (theme/wallpaper before UI paints)
     await initBackground();
@@ -265,7 +267,7 @@ async function initApp() {
     });
 
   } catch (err) {
-    // Step 8 — Graceful error handling
+    // Step 9 — Graceful error handling
     console.error('Acrylic init error:', err);
     toast.error('Something went wrong. Please refresh.');
     armEntryAnimation();
@@ -273,4 +275,3 @@ async function initApp() {
 }
 
 initApp();
-
