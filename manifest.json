@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Acrylic - New Tab",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Shreyash Gupta",
   "description": "Premium glassmorphism New Tab. Tasks, Pomodoro, themes. Copyright (C) 2026 Shreyash Gupta. Licensed under GPLv3.",
   "default_locale": "en",
