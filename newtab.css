@@ -279,13 +279,13 @@ button:disabled {
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  /* Solid black curtain — hides YouTube's native UI (play button, title)
+  /* Themed curtain — hides YouTube's native UI (play button, title)
      during load. JS adds .curtain-open after video confirmed + 2.5s delay. */
   background: #000;
   transition: background 1.5s ease-in-out;
 }
 
-/* JS-controlled reveal: fades from solid black to semi-transparent darken overlay */
+/* JS-controlled reveal: fades from themed curtain to semi-transparent darken overlay */
 .acrylic-video-mask.curtain-open {
   background: rgba(0, 0, 0, 0.4);
 }

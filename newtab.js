@@ -24,18 +24,11 @@ let settingsOpen = false;
 
 
 function armEntryAnimation() {
-  const apply = () => {
+  requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       document.body?.classList.add('acrylic-loaded');
     });
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', apply, { once: true });
-    return;
-  }
-
-  apply();
+  });
 }
 
 async function initApp() {
@@ -58,6 +51,9 @@ async function initApp() {
       initQuickLinks(),
       initTasks(),
     ]);
+
+    // Step 3.5 — Trigger foreground entry cascade (background + UI are ready)
+    armEntryAnimation();
 
     // Step 4 — Non-blocking welcome card (first install only, after UI is fully loaded)
     import('./onboarding/onboarding.js').then(m => m.initOnboarding()).catch(() => {});
@@ -272,9 +268,9 @@ async function initApp() {
     // Step 8 — Graceful error handling
     console.error('Acrylic init error:', err);
     toast.error('Something went wrong. Please refresh.');
+    armEntryAnimation();
   }
 }
 
-armEntryAnimation();
 initApp();
 
