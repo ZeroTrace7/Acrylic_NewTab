@@ -29,10 +29,9 @@ let currentWallpaperUrl = '';
 let wallpaperRequestId = 0;
 let currentBlobUrl = '';
 let backgroundTransitionToken = 0;
-let themeRevealTimer = 0;
 
 const WALLPAPER_LOAD_TIMEOUT_MS = 15000;
-const WALLPAPER_FADE_MS = 800;
+const WALLPAPER_FADE_MS = 400;
 const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{11}$/;
 const YOUTUBE_EMBED_ORIGINS = new Set([
   'https://www.youtube.com',
@@ -355,30 +354,11 @@ function setWallpaperFadeOutState(isFading) {
 }
 
 function clearThemeRevealHold() {
-  if (themeRevealTimer) {
-    clearTimeout(themeRevealTimer);
-    themeRevealTimer = 0;
-  }
-  /* Double-rAF: force Chrome to paint the opacity:0 boot frame before
-     removing the hold class — otherwise the browser skips the transition
-     because it never actually rendered the initial state to screen. */
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      getBodyEl()?.classList.remove('theme-layer-hold');
-    });
-  });
+  /* No-op: boot reveal is now handled by the pure CSS .fade-in-from-black overlay */
 }
 
 function holdThemeReveal() {
-  const fadeDuration = getWallpaperFadeDuration();
-  clearThemeRevealHold();
-  const body = getBodyEl();
-  if (!body) return;
-  body.classList.add('theme-layer-hold');
-  themeRevealTimer = setTimeout(() => {
-    themeRevealTimer = 0;
-    body.classList.remove('theme-layer-hold');
-  }, fadeDuration);
+  /* No-op: boot reveal is now handled by the pure CSS .fade-in-from-black overlay */
 }
 
 function clearWallpaperMedia() {

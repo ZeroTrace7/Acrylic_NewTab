@@ -191,17 +191,10 @@ button:disabled {
   pointer-events: none;
   opacity: 1;
   background: var(--theme-background, none);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s ease-in-out;
 }
 
-#app-body.has-wallpaper #theme-layer,
-#app-body.theme-layer-hold #theme-layer {
-  opacity: 0;
-}
-
-/* Boot state: all background layers hidden behind black until JS reveals */
-#app-body.theme-layer-hold #bg-layer,
-#app-body.theme-layer-hold #bg-overlay {
+#app-body.has-wallpaper #theme-layer {
   opacity: 0;
 }
 
@@ -229,7 +222,7 @@ button:disabled {
   transform: scale(1.05);
   transition:
     filter var(--dur-mid) var(--ease-glass),
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.4s ease-in-out;
 }
 
 /* Cinematic wallpaper swap: toggled via JS during hold-and-swap */
@@ -303,7 +296,7 @@ button:disabled {
   pointer-events: none;
   background: none;
   opacity: 1;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s ease-in-out;
 }
 
 #app-body.has-wallpaper #bg-overlay {
@@ -415,6 +408,27 @@ body.acrylic-loaded .anim-sidebar {
   body.acrylic-loaded .anim-sidebar {
     animation: none !important;
   }
+
+  .fade-in-from-black::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* ── Boot Overlay: GPU-accelerated black cover that auto-fades ── */
+@keyframes fade-out-cover {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.fade-in-from-black::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  animation: fade-out-cover 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
 }
 
 /* ────────────────────────────────────────────────────────────
