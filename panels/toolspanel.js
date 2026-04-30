@@ -13,7 +13,7 @@ let hydratePanelRaf = 0;
 let currentStageEl = null;
 let tabSwitchToken = 0;
 
-const TAB_STAGE_EXIT_MS = 320;
+const TAB_STAGE_EXIT_MS = 540;
 let handleDocumentMouseDown = null;
 
 const TABS = [
@@ -282,4 +282,3 @@ function closePanel() {
 export function toggleToolsPanel(onClose) {
   isOpen ? closePanel() : openPanel(onClose);
 }
-

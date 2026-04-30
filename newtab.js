@@ -102,6 +102,7 @@ async function initApp() {
     let zenUse24 = false;
     let zenExitBtn = null;
     let zenEnterTimer = 0;
+    let zenRemovalTimer = 0;
     const ZEN_ENTER_DELAY_MS = 130;
 
     function ensureZenExitButton() {
@@ -145,6 +146,9 @@ async function initApp() {
 
     async function enterZen() {
       if (zenClockEl) return;
+      clearTimeout(zenRemovalTimer);
+      zenRemovalTimer = 0;
+      document.querySelectorAll('.zen-flip-clock').forEach((el) => el.remove());
       zenUse24 = (await Prefs.get('clockFormat')) === '24h';
       ensureZenExitButton();
       zenExitBtn?.setAttribute('aria-hidden', 'false');
@@ -203,7 +207,11 @@ async function initApp() {
         zenDigitEls.length = 0;
         zenDateEl = null;
         // Wait for fade-out transition to finish before removing DOM
-        setTimeout(() => el.remove(), 800);
+        clearTimeout(zenRemovalTimer);
+        zenRemovalTimer = setTimeout(() => {
+          el.remove();
+          zenRemovalTimer = 0;
+        }, 800);
       }
     }
 

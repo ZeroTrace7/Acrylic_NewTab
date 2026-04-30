@@ -41,6 +41,9 @@ let pickerOpenRaf2 = 0;
 let pickerFocusTimer = 0;
 let searchHistoryEnabled = false;
 let searchHistoryItems = [];
+let engineIconSwapTimer = 0;
+let engineIconResetTimer = 0;
+let engineIconSwapToken = 0;
 
 function setSearchPickerUiState(isOpen) {
   document.body.classList.toggle('search-picker-open', isOpen);
@@ -178,10 +181,14 @@ function setEngine(engine) {
   DOM.engineBtn?.setAttribute('title', engine.name);
   const icon = DOM.engineIcon;
   if (icon) {
+    clearTimeout(engineIconSwapTimer);
+    clearTimeout(engineIconResetTimer);
+    const iconSwapToken = ++engineIconSwapToken;
     /* Premium icon-swap micro-animation: shrink → swap → spring back */
     icon.style.transition = 'transform 120ms ease';
     icon.style.transform = 'scale(0.7)';
-    setTimeout(() => {
+    engineIconSwapTimer = setTimeout(() => {
+      if (iconSwapToken !== engineIconSwapToken) return;
       icon.onerror = () => {
         icon.onerror = null;
         icon.src = FALLBACK_ENGINE_ICON;
@@ -191,7 +198,10 @@ function setEngine(engine) {
       icon.width = engine.iconSize || 18;
       icon.height = engine.iconSize || 18;
       icon.style.transform = 'scale(1.1)';
-      setTimeout(() => { icon.style.transform = ''; }, 120);
+      engineIconResetTimer = setTimeout(() => {
+        if (iconSwapToken !== engineIconSwapToken) return;
+        icon.style.transform = '';
+      }, 120);
     }, 100);
   }
   Prefs.set('searchEngine', engine.id);
@@ -219,34 +229,54 @@ function syncAssistantMode() {
 }
 
 let _promptExpansionTimer = 0;
+let _promptExpansionToken = 0;
+let _promptExpansionTarget = null;
 
 function syncPromptExpansion() {
   const isAssistant = isAssistantEngine(currentEngine);
   const hasText = DOM.searchInput?.value.trim().length > 0;
   const shouldExpand = isAssistant && hasText;
   const isExpanded = document.body.classList.contains('ai-prompt-active');
+  const wrapper = DOM.searchWrapper;
+
+  if (_promptExpansionTarget !== null && _promptExpansionTarget !== shouldExpand) {
+    clearTimeout(_promptExpansionTimer);
+    _promptExpansionTimer = 0;
+    _promptExpansionToken += 1;
+    _promptExpansionTarget = null;
+    wrapper?.classList.remove('mode-transitioning');
+  }
 
   /* No change needed */
-  if (shouldExpand === isExpanded) return;
+  if (shouldExpand === isExpanded) {
+    if (_promptExpansionTarget === null) wrapper?.classList.remove('mode-transitioning');
+    return;
+  }
 
-  const wrapper = DOM.searchWrapper;
   if (!wrapper) {
+    _promptExpansionTarget = null;
     document.body.classList.toggle('ai-prompt-active', shouldExpand);
     return;
   }
 
   /* Cancel any in-flight transition */
   clearTimeout(_promptExpansionTimer);
+  const promptExpansionToken = ++_promptExpansionToken;
+  _promptExpansionTarget = shouldExpand;
 
   /* Phase 1 — fade out the inner content (140ms) */
   wrapper.classList.add('mode-transitioning');
 
   _promptExpansionTimer = setTimeout(() => {
+    if (promptExpansionToken !== _promptExpansionToken) return;
     /* Phase 2 — apply layout change while invisible */
     document.body.classList.toggle('ai-prompt-active', shouldExpand);
+    _promptExpansionTarget = null;
+    _promptExpansionTimer = 0;
 
     /* Phase 3 — fade back in (180ms via CSS) */
     requestAnimationFrame(() => {
+      if (promptExpansionToken !== _promptExpansionToken) return;
       wrapper.classList.remove('mode-transitioning');
     });
   }, 150);

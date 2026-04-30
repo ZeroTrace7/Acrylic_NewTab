@@ -1231,7 +1231,7 @@ function closeSettings() {
     if (themeChangedHandler) { bus.removeEventListener('themeChanged', themeChangedHandler); themeChangedHandler = null; }
     onCloseCallback?.();
     onCloseCallback = null;
-  }, 420);
+  }, 520);
 }
 
 export async function initSettings(onClose) {

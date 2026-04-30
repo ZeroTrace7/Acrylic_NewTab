@@ -155,13 +155,16 @@ function animateListReorder(beforeRects) {
     requestAnimationFrame(() => {
       row.style.transition = 'transform 680ms cubic-bezier(0.16, 1, 0.3, 1)';
       row.style.transform = 'translateY(0)';
+      let cleanupTimer = 0;
       const cleanup = () => {
+        clearTimeout(cleanupTimer);
         row.style.transition = '';
         row.style.transform = '';
         row.style.willChange = '';
         row.removeEventListener('transitionend', cleanup);
       };
       row.addEventListener('transitionend', cleanup, { once: true });
+      cleanupTimer = setTimeout(cleanup, 720);
     });
   });
 }

@@ -281,7 +281,7 @@
 }
 
 .animate-premium-panel {
-  animation: premiumPanelOpen 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: premiumPanelOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: left center;
   will-change: transform, opacity;
 }
