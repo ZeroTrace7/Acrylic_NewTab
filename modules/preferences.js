@@ -380,6 +380,17 @@ function stopHudDrag() {
 function applyLayoutEditMode(enabled) {
   preferenceState.editLayoutMode = Boolean(enabled);
   document.body?.classList.toggle('is-layout-editing', preferenceState.editLayoutMode);
+
+  // Toggle native drag hint titles — only visible in edit mode
+  document.querySelectorAll('.layout-edit-target[data-layout-edit-target]').forEach((el) => {
+    if (preferenceState.editLayoutMode) {
+      const config = LAYOUT_KEYS[el.dataset.layoutEditTarget];
+      if (config) el.title = `Drag ${config.label} to reposition`;
+    } else {
+      el.removeAttribute('title');
+    }
+  });
+
   if (preferenceState.editLayoutMode) {
     ensureLayoutEditorHud();
   } else {
@@ -428,7 +439,6 @@ function bindLayoutTargets() {
     el.classList.add('layout-edit-target');
     el.dataset.layoutEditTarget = key;
     el.dataset.layoutLabel = `Drag ${config.label}`;
-    el.title = `Drag ${config.label} to reposition`;
   });
 }
 

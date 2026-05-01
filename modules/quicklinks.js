@@ -1023,7 +1023,6 @@ function openManagePanel() {
   panel.setAttribute('aria-hidden', 'false');
   panel.classList.add('animate-premium-panel');
   updateManageButtonState();
-  manageUrlInputEl?.focus();
 }
 
 function toggleManagePanel() {
@@ -1482,11 +1481,13 @@ function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
 
   tile.classList.toggle('quicklink-tile-bottom', useRawFavicon);
   tile.href = link.url;
-  tile.title = link.title;
+  tile.removeAttribute('title');
   tile.dataset.id = link.id;
   if (hideLabel && !useRawFavicon) {
+    wrapper.dataset.tooltip = link.title;
     bindSidebarDragNode(wrapper);
   } else {
+    delete wrapper.dataset.tooltip;
     wrapper.setAttribute('draggable', 'false');
     wrapper.classList.remove('is-sidebar-draggable');
     tile.setAttribute('draggable', 'false');
@@ -1505,12 +1506,12 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
   wrapper.classList.toggle('quicklink-item-bottom', useRawFavicon);
   wrapper.dataset.linkId = link.id;
   wrapper.dataset.id = link.id;
+  if (hideLabel && !useRawFavicon) wrapper.dataset.tooltip = link.title;
 
   const a = document.createElement('a');
   a.className = 'quicklink-tile';
   a.classList.toggle('quicklink-tile-bottom', useRawFavicon);
   a.href = link.url;
-  a.title = link.title;
   a.dataset.id = link.id;
   a.setAttribute('role', 'listitem');
   a.setAttribute('draggable', 'false');
@@ -1777,6 +1778,103 @@ function removeLink(id) {
   toast.info('Link removed');
 }
 
+/* ── Premium Glassmorphism Tooltip Engine ── */
+let tooltipEl = null;
+let tooltipShowTimer = null;
+const TOOLTIP_DELAY_MS = 600;
+
+function ensureTooltipNode() {
+  if (tooltipEl) return tooltipEl;
+  tooltipEl = document.createElement('div');
+  tooltipEl.id = 'acrylic-tooltip';
+  tooltipEl.setAttribute('role', 'tooltip');
+  tooltipEl.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(tooltipEl);
+  return tooltipEl;
+}
+
+function showTooltip(targetEl) {
+  if (draggingSidebarLinkId || managePanelOpen) return;
+  if (document.body.classList.contains('is-sidebar-reordering')) return;
+
+  const text = targetEl.dataset.tooltip;
+  if (!text) return;
+
+  const tip = ensureTooltipNode();
+  tip.textContent = text;
+
+  const rect = targetEl.getBoundingClientRect();
+  let left = rect.right + 12;
+  let top = rect.top + (rect.height / 2);
+
+  // Viewport clamping — prevent overflow
+  tip.style.left = '0px';
+  tip.style.top = '0px';
+  tip.classList.remove('visible');
+  void tip.offsetWidth;
+  const tipRect = tip.getBoundingClientRect();
+  const tipW = tipRect.width;
+  const tipH = tipRect.height;
+
+  if (left + tipW > window.innerWidth - 8) {
+    left = rect.left - tipW - 12;
+  }
+  top = Math.max(tipH / 2 + 8, Math.min(top, window.innerHeight - tipH / 2 - 8));
+
+  tip.style.left = `${Math.round(left)}px`;
+  tip.style.top = `${Math.round(top)}px`;
+  tip.classList.add('visible');
+  tip.setAttribute('aria-hidden', 'false');
+}
+
+function hideTooltip() {
+  if (tooltipShowTimer) {
+    clearTimeout(tooltipShowTimer);
+    tooltipShowTimer = null;
+  }
+  if (tooltipEl) {
+    tooltipEl.classList.remove('visible');
+    tooltipEl.setAttribute('aria-hidden', 'true');
+  }
+}
+
+function scheduleTooltip(targetEl) {
+  hideTooltip();
+  tooltipShowTimer = setTimeout(() => {
+    tooltipShowTimer = null;
+    showTooltip(targetEl);
+  }, TOOLTIP_DELAY_MS);
+}
+
+function initSidebarTooltips() {
+  ensureTooltipNode();
+
+  // Event delegation on the sidebar grid — handles dynamic tile lifecycle
+  const sidebarGrid = DOM.sidebarGrid;
+  if (sidebarGrid) {
+    sidebarGrid.addEventListener('pointerenter', (e) => {
+      const item = e.target instanceof Element ? e.target.closest('.quicklink-item') : null;
+      if (item instanceof HTMLElement && item.dataset.tooltip) {
+        scheduleTooltip(item);
+      }
+    }, true);
+
+    sidebarGrid.addEventListener('pointerleave', (e) => {
+      const item = e.target instanceof Element ? e.target.closest('.quicklink-item') : null;
+      if (item) hideTooltip();
+    }, true);
+  }
+
+  // Static tooltip on the ... button
+  const toolsFab = DOM.toolsFab;
+  if (toolsFab) {
+    toolsFab.dataset.tooltip = 'Quick Links';
+    toolsFab.removeAttribute('title');
+    toolsFab.addEventListener('pointerenter', () => scheduleTooltip(toolsFab));
+    toolsFab.addEventListener('pointerleave', () => hideTooltip());
+  }
+}
+
 export async function initQuickLinks() {
   ensureQuicklinksStyles();
   try {
@@ -1836,4 +1934,6 @@ export async function initQuickLinks() {
     topSiteLimit = Number.isFinite(changes.quickLinksMax) ? changes.quickLinksMax : 6;
     renderLinks();
   });
+
+  initSidebarTooltips();
 }
