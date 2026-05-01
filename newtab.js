@@ -60,6 +60,9 @@ async function initApp() {
     // Step 4 — Non-blocking welcome card (first install only, after UI is fully loaded)
     import('./onboarding/onboarding.js').then(m => m.initOnboarding()).catch(() => {});
 
+    // Step 4.5 — Non-blocking update banner (after extension updates only)
+    import('./modules/update-banner.js').then(m => m.initUpdateBanner()).catch(() => {});
+
     // Step 5 — Preferences button (lazy-loaded)
     DOM.settingsBtn?.addEventListener('click', async () => {
       if (settingsOpen) return;

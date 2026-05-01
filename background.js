@@ -217,6 +217,22 @@ chrome.runtime.onInstalled.addListener(async (details) => {
       timerState: { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 },
       dailyStats: { date: TODAY(), count: 0 },
     });
+
+    // ── Update notification flag ────────────────────────────
+    if (details.reason === 'update') {
+      const currentVersion = chrome.runtime.getManifest().version;
+      const previousVersion = details.previousVersion;
+      if (currentVersion !== previousVersion) {
+        await chrome.storage.local.set({
+          acrylicUpdateReady: {
+            version: currentVersion,
+            previousVersion,
+            timestamp: Date.now(),
+          },
+        });
+      }
+    }
+
     await chrome.alarms.create('dailyReset', { when: new Date().setHours(24, 0, 0, 0), periodInMinutes: 1440 });
     await chrome.contextMenus.removeAll();
     chrome.contextMenus.create({ id: 'addToNotes', title: 'Save to Acrylic Notes', contexts: ['selection'] });

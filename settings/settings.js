@@ -169,7 +169,7 @@ function openWhatsNew() {
 
   const hbadge = document.createElement('div');
   hbadge.className = 'whats-new-version';
-  hbadge.textContent = 'v1.0.0 — Initial Release';
+  hbadge.textContent = `v${chrome.runtime.getManifest().version}`;
 
   const hclose = document.createElement('button');
   hclose.type = 'button';
@@ -218,7 +218,7 @@ async function exportData() {
     chrome.storage.local.get(null),
   ]);
   const payload = JSON.stringify({
-    _meta: { app: 'Acrylic', version: '1.0.0', exportedAt: new Date().toISOString() },
+    _meta: { app: 'Acrylic', version: chrome.runtime.getManifest().version, exportedAt: new Date().toISOString() },
     preferences: syncData,
     localData,
   }, null, 2);
@@ -403,7 +403,7 @@ function buildAboutFooter() {
 
   const meta = document.createElement('span');
   meta.className = 'about-footer-meta';
-  meta.textContent = 'Acrylic v1.0.0 · Built by Shreyash Gupta';
+  meta.textContent = `Acrylic v${chrome.runtime.getManifest().version} · Built by Shreyash Gupta`;
 
   const socials = document.createElement('div');
   socials.className = 'about-footer-socials';
