@@ -281,10 +281,35 @@
 }
 
 .animate-premium-panel {
-  animation: premiumPanelOpen 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: premiumPanelOpen 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: left center;
   will-change: transform, opacity;
 }
+
+/* ── Staggered content cascade — each section fades/slides in sequentially ── */
+.manage-links-panel .manage-panel-stagger {
+  opacity: 0;
+  transform: translateY(10px);
+  will-change: opacity, transform;
+  transition:
+    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.manage-links-panel.open .manage-panel-stagger {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger delay tiers */
+.manage-links-panel.open .manage-panel-stagger[data-stagger="0"] { transition-delay: 0ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="1"] { transition-delay: 60ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="2"] { transition-delay: 120ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="3"] { transition-delay: 170ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="4"] { transition-delay: 220ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="5"] { transition-delay: 270ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="6"] { transition-delay: 320ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="7"] { transition-delay: 370ms; }
 
 .manage-links-header {
   display: flex;
@@ -455,12 +480,25 @@
   border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: none;
   flex-shrink: 0;
-  transition: transform 140ms ease, filter 140ms ease;
+  /* Start hidden — spring pop-in when panel opens */
+  transform: scale(0);
+  opacity: 0;
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 220ms ease,
+    filter 140ms ease;
+}
+
+/* Spring pop-in with overshoot when panel is open */
+.manage-links-panel.open .manage-link-remove {
+  transform: scale(1);
+  opacity: 1;
+  transition-delay: 380ms;
 }
 
 .manage-link-remove:hover {
-  transform: scale(1.08);
-  filter: brightness(1.03);
+  transform: scale(1.12) !important;
+  filter: brightness(1.05);
 }
 
 .manage-links-empty {
@@ -508,6 +546,10 @@
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid;
   border-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.05) rgba(255, 255, 255, 0.2);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .manage-links-input::placeholder {
@@ -518,6 +560,7 @@
   outline: none;
   border-color: rgba(125, 211, 252, 0.52);
   background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.10);
 }
 
 .manage-links-submit {
@@ -536,12 +579,19 @@
   border-color: rgba(125, 211, 252, 0.66);
 }
 
+.manage-links-submit:active {
+  transform: scale(0.97);
+  background: rgba(56, 189, 248, 0.38);
+}
+
 .manage-links-library-grid {
   grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)) !important;
   gap: 12px 6px;
   max-height: 120px;
   overflow-y: auto;
   padding-right: 4px;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
 }
 
 .manage-links-library-grid::-webkit-scrollbar {

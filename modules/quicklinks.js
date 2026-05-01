@@ -959,16 +959,18 @@ function closeManagePanel() {
     managePanelEl.classList.remove('open');
     managePanelEl.setAttribute('aria-hidden', 'true');
     managePanelEl.style.transformOrigin = 'left center';
-    managePanelEl.style.transition = 'opacity 140ms ease, transform 140ms ease';
+    managePanelEl.style.transition = 'opacity 260ms cubic-bezier(0.4,0,1,1), transform 280ms cubic-bezier(0.4,0,1,1), filter 260ms ease';
     managePanelEl.style.opacity = '0';
-    managePanelEl.style.transform = 'translateX(-10px) scale(0.985)';
+    managePanelEl.style.transform = 'translateX(-12px) scale(0.97)';
+    managePanelEl.style.filter = 'blur(3px)';
     if (managePanelCloseTimer) clearTimeout(managePanelCloseTimer);
     managePanelCloseTimer = setTimeout(() => {
       if (!managePanelOpen && managePanelEl) {
         managePanelEl.style.display = 'none';
+        managePanelEl.style.filter = '';
       }
       managePanelCloseTimer = null;
-    }, 140);
+    }, 280);
   }
   updateManageButtonState();
 }
@@ -1012,6 +1014,7 @@ function openManagePanel() {
   panel.style.transition = '';
   panel.style.opacity = '';
   panel.style.transform = '';
+  panel.style.filter = '';
   panel.style.willChange = '';
   panel.classList.remove('animate-fadeIn', 'fade-in', 'fadeIn');
   panel.classList.remove('animate-premium-panel');
@@ -1150,13 +1153,15 @@ function buildManagePanelAddForm() {
     width: 100%;
     min-height: 42px;
     outline: none;
-    transition: border 150ms ease;
+    transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
   `;
   manageUrlInputEl.addEventListener('focus', () => {
     manageUrlInputEl.style.border = '1px solid var(--glass-border-panel)';
+    manageUrlInputEl.style.boxShadow = '0 0 0 3px rgba(125,211,252,0.10)';
   });
   manageUrlInputEl.addEventListener('blur', () => {
     manageUrlInputEl.style.border = '1px solid var(--glass-border)';
+    manageUrlInputEl.style.boxShadow = '';
   });
   manageUrlInputEl.addEventListener('input', () => {
     if (!manageUrlInputEl.value.trim() && manageNameInputEl && manageNameInputEl.value.trim() === manageUrlInputEl.dataset.autoName) {
@@ -1223,13 +1228,15 @@ function buildManagePanelAddForm() {
     width: 100%;
     min-height: 42px;
     outline: none;
-    transition: border 150ms ease;
+    transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
   `;
   manageNameInputEl.addEventListener('focus', () => {
     manageNameInputEl.style.border = '1px solid var(--glass-border-panel)';
+    manageNameInputEl.style.boxShadow = '0 0 0 3px rgba(125,211,252,0.10)';
   });
   manageNameInputEl.addEventListener('blur', () => {
     manageNameInputEl.style.border = '1px solid var(--glass-border)';
+    manageNameInputEl.style.boxShadow = '';
   });
 
   const nameWrap = document.createElement('div');
@@ -1299,7 +1306,7 @@ function buildManagePanelSubmitButton() {
     padding: 11px;
     width: 100%;
     cursor: pointer;
-    transition: background 150ms ease;
+    transition: background 180ms ease, transform 180ms cubic-bezier(0.22,1,0.36,1);
   `;
   addBtn.addEventListener('mouseenter', () => {
     addBtn.style.background = 'rgba(59,130,246,1)';
@@ -1320,11 +1327,39 @@ function buildManagePanel() {
   panel.setAttribute('aria-hidden', 'true');
   panel.style.fontFamily = "'Geist', 'Inter', system-ui, sans-serif";
 
-  panel.appendChild(buildManagePanelHeader());
-  panel.appendChild(buildManagePanelAddedSection());
-  panel.appendChild(buildManagePanelAddForm());
-  panel.appendChild(buildManagePanelLibrary());
-  panel.appendChild(buildManagePanelSubmitButton());
+  // Build sections with stagger data-attributes for cascading entry
+  const header = buildManagePanelHeader();
+  header.classList.add('manage-panel-stagger');
+  header.dataset.stagger = '0';
+
+  const addedSection = buildManagePanelAddedSection();
+  // addedSection is a DocumentFragment — wrap children with stagger
+  const addedWrapper = document.createElement('div');
+  addedWrapper.classList.add('manage-panel-stagger');
+  addedWrapper.dataset.stagger = '1';
+  addedWrapper.appendChild(addedSection);
+
+  const addForm = buildManagePanelAddForm();
+  const addFormWrapper = document.createElement('div');
+  addFormWrapper.classList.add('manage-panel-stagger');
+  addFormWrapper.dataset.stagger = '3';
+  addFormWrapper.appendChild(addForm);
+
+  const library = buildManagePanelLibrary();
+  library.classList.add('manage-panel-stagger');
+  library.dataset.stagger = '5';
+
+  const submitBtn = buildManagePanelSubmitButton();
+  const submitWrapper = document.createElement('div');
+  submitWrapper.classList.add('manage-panel-stagger');
+  submitWrapper.dataset.stagger = '7';
+  submitWrapper.appendChild(submitBtn);
+
+  panel.appendChild(header);
+  panel.appendChild(addedWrapper);
+  panel.appendChild(addFormWrapper);
+  panel.appendChild(library);
+  panel.appendChild(submitWrapper);
 
   return panel;
 }
@@ -1694,9 +1729,51 @@ function updateLink(id, title, url, isApp = false) {
 }
 
 function removeLink(id) {
-  links = links.filter(l => l.id !== id);
-  persistLinks();
-  renderLinks();
+  // Animate tile exit in manage panel before DOM removal
+  const manageTile = manageAddedTiles.get(id);
+  if (manageTile && manageTile.parentElement) {
+    // FLIP: capture positions of siblings before removal
+    const grid = manageTile.parentElement;
+    const siblings = Array.from(grid.children).filter(
+      (child) => child instanceof HTMLElement && child !== manageTile
+    );
+    const beforeRects = new Map(siblings.map((s) => [s, s.getBoundingClientRect()]));
+
+    // Animate the tile out
+    manageTile.style.transition = 'opacity 250ms ease, transform 280ms cubic-bezier(0.4,0,1,1), filter 250ms ease';
+    manageTile.style.opacity = '0';
+    manageTile.style.transform = 'scale(0.7)';
+    manageTile.style.filter = 'blur(4px)';
+    manageTile.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      links = links.filter(l => l.id !== id);
+      persistLinks();
+      renderLinks();
+
+      // FLIP: animate siblings to new positions
+      siblings.forEach((sibling) => {
+        if (!sibling.parentElement) return;
+        const prev = beforeRects.get(sibling);
+        if (!prev) return;
+        const next = sibling.getBoundingClientRect();
+        const dx = prev.left - next.left;
+        const dy = prev.top - next.top;
+        if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+        sibling.style.transition = 'none';
+        sibling.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(() => {
+          sibling.style.transition = 'transform 380ms cubic-bezier(0.22, 1, 0.36, 1)';
+          sibling.style.transform = '';
+          setTimeout(() => { sibling.style.transition = ''; }, 400);
+        });
+      });
+    }, 260);
+  } else {
+    links = links.filter(l => l.id !== id);
+    persistLinks();
+    renderLinks();
+  }
   toast.info('Link removed');
 }
 
