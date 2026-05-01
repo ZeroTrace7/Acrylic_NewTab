@@ -845,6 +845,7 @@ function createManageLibraryTile(entry) {
   const tile = document.createElement('div');
   tile.className = 'manage-library-item';
   tile.dataset.libraryKey = entry.key;
+  tile.dataset.tooltip = entry.label;
   tile.style.cssText = `
     display: flex;
     align-items: center;
@@ -954,6 +955,7 @@ function addCustomLinkFromPanel() {
 
 function closeManagePanel() {
   managePanelOpen = false;
+  hideTooltip();
   if (managePanelEl) {
     managePanelEl.classList.remove('animate-premium-panel');
     managePanelEl.classList.remove('open');
@@ -1794,8 +1796,11 @@ function ensureTooltipNode() {
 }
 
 function showTooltip(targetEl) {
-  if (draggingSidebarLinkId || managePanelOpen) return;
+  if (draggingSidebarLinkId) return;
   if (document.body.classList.contains('is-sidebar-reordering')) return;
+  // Suppress sidebar tooltips when manage panel is open, but allow in-panel tooltips
+  const isInsideManagePanel = managePanelEl && managePanelEl.contains(targetEl);
+  if (managePanelOpen && !isInsideManagePanel) return;
 
   const text = targetEl.dataset.tooltip;
   if (!text) return;
@@ -1838,12 +1843,12 @@ function hideTooltip() {
   }
 }
 
-function scheduleTooltip(targetEl) {
+function scheduleTooltip(targetEl, delay = TOOLTIP_DELAY_MS) {
   hideTooltip();
   tooltipShowTimer = setTimeout(() => {
     tooltipShowTimer = null;
     showTooltip(targetEl);
-  }, TOOLTIP_DELAY_MS);
+  }, delay);
 }
 
 function initSidebarTooltips() {
@@ -1872,6 +1877,33 @@ function initSidebarTooltips() {
     toolsFab.removeAttribute('title');
     toolsFab.addEventListener('pointerenter', () => scheduleTooltip(toolsFab));
     toolsFab.addEventListener('pointerleave', () => hideTooltip());
+  }
+
+  // Event delegation on the library grid inside manage panel
+  const attachLibraryTooltips = () => {
+    if (!manageLibraryGridEl) return;
+    manageLibraryGridEl.addEventListener('pointerenter', (e) => {
+      const item = e.target instanceof Element ? e.target.closest('.manage-library-item') : null;
+      if (item instanceof HTMLElement && item.dataset.tooltip) {
+        scheduleTooltip(item, 300);
+      }
+    }, true);
+    manageLibraryGridEl.addEventListener('pointerleave', (e) => {
+      const item = e.target instanceof Element ? e.target.closest('.manage-library-item') : null;
+      if (item) hideTooltip();
+    }, true);
+  };
+  // Library grid may not exist yet (lazy-built), so also observe
+  if (manageLibraryGridEl) {
+    attachLibraryTooltips();
+  } else {
+    const observer = new MutationObserver(() => {
+      if (manageLibraryGridEl) {
+        attachLibraryTooltips();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 }
 
