@@ -27,12 +27,25 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## Table of Contents
 
+- [What's New in v1.1.1](#🎉-whats-new-in-v111)
 - [Why Acrylic?](#✨-why-acrylic)
 - [Architecture vs. Competitors](#⚡-architecture-vs-competitors)
 - [Features](#🚀-features)
 - [Keyboard Shortcuts](#⌨️-keyboard-shortcuts)
 - [Tech Stack](#🛠️-tech-stack)
 - [Manual Installation & Verification](#🛡️-manual-installation--verification)
+
+---
+
+## 🎉 What's New in v1.1.1
+
+This update focuses on **premium micro-interactions and cinematic UI polish**:
+- **Custom Glassmorphism Tooltips:** Replaced native browser hover tooltips with a custom glassmorphism system using event delegation for zero-flicker pointer mechanics.
+- **Cinematic Manage Panel:** The Quick Links manage panel now features a 600ms scale-and-glide entrance with staggered internal sections, and a 280ms cubic-bezier blur exit.
+- **Animated Tile Removal (FLIP):** Deleting a link now triggers a hardware-accelerated FLIP exit animation (blur + scale out), rather than instantly disappearing.
+- **Micro-Interaction Upgrades:** Added a 1.56 spring-overshoot pop-in for remove badges, box-shadow pulses for input focus, and press-state transformations for buttons.
+- **Update Notification Engine:** Added a beautiful glassmorphic "What's New" banner that only triggers when the extension updates versions.
+- **Bug Fixes:** Resolved the native "Drag Dock to reposition" tooltip appearing when edit layout mode was not active.
 
 ---
 
