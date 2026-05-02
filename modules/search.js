@@ -25,7 +25,7 @@ const ENGINE_GROUPS = [
 ];
 
 const ENGINES = [
-  { id: 'default', name: 'Web Search', group: 'destinations', type: 'search', url: '', icon: 'icons/search.svg' },
+  { id: 'default', name: 'Web Search', group: 'destinations', type: 'search', url: '', icon: 'icons/google-classic.svg' },
   { id: 'chatgpt', name: 'ChatGPT', group: 'destinations', type: 'ai', url: 'https://chatgpt.com/?q=', icon: 'icons/chatgpt.svg' },
   { id: 'gemini', name: 'Gemini', group: 'destinations', type: 'ai', url: 'https://gemini.google.com/app?q=', icon: 'https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg', iconSize: 22 },
   { id: 'claude', name: 'Claude', group: 'destinations', type: 'ai', url: 'https://claude.ai/new?q=', icon: 'https://cdn.simpleicons.org/claude/D97757' },
