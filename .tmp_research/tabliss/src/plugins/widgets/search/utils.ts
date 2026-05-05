@@ -1,7 +1,6 @@
 import tlds from "tlds";
 import { engines } from "./engines";
 
-// TODO: Add unit tests
 export function buildUrl(query: string, engineUrl: string) {
   // See if they have started with a web scheme
   if (/^https?:\/\/\w+/.test(query)) {
