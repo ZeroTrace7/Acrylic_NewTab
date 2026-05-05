@@ -17,8 +17,8 @@ export const setBackground = (key: string): void => {
     key,
     display: { blur: 0, luminosity: -0.2 },
   });
-  DB.del(db, `data/${current.id}`);
-  DB.del(cache, current.id);
+  DB.delHard(db, `data/${current.id}`);
+  DB.delHard(cache, current.id);
 };
 
 // Widget actions
@@ -39,8 +39,8 @@ export const addWidget = (key: string): void => {
 /** Remove a widget */
 export const removeWidget = (id: string): void => {
   DB.put(db, `widget/${id}`, null);
-  DB.del(db, `data/${id}`);
-  DB.del(cache, id);
+  DB.delHard(db, `data/${id}`);
+  DB.delHard(cache, id);
 };
 
 /** Reorder a widget */

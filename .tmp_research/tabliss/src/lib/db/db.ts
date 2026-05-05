@@ -72,6 +72,21 @@ export const put = <T, K extends Key<T>>(
 };
 
 /**
+ * Delete a key from the database using a tombstone, hiding parent/default values.
+ */
+export const delHard = <T, K extends Key<T>>(
+  db: Snapshot<T> | Database<T>,
+  key: K,
+): void => {
+  if ("listeners" in db) {
+    db.cache.set(key, undefined);
+    db.listeners.forEach((listener) => listener([key, undefined]));
+  } else {
+    db.cache.set(key, undefined);
+  }
+};
+
+/**
  * Delete a key from the database.
  */
 export const del = <T, K extends Key<T>>(
@@ -79,7 +94,6 @@ export const del = <T, K extends Key<T>>(
   key: K,
 ): void => {
   if ("listeners" in db) {
-    // TODO: This is here because of the interaction with def data, consider changing
     db.cache.delete(key);
     db.listeners.forEach((listener) => listener([key, undefined]));
   } else {
