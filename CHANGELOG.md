@@ -13,8 +13,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 *Focus: Premium micro-interactions, cinematic UI polish, and timer reliability.*
 
 ### Added
-- **Google Search Identity** — Default search engine icon replaced with the classic multicolor Google "G" logo for instant brand recognition.
-- **Search Engine Selector Discoverability** — Engine picker button now features a glass border and interactive hover/active states, making the AI engine switcher (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek) clearly visible as an interactive element.
+- **Search Bar Identity** — Default web search icon upgraded to a polished, recognizable design for a more premium search bar appearance.
+- **AI Destination Picker** — Engine picker button now features a glass border and interactive hover/active states, making the AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek) clearly visible as interactive options.
 - **Custom Glassmorphism Tooltips** — Replaced native browser `title` tooltips with a custom glassmorphism tooltip system using event delegation for zero-flicker pointer mechanics. Sidebar dock tooltips delayed 600ms on hover, suppressed during drag or when panel is open. Preset library tooltips use accelerated 300ms delay.
 - **Update Notification Engine** — New `modules/update-banner.js` module. Glassmorphic "What's New" banner appears once after each extension update. Waits 2400ms post-boot to avoid fighting the curtain/entry animation. Dismiss with buttery 600ms blur melt-away.
 - **Animated Tile Removal (FLIP)** — Deleting a Quick Link now triggers a hardware-accelerated FLIP exit animation (blur + scale out) rather than instantly disappearing.
@@ -89,11 +89,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - **Dynamic Backgrounds** — Custom wallpaper URLs, YouTube video ambient wallpapers (via `youtube-nocookie.com` iframe), wallpaper ghost crossfading.
 - **Dynamic Background Brightness Adaptation** — Canvas-based BT.709 luminosity sampling auto-flips text/UI colors on bright wallpapers.
 - **Zen Mode** — Single-click distraction-free mode with pure `#000` background and retro-mechanical flip clock.
-- **Search Command Bar** — Google, Bing, DuckDuckGo, Brave, YouTube, Perplexity, ChatGPT, Claude, Gemini, Grok, DeepSeek, Yandex.
+- **Search & AI Bar** — Default web search via Chrome Search API (respects user's browser default), plus AI destinations: ChatGPT, Claude, Gemini, Perplexity, Grok, DeepSeek.
 - **Glassmorphism Architecture** — `rgba(255,255,255,0.04)` fill, `backdrop-filter: blur(16px)`, `1px solid rgba(255,255,255,0.08)` borders, grain texture overlay (`--bg-grain-opacity: 0.035`).
 - **Keyboard Shortcuts** — `/` (focus search), `Ctrl+K` / `⌘K` (focus search), `T` (toggle tasks), `Ctrl+,` / `⌘,` (preferences), `Escape` (exit/blur).
 - **Data Portability** — Full JSON Export/Import via Preferences panel.
-- **Onboarding Flow** — First-run welcome card with search engine selection.
+- **Onboarding Flow** — First-run welcome card with search and AI destination selection.
 
 ### Accessibility
 - WCAG `:focus-visible` glass-themed focus rings.
@@ -111,7 +111,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - GPLv3 license headers applied to all source files.
 - `PRIVACY_POLICY.md` — 12-section privacy policy with per-permission justification.
 - `tabs` moved to `optional_permissions` to eliminate "Read your browsing history" install warning.
-- `search` permission removed (unused — search bar uses `window.location.href`).
+- Web search uses `chrome.search.query()` via the `search` permission to respect the user's default browser search provider. AI destinations navigate directly to their respective URLs.
 
 ---
 

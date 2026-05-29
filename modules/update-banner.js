@@ -34,7 +34,7 @@ const RELEASE_NOTES = {
   '1.1.1': {
     headline: 'Premium polish, search identity & timer reliability',
     items: [
-      { icon: '🔍', text: 'Google "G" search icon & discoverable engine switcher' },
+      { icon: '🔍', text: 'Polished search bar icon & discoverable AI destination picker' },
       { icon: '✨', text: 'Custom glassmorphism tooltips & cinematic panel animations' },
       { icon: '🍅', text: 'Pomodoro audio engine re-built for 100% reliable playback' },
     ],

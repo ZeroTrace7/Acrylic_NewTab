@@ -40,8 +40,8 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 ## 🎉 What's New in v1.1.1
 
 This update focuses on **premium micro-interactions, cinematic UI polish, and timer reliability**:
-- **Google Search Identity:** The default search engine icon is now the classic multicolor Google "G" logo instead of a generic magnifying glass, giving the search bar a more polished and recognizable look.
-- **Search Engine Selector Discoverability:** The engine picker button now features a subtle glass border and background, making it clearly visible as an interactive element. Hover and active states are more prominent so users can discover the AI engine switcher (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
+- **Search Bar Polish:** The default web search icon has been upgraded to a polished, recognizable design, giving the search bar a more premium look.
+- **AI Destination Picker:** The destination picker button now features a subtle glass border and background, making it clearly visible as an interactive element. Hover and active states are more prominent so users can discover the AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Custom Glassmorphism Tooltips:** Replaced native browser hover tooltips with a custom glassmorphism system using event delegation for zero-flicker pointer mechanics.
 - **Cinematic Manage Panel:** The Quick Links manage panel now features a 1s scale-and-glide entrance with blur dissolve and staggered internal sections (120ms–680ms tiers), and a 280ms cubic-bezier blur exit.
 - **Animated Tile Removal (FLIP):** Deleting a link now triggers a hardware-accelerated FLIP exit animation (blur + scale out), rather than instantly disappearing.
@@ -106,7 +106,7 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
   - 📋 **Clipboard Manager:** Caches the last 20 copied items.
 - **Quick Links System:** Native drag-to-reorder layout, 50-app SVG library with `evenodd` clipping, and 128px fallback icon rendering (desaturated & inverted).
 - **Personalization Engine:** 8 premium baseline themes, custom YouTube video ambient background support, and user greeting toggles.
-- **Search Command:** Google, Bing, DuckDuckGo, Brave, and Perplexity support, with a privacy-focused History toggle.
+- **Search & AI:** Default web search via Chrome Search API (respects your browser's default provider), plus AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Data Sovereignty:** 100% localized standard. JSON Export/Import for backup workflows.
 - **Performance First:** Sub-100ms load times, CSS `will-change` hardware acceleration, zero React/framework overhead, and custom `cubic-bezier(0.16, 1, 0.3, 1)` motion curves.
 

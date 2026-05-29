@@ -53,8 +53,8 @@ When a user adds a website to Quick Links, Acrylic retrieves the site's favicon 
 
 Only the target website's domain name is transmitted in these requests. No user data, session identifiers, cookies, or authentication tokens are included.
 
-### 3.2 Search Engine Favicons
-The integrated search bar displays small favicon icons for search engines (Google, Bing, DuckDuckGo, Brave, YouTube, Perplexity, ChatGPT, Claude, Grok). These icons are loaded from their respective public `/favicon.ico` endpoints. No search queries or user data are transmitted during icon loading.
+### 3.2 Search Bar & AI Destination Icons
+The integrated search bar displays small favicon icons for the default web search option and AI assistant destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek). Some icons are bundled locally within the extension; others are loaded from their respective public endpoints. No search queries or user data are transmitted during icon loading.
 
 ### 3.3 Custom Wallpapers
 If a user provides a URL for a custom wallpaper image, Acrylic loads that image directly. No data is sent to any server — the image is simply rendered in the browser.
@@ -97,6 +97,7 @@ Acrylic requests only the minimum browser permissions strictly necessary for its
 | `contextMenus` | Creates a "Save to Acrylic Notes" option in the browser's right-click context menu, allowing users to save selected text to their local notes. | **None.** The selected text is saved to `chrome.storage.local` on the user's device. |
 | `offscreen` | Creates an offscreen document to play Pomodoro ambient audio (rain, cafe, fireplace) using the Web Audio API while the New Tab page is not focused. | **None.** Audio files are bundled locally within the extension package. |
 | `management` | Powers the Extensions panel in Quick Tools, allowing users to view and toggle their installed Chrome extensions via `chrome.management.getAll()` and `chrome.management.setEnabled()`. | **None.** Extension metadata is provided by Chrome's local extension registry and never leaves the device. |
+| `search` | Sends user-entered queries to the user's existing default search provider via `chrome.search.query()`. Acrylic does not select, override, or change the user's default search provider. | **None.** The query is passed to Chrome's built-in search routing. Acrylic does not receive, intercept, store, or transmit the query text. |
 
 ### 5.2 Optional Permissions (Requested at Runtime)
 
