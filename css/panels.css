@@ -272,28 +272,34 @@
 @keyframes premiumPanelOpen {
   0% {
     opacity: 0;
-    transform: scale(0.96) translateY(12px);
+    transform: scale(0.93) translateY(18px);
+    filter: blur(3px);
+  }
+  40% {
+    opacity: 0.7;
+    filter: blur(1px);
   }
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
+    filter: blur(0);
   }
 }
 
 .animate-premium-panel {
-  animation: premiumPanelOpen 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: premiumPanelOpen 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: left center;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 
 /* ── Staggered content cascade — each section fades/slides in sequentially ── */
 .manage-links-panel .manage-panel-stagger {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(14px);
   will-change: opacity, transform;
   transition:
-    opacity 460ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 580ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 880ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .manage-links-panel.open .manage-panel-stagger {
@@ -302,14 +308,14 @@
 }
 
 /* Stagger delay tiers */
-.manage-links-panel.open .manage-panel-stagger[data-stagger="0"] { transition-delay: 0ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="1"] { transition-delay: 60ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="2"] { transition-delay: 120ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="3"] { transition-delay: 170ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="4"] { transition-delay: 220ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="5"] { transition-delay: 270ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="6"] { transition-delay: 320ms; }
-.manage-links-panel.open .manage-panel-stagger[data-stagger="7"] { transition-delay: 370ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="0"] { transition-delay: 120ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="1"] { transition-delay: 220ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="2"] { transition-delay: 310ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="3"] { transition-delay: 390ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="4"] { transition-delay: 470ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="5"] { transition-delay: 540ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="6"] { transition-delay: 610ms; }
+.manage-links-panel.open .manage-panel-stagger[data-stagger="7"] { transition-delay: 680ms; }
 
 .manage-links-header {
   display: flex;

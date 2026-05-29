@@ -39,12 +39,15 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## 🎉 What's New in v1.1.1
 
-This update focuses on **premium micro-interactions and cinematic UI polish**:
+This update focuses on **premium micro-interactions, cinematic UI polish, and timer reliability**:
+- **Google Search Identity:** The default search engine icon is now the classic multicolor Google "G" logo instead of a generic magnifying glass, giving the search bar a more polished and recognizable look.
+- **Search Engine Selector Discoverability:** The engine picker button now features a subtle glass border and background, making it clearly visible as an interactive element. Hover and active states are more prominent so users can discover the AI engine switcher (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Custom Glassmorphism Tooltips:** Replaced native browser hover tooltips with a custom glassmorphism system using event delegation for zero-flicker pointer mechanics.
 - **Cinematic Manage Panel:** The Quick Links manage panel now features a 600ms scale-and-glide entrance with staggered internal sections, and a 280ms cubic-bezier blur exit.
 - **Animated Tile Removal (FLIP):** Deleting a link now triggers a hardware-accelerated FLIP exit animation (blur + scale out), rather than instantly disappearing.
 - **Micro-Interaction Upgrades:** Added a 1.56 spring-overshoot pop-in for remove badges, box-shadow pulses for input focus, and press-state transformations for buttons.
 - **Update Notification Engine:** Added a beautiful glassmorphic "What's New" banner that only triggers when the extension updates versions.
+- **Pomodoro Timer Upgrades:** Adjusted Long Break timing to an optimal 30 minutes, and completely re-engineered the offscreen audio driver. Start/end chimes and ambient sounds now play with 100% reliability across all focus and break modes, eliminating silent failures.
 - **Bug Fixes:** Resolved the native "Drag Dock to reposition" tooltip appearing when edit layout mode was not active.
 
 ---

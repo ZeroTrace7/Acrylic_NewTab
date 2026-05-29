@@ -14,7 +14,7 @@ const TODAY = () => new Date().toISOString().split('T')[0];
 const MODE_DURATION = {
   pomodoro:   25 * 60,
   shortBreak:  5 * 60,
-  longBreak:  60 * 60,
+  longBreak:  30 * 60,
 };
 
 const YOUTUBE_REFERER_RULE_ID = 4101;
@@ -62,13 +62,22 @@ async function syncYouTubeEmbedRefererRule() {
   });
 }
 
+let creatingOffscreen;
 async function ensureOffscreen() {
   if (await chrome.offscreen.hasDocument()) return;
-  await chrome.offscreen.createDocument({
+  if (creatingOffscreen) {
+    await creatingOffscreen;
+    return;
+  }
+  creatingOffscreen = chrome.offscreen.createDocument({
     url: 'offscreen.html',
     reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
     justification: 'Pomodoro timer sounds',
   });
+  await creatingOffscreen;
+  creatingOffscreen = null;
+  // Wait a moment for the offscreen DOM and listener to fully initialize
+  await new Promise(r => setTimeout(r, 150));
 }
 
 async function playSound(source) {
