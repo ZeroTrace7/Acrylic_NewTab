@@ -69,15 +69,20 @@ async function ensureOffscreen() {
     await creatingOffscreen;
     return;
   }
-  creatingOffscreen = chrome.offscreen.createDocument({
-    url: 'offscreen.html',
-    reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
-    justification: 'Pomodoro timer sounds',
-  });
+  creatingOffscreen = (async () => {
+    try {
+      await chrome.offscreen.createDocument({
+        url: 'offscreen.html',
+        reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
+        justification: 'Pomodoro timer sounds',
+      });
+      // Wait for the offscreen DOM and listener to fully initialize
+      await new Promise(r => setTimeout(r, 150));
+    } finally {
+      creatingOffscreen = null;
+    }
+  })();
   await creatingOffscreen;
-  creatingOffscreen = null;
-  // Wait a moment for the offscreen DOM and listener to fully initialize
-  await new Promise(r => setTimeout(r, 150));
 }
 
 async function playSound(source) {

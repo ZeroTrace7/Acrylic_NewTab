@@ -31,12 +31,14 @@ const RELEASE_NOTES = {
       { icon: '🎨', text: 'Polished UI animations & micro-interactions' },
     ],
   },
-  // '1.1.0': {
-  //   headline: 'Brand new features & enhancements',
-  //   items: [
-  //     { icon: '🚀', text: 'New feature description' },
-  //   ],
-  // },
+  '1.1.1': {
+    headline: 'Premium polish, search identity & timer reliability',
+    items: [
+      { icon: '🔍', text: 'Google "G" search icon & discoverable engine switcher' },
+      { icon: '✨', text: 'Custom glassmorphism tooltips & cinematic panel animations' },
+      { icon: '🍅', text: 'Pomodoro audio engine re-built for 100% reliable playback' },
+    ],
+  },
 };
 
 // ─── Public API ─────────────────────────────────────────────
