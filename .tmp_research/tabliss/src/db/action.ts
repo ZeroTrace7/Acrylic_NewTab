@@ -3,6 +3,7 @@ import { DB } from "../lib";
 import migrateFrom2 from "./migrations/migrate2";
 import { selectWidgets } from "./select";
 import { cache, db, WidgetDisplay } from "./state";
+import { validateV2, validateV3 } from "./schema";
 
 export const createId = (): string => nanoid(12);
 
@@ -76,9 +77,18 @@ export const toggleFocus = () => {
 
 /** Import database from a dump */
 export const importStore = (dump: any): void => {
-  // TODO: Add proper schema validation
   if (typeof dump !== "object" || dump === null)
     throw new TypeError("Unexpected format");
+
+  if ("backgrounds" in dump) {
+    validateV2(dump);
+  } else if (dump.version === 3) {
+    validateV3(dump);
+  } else if (dump.version > 3) {
+    throw new TypeError("Settings exported from an newer version of Tabliss");
+  } else {
+    throw new TypeError("Unknown settings version");
+  }
 
   resetStore();
   if ("backgrounds" in dump) {
@@ -89,12 +99,6 @@ export const importStore = (dump: any): void => {
   } else if (dump.version === 3) {
     // Version 3 config
     delete dump.version;
-  } else if (dump.version > 3) {
-    // Future version
-    throw new TypeError("Settings exported from an newer version of Tabliss");
-  } else {
-    // Unknown version
-    throw new TypeError("Unknown settings version");
   }
   // @ts-ignore
   Object.entries(dump).forEach(([key, val]) => DB.put(db, key, val));
