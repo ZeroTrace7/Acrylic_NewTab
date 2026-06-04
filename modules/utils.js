@@ -168,6 +168,7 @@ export function clamp(value, min, max) {
 
 /** Returns true if the string is a plausible http/https URL with a real domain, false otherwise. */
 export function isValidUrl(url) {
+  if (!url || /\s/.test(url)) return false;
   try {
     const parsed = new URL(url);
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
