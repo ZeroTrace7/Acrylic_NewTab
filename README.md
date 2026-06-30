@@ -37,9 +37,12 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.1
+## 🎉 What's New in v1.1.2
 
-This update focuses on **premium micro-interactions, cinematic UI polish, and timer reliability**:
+This update includes everything from the massive v1.1.1 overhaul plus a critical Chrome Web Store launch hotfix:
+- **Store Launch (v1.1.2):** Acrylic is now officially live on the Chrome Web Store! The extension ID has been finalized and the "Rate Us" buttons now point directly to our permanent store listing.
+
+**Previous Highlights (Premium micro-interactions, cinematic UI polish, and timer reliability):**
 - **Search Bar Polish:** The default web search icon has been upgraded to a polished, recognizable design, giving the search bar a more premium look.
 - **AI Destination Picker:** The destination picker button now features a subtle glass border and background, making it clearly visible as an interactive element. Hover and active states are more prominent so users can discover the AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Custom Glassmorphism Tooltips:** Replaced native browser hover tooltips with a custom glassmorphism system using event delegation for zero-flicker pointer mechanics.
@@ -100,8 +103,8 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
 - **Productivity Suite (Quick Tools Panel):**
   - ✅ **Smart Tasks:** Scribble strike animations, progress tracking, and reward states.
   - ⏱️ **Pomodoro Timer:** Ambient sounds and dynamic focus states.
-  - 📝 **Notes:** Persistent draft saving via `chrome.storage.local`.
-  - 🗂️ **Tabs Manager:** Live DOM-synced open tab management.
+  - 📝 **Notes:** Persistent draft saving via `chrome.storage.local` with a built-in **Web Clipper** (right-click any text on the web to save it instantly).
+  - 🗂️ **Tabs Manager:** Live DOM-synced open tab management with saved tab groups. (Requires optional permission, requested gracefully at runtime).
   - 🧩 **Extensions Manager:** Full `chrome.management` interface.
   - 📋 **Clipboard Manager:** Caches the last 20 copied items.
 - **Quick Links System:** Native drag-to-reorder layout, 50-app SVG library with `evenodd` clipping, and 128px fallback icon rendering (desaturated & inverted).
@@ -153,7 +156,7 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 - **Styling**: Vanilla CSS with custom properties (no Tailwind, no SCSS)
 - **Storage**: `chrome.storage.sync` for preferences, `chrome.storage.local` for app data
 - **Build**: None — the extension loads directly from source files
-- **Privacy**: Zero telemetry, zero accounts, zero external API calls (except favicon fetch)
+- **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime. The `search` permission strictly passes queries to your browser's existing default search engine.
 
 ---
 
