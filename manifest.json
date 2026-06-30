@@ -54,5 +54,12 @@
 
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https: http: blob: data:; img-src 'self' http: https: data: blob:; frame-src 'self' https://youtube.com https://www.youtube.com https://youtube-nocookie.com https://www.youtube-nocookie.com"
+  },
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "acrylic@shreyash.gupta",
+      "strict_min_version": "109.0"
+    }
   }
 }

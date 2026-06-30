@@ -1,0 +1,180 @@
+/** Returns a debounced version of fn that delays invocation until after delay ms since the last call. */
+export function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+/** Returns a throttled version of fn that invokes at most once per limit ms. */
+export function throttle(fn, limit) {
+  let inThrottle = false;
+  return (...args) => {
+    if (inThrottle) return;
+    fn(...args);
+    inThrottle = true;
+    setTimeout(() => (inThrottle = false), limit);
+  };
+}
+
+/** Returns a unique string ID based on timestamp and random characters. */
+export function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+/** Formats a Date object into a locale-aware human-readable date string. */
+export function formatDate(date) {
+  return date.toLocaleDateString(undefined, {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+/** Formats a Date object into a zero-padded "HH:MM" string in 12-hour or 24-hour format. */
+export function formatTime(date, use24 = false) {
+  let hours = date.getHours();
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  if (!use24) {
+    hours = hours % 12 || 12;
+  }
+  return hours.toString().padStart(2, '0') + ':' + minutes;
+}
+
+/** Locale-aware greeting lookup table — reads navigator.language, falls back to English. */
+const GREETINGS = {
+  en: ['Good morning', 'Good afternoon', 'Good evening'],
+  es: ['Buenos días', 'Buenas tardes', 'Buenas noches'],
+  fr: ['Bonjour', 'Bon après-midi', 'Bonsoir'],
+  de: ['Guten Morgen', 'Guten Tag', 'Guten Abend'],
+  pt: ['Bom dia', 'Boa tarde', 'Boa noite'],
+  ja: ['おはようございます', 'こんにちは', 'こんばんは'],
+  zh: ['早上好', '下午好', '晚上好'],
+  ko: ['좋은 아침이에요', '안녕하세요', '안녕하세요'],
+  ar: ['صباح الخير', 'مساء الخير', 'مساء النور'],
+  hi: ['सुप्रभात', 'नमस्ते', 'शुभ संध्या'],
+};
+
+/** Returns a locale-aware greeting string based on the hour, optionally appending a name. */
+export function getGreeting(date, name = '') {
+  const hour = date.getHours();
+  const lang = navigator.language?.slice(0, 2) || 'en';
+  const set = GREETINGS[lang] || GREETINGS['en'];
+  const greeting = hour < 12 ? set[0] : hour < 17 ? set[1] : set[2];
+  if (name && name.trim()) return `${greeting}, ${name.trim()}`;
+  return greeting;
+}
+
+/** Extracts and returns the hostname from a URL string, or empty string on failure. */
+export function getDomain(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+}
+
+/** Derives a user-friendly name from a URL. */
+export function getFriendlyName(url) {
+  const safeUrl = sanitizeUrl(url);
+  const domain = getDomain(safeUrl).replace(/^www\./i, '');
+  if (!domain) return '';
+  const parts = domain.split('.');
+  if (parts.length === 0) return '';
+  let word = parts.length > 2 ? parts[1] : parts[0];
+  if (parts.length > 2 && parts[0].length > parts[1].length) {
+    word = parts[0];
+  }
+  if (!word) return '';
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+/** Trims and prepends https:// to a URL string if it doesn't already have a protocol. */
+export function sanitizeUrl(url) {
+  const trimmed = url.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+  return 'https://' + trimmed;
+}
+
+/** Returns a high-resolution Google favicon URL for the given domain, or empty string if domain is invalid. */
+export function getFaviconUrl(url) {
+  const domain = getDomain(url);
+  if (!domain) return '';
+  return `https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${encodeURIComponent(sanitizeUrl(url))}&size=128`;
+}
+
+/** Returns an alternate favicon service URL for the given domain. */
+export function getFaviconFallbackUrl(url) {
+  let domain = getDomain(url);
+  if (!domain) return '';
+  domain = domain.replace(/^www\./, '');
+  return `https://icon.horse/icon/${domain}`;
+}
+
+/** Truncates a string to maxLength characters, appending "…" if it exceeds the limit. */
+export function truncate(str, maxLength = 20) {
+  const chars = [...str];
+  if (chars.length <= maxLength) return str;
+  return chars.slice(0, maxLength).join('') + '…';
+}
+
+/** Copies text to the clipboard, resolving to true on success or false on failure. */
+export async function copyToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Downloads a text string as a file by creating a temporary Blob and anchor element. */
+export function downloadTextFile(filename, content) {
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/** Polls for a DOM element by ID every 50ms, resolving when found or rejecting after timeout ms. */
+export function waitForElement(id, timeout = 3000) {
+  return new Promise((resolve, reject) => {
+    const el = document.getElementById(id);
+    if (el) return resolve(el);
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        clearInterval(interval);
+        resolve(el);
+      } else if (Date.now() - start >= timeout) {
+        clearInterval(interval);
+        reject(new Error(`Element #${id} not found within ${timeout}ms`));
+      }
+    }, 50);
+  });
+}
+
+/** Clamps a numeric value between a minimum and maximum. */
+export function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+/** Returns true if the string is a plausible http/https URL with a real domain, false otherwise. */
+export function isValidUrl(url) {
+  if (!url || /\s/.test(url)) return false;
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+    /* A real domain must have at least one dot (e.g. google.com, example.org) */
+    return parsed.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}

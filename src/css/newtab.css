@@ -1,0 +1,678 @@
+/* ============================================================
+   ACRYLIC — NEW TAB  ·  newtab.css
+   Complete styling foundation: glass system, layout, clock,
+   search, quicklinks, animations.
+   Pure CSS · No frameworks · No Tailwind
+   ============================================================ */
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 1 — CSS Custom Properties
+   ──────────────────────────────────────────────────────────── */
+:root {
+  /* Glass */
+  --glass-bg:            rgba(0, 0, 0, 0.15);
+  --glass-bg-hover:      rgba(255, 255, 255, 0.10);
+  --glass-bg-active:     rgba(255, 255, 255, 0.14);
+  --glass-subtle:        rgba(255, 255, 255, 0.04);
+  --glass-border:        rgba(255, 255, 255, 0.2);
+  --glass-border-panel:  rgba(255, 255, 255, 0.2);
+  --glass-border-soft:   rgba(255, 255, 255, 0.12);
+  --glass-blur:          40px;
+  --glass-radius:        14px;
+  --glass-radius-sm:     12px;
+  --glass-radius-lg:     14px;
+  --shadow-x-sm:         -5px;
+  --shadow-x-lg:         -8px;
+  --glass-shadow:        var(--shadow-x-sm) 8px 32px rgba(0, 0, 0, 0.30);
+  --glass-shadow-lg:     var(--shadow-x-lg) 20px 60px rgba(0, 0, 0, 0.40);
+  --glass-inset:         inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  --control-radius:      12px;
+  --control-blur:        16px;
+  --control-border:      rgba(255, 255, 255, 0.08);
+  --control-bg:          rgba(255, 255, 255, 0.04);
+  --control-bg-hover:    rgba(255, 255, 255, 0.11);
+  --control-shadow:      0 10px 28px rgba(0, 0, 0, 0.34);
+
+  /* Fonts */
+  --font-ui:       'Poppins', sans-serif;
+  --font-greeting: 'Gloria Hallelujah', cursive;
+  --font-display:  'Gloria Hallelujah', cursive;
+  --font-mono:     'Silkscreen', monospace;
+  --dashboard-font-family: var(--font-display);
+
+  /* Text */
+  --text-primary:   rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-muted:     rgba(255, 255, 255, 0.55);
+  --text-ghost:     rgba(255, 255, 255, 0.25);
+  --dashboard-text-depth-strong: 0 2px 4px rgba(0, 0, 0, 0.50);
+  --dashboard-text-depth-soft: 0 2px 4px rgba(0, 0, 0, 0.35);
+  --dashboard-focus-text-depth-strong: 0 2px 4px rgba(0, 0, 0, 0.50), 0 1px 2px rgba(0, 0, 0, 0.40);
+  --dashboard-focus-text-depth-soft: 0 2px 4px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+
+  /* Accents */
+  --accent-blue:  rgba(96, 165, 250, 0.90);
+  --accent-green: rgba(52, 211, 153, 0.90);
+  --accent-red:   rgba(248, 113, 113, 0.90);
+
+  /* Spacing */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+
+  /* Transitions */
+  --ease-glass:  ease;
+  --ease-spring: ease;
+  --dur-fast:    150ms;
+  --dur-mid:     150ms;
+  --dur-slow:    180ms;
+
+  /* Background */
+  --bg-image:         none;
+  --bg-darken:        0.30;
+  --bg-vignette:      0.72;
+  --bg-center-glow:   0.10;
+  --bg-grain-opacity: 0.035;
+  --bg-blur-amount:   0px;
+}
+
+/* RTL shadow inversion — maintains glassmorphism light-source consistency */
+[dir="rtl"] {
+  --shadow-x-sm: 5px;
+  --shadow-x-lg: 8px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.widget-visibility-target {
+  transition:
+    opacity 560ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 760ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 560ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+
+.widget-visibility-target.is-widget-hidden {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0) scale(0.985);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 2 — Reset & Basee
+   ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+  background: #000;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  font-family: var(--font-ui);
+  color: var(--text-primary);
+  background: #000;
+  background-attachment: fixed;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app-body.text-depth-disabled {
+  --dashboard-focus-text-depth-strong: none;
+  --dashboard-focus-text-depth-soft: none;
+}
+
+#app-body {
+  background: #000;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 2px;
+  border-radius: var(--glass-radius-sm);
+}
+
+#theme-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 1;
+  background: var(--theme-background, none);
+  transition: opacity 0.4s ease-in-out;
+}
+
+#app-body.has-wallpaper #theme-layer {
+  opacity: 0;
+}
+
+/* ── Theme Ghost: cinematic crossfade snapshot ── */
+#theme-ghost {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease-in-out;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 3 — Background System
+   ──────────────────────────────────────────────────────────── */
+#bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  filter: blur(var(--bg-blur-amount));
+  transform: scale(1.05);
+  transition:
+    filter var(--dur-mid) var(--ease-glass),
+    opacity 0.4s ease-in-out;
+}
+
+/* Cinematic wallpaper swap: toggled via JS during hold-and-swap */
+#bg-layer.wp-fade-out {
+  opacity: 0 !important;
+}
+
+/* ── Wallpaper Ghost: cinematic crossfade snapshot ── */
+#wallpaper-ghost {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.wallpaper-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+
+.youtube-wallpaper-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #000;
+  isolation: isolate;
+}
+
+#youtube-bg-iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100vw, 177.7778vh);
+  height: max(56.25vw, 100vh);
+  /* Overscan: scale up 15% so YouTube's edge UI (title bar, logo,
+     pause icon) bleeds off-screen. translate centers the scaled frame. */
+  transform: translate(-50%, -50%) scale(1.15);
+  transform-origin: center center;
+  pointer-events: none;
+  border: 0;
+}
+
+.acrylic-video-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  /* Themed curtain — hides YouTube's native UI (play button, title)
+     during load. JS adds .curtain-open after video confirmed + 2.5s delay. */
+  background: #000;
+  transition: background 1.5s ease-in-out;
+}
+
+/* JS-controlled reveal: fades from themed curtain to semi-transparent darken overlay */
+.acrylic-video-mask.curtain-open {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+#bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: none;
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#app-body.has-wallpaper #bg-overlay {
+  background:
+    radial-gradient(ellipse at 50% 55%, rgba(96, 165, 250, var(--bg-center-glow)) 0%, rgba(96, 165, 250, 0) 46%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, calc(var(--bg-darken) * var(--bg-vignette))) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(0, 0, 0, calc(var(--bg-darken) * 0.45)) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(0, 0, 0, calc(var(--bg-darken) * 0.62)) 0%, rgba(0, 0, 0, calc(var(--bg-darken) * 1.02)) 100%);
+}
+
+/* Neutralize the overlay glow during wallpaper swaps */
+#bg-layer.wp-fade-out + #bg-overlay,
+#bg-overlay.wp-fade-out {
+  opacity: 0 !important;
+  transition: opacity 0.4s ease-in-out;
+}
+
+#bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: var(--bg-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 3.5 — Premium Entry Animation (~1.5s cinematic stagger)
+   ──────────────────────────────────────────────────────────── */
+.anim-hidden {
+  opacity: 0;
+}
+
+.anim-clock,
+.anim-greeting,
+.anim-search,
+.anim-sidebar {
+  will-change: opacity, transform, filter;
+}
+
+@keyframes acrylic-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes acrylic-drop-in {
+  from { transform: translateY(-20px); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes acrylic-rise-in {
+  from { transform: translateY(16px); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes acrylic-scale-in {
+  from { transform: scale(0.92); }
+  to   { transform: scale(1); }
+}
+
+@keyframes acrylic-slide-left-in {
+  from { transform: translateX(-20px); }
+  to   { transform: translateX(0); }
+}
+
+/* ── Cinematic stagger: Clock → Greeting → Search → Sidebar ── */
+
+body.acrylic-loaded .anim-clock {
+  animation:
+    acrylic-fade-in 600ms ease 250ms both,
+    acrylic-drop-in 700ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+}
+
+body.acrylic-loaded .anim-greeting {
+  animation:
+    acrylic-fade-in 550ms ease 480ms both,
+    acrylic-rise-in 650ms cubic-bezier(0.16, 1, 0.3, 1) 480ms both;
+}
+
+body.acrylic-loaded .anim-search {
+  transform-origin: center center;
+  animation:
+    acrylic-fade-in 550ms ease 680ms both,
+    acrylic-scale-in 650ms cubic-bezier(0.16, 1, 0.3, 1) 680ms both;
+}
+
+body.acrylic-loaded .anim-sidebar {
+  animation:
+    acrylic-fade-in 600ms ease 860ms both,
+    acrylic-slide-left-in 700ms cubic-bezier(0.16, 1, 0.3, 1) 860ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-hidden {
+    opacity: 1 !important;
+  }
+
+  #theme-layer,
+  #bg-layer,
+  #bg-overlay,
+  #theme-ghost,
+  #wallpaper-ghost {
+    transition: none !important;
+  }
+
+  body.acrylic-loaded .anim-clock,
+  body.acrylic-loaded .anim-greeting,
+  body.acrylic-loaded .anim-search,
+  body.acrylic-loaded .anim-sidebar {
+    animation: none !important;
+  }
+
+  .fade-in-from-black::after {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* ── Boot Overlay: GPU-accelerated black cover that auto-fades ── */
+@keyframes fade-out-cover {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.fade-in-from-black::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 2147483647;
+  animation: fade-out-cover 1s cubic-bezier(0.4, 0, 0.2, 1) 200ms forwards;
+  pointer-events: none;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 4 — Theme Presets
+   ──────────────────────────────────────────────────────────── */
+#app-body.theme-midnight {
+  --theme-background:
+    radial-gradient(ellipse at 50% 52%, rgba(56, 117, 223, 0.18) 0%, transparent 46%),
+    radial-gradient(ellipse at 18% 22%, rgba(59, 130, 246, 0.10) 0%, transparent 52%),
+    linear-gradient(168deg, #050b18 0%, #0a1328 48%, #111f3a 100%);
+}
+
+#app-body.theme-deep-blue {
+  --theme-background:
+    radial-gradient(ellipse at 30% 70%, rgba(14, 50, 100, 0.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 24%, rgba(37, 99, 235, 0.11) 0%, transparent 52%),
+    linear-gradient(160deg, #021b37 0%, #031541 50%, #0e1421 100%);
+}
+
+#app-body.theme-aurora {
+  --theme-background:
+    radial-gradient(ellipse at 70% 30%, rgba(0, 150, 136, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 24% 74%, rgba(20, 184, 166, 0.10) 0%, transparent 52%),
+    linear-gradient(160deg, #003840 0%, #005a5b 50%, #007369 100%);
+}
+
+#app-body.theme-rose-noir {
+  --theme-background:
+    radial-gradient(ellipse at 50% 50%, rgba(120, 30, 80, 0.20) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 24%, rgba(236, 72, 153, 0.10) 0%, transparent 50%),
+    linear-gradient(160deg, #2d0320 0%, #4a154b 50%, #5d3a5f 100%);
+}
+
+#app-body.theme-espresso {
+  --theme-background:
+    radial-gradient(ellipse at 40% 60%, rgba(80, 40, 20, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 76% 18%, rgba(180, 83, 9, 0.10) 0%, transparent 52%),
+    linear-gradient(160deg, #1c0f0a 0%, #2a1a12 50%, #3d2015 100%);
+}
+
+#app-body.theme-forest {
+  --theme-background:
+    radial-gradient(ellipse at 50% 50%, rgba(34, 80, 34, 0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 24% 20%, rgba(74, 222, 128, 0.09) 0%, transparent 50%),
+    linear-gradient(160deg, #0d1f0f 0%, #1a2e1c 50%, #1e3320 100%);
+}
+
+#app-body.theme-carbon {
+  --theme-background:
+    radial-gradient(ellipse at 50% 50%, rgba(30, 58, 138, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 48%),
+    linear-gradient(165deg, #050505 0%, #0a0a0a 52%, #111111 100%);
+}
+
+#app-body.theme-synthwave {
+  --theme-background:
+    radial-gradient(ellipse at 30% 70%, rgba(168, 85, 247, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 24%, rgba(236, 72, 153, 0.14) 0%, transparent 52%),
+    radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #0f0720 0%, #1a0533 50%, #2d0a4e 100%);
+}
+
+#app-body.has-wallpaper {
+  background: transparent;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 6 — Scrollbar
+   ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 9 — Simple Clock
+   ──────────────────────────────────────────────────────────── */
+
+.clock-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  padding-top: clamp(8px, 1.5vh, 16px);
+  margin-top: 0;
+}
+
+.clock-date {
+  font-family: var(--dashboard-font-family);
+  font-size: clamp(1rem, 1.9vw, 1.3rem);
+  color: var(--text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-shadow: var(--dashboard-focus-text-depth-soft);
+}
+
+.clock-greeting {
+  display: block;
+  font-family: var(--dashboard-font-family);
+  font-size: clamp(1.55rem, 3.6vw, 2.3rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 0;
+  text-shadow: var(--dashboard-focus-text-depth-soft);
+}
+
+.simple-clock {
+  font-family: var(--dashboard-font-family);
+  font-size: clamp(2.6rem, 5.3vw, 4.1rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  text-shadow: var(--dashboard-focus-text-depth-strong);
+  line-height: 1;
+  text-align: center;
+}
+
+.clock-period {
+  font-size: 0.4em;
+  font-family: var(--dashboard-font-family);
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-inline-start: 0.2em;
+  vertical-align: baseline;
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 15 — Bright Background Adaptation
+   When a bright wallpaper is detected, body gets .bg-bright
+   and all text/glass variables flip to dark-on-light values.
+   ──────────────────────────────────────────────────────────── */
+
+#app-body.bg-bright {
+  /* Text → dark for legibility on bright backgrounds */
+  --text-primary:   rgba(15, 15, 15, 0.92);
+  --text-secondary: rgba(30, 30, 30, 0.72);
+  --text-muted:     rgba(40, 40, 40, 0.55);
+  --text-ghost:     rgba(50, 50, 50, 0.30);
+
+  /* Glass → darker tint so panels remain visible on white/pastel BGs */
+  --glass-bg:           rgba(0, 0, 0, 0.08);
+  --glass-bg-hover:     rgba(0, 0, 0, 0.12);
+  --glass-bg-active:    rgba(0, 0, 0, 0.16);
+  --glass-subtle:       rgba(0, 0, 0, 0.06);
+  --glass-border:       rgba(0, 0, 0, 0.10);
+  --glass-border-panel: rgba(0, 0, 0, 0.16);
+  --glass-border-soft:  rgba(0, 0, 0, 0.10);
+  --glass-shadow:       0 8px 32px rgba(0, 0, 0, 0.10);
+  --glass-shadow-lg:    0 20px 60px rgba(0, 0, 0, 0.15);
+  --glass-inset:        inset 0 1px 0 rgba(0, 0, 0, 0.08);
+
+  /* Controls */
+  --control-border:     rgba(0, 0, 0, 0.10);
+  --control-bg:         rgba(0, 0, 0, 0.06);
+  --control-bg-hover:   rgba(0, 0, 0, 0.12);
+  --control-shadow:     0 10px 28px rgba(0, 0, 0, 0.14);
+
+  /* Drop text shadow — disable on light backgrounds (looks muddy) */
+  --dashboard-text-depth-strong: none;
+  --dashboard-text-depth-soft: none;
+  --dashboard-focus-text-depth-strong: none;
+  --dashboard-focus-text-depth-soft: none;
+}
+
+/* Scrollbar adaptation for bright mode */
+#app-body.bg-bright ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.04);
+}
+#app-body.bg-bright ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+#app-body.bg-bright ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.30);
+}
+
+/* Focus ring: swap to a darker accent for visibility on bright BGs */
+#app-body.bg-bright :focus-visible {
+  outline-color: rgba(37, 99, 235, 0.60);
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 15.5 — Reduced Transparency (Accessibility)
+   Users with vestibular/motion sensitivity or transparency
+   disabled at OS level get solid panels instead of blur.
+   ──────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg:        rgba(20, 20, 30, 0.92);
+    --glass-bg-hover:  rgba(25, 25, 35, 0.94);
+    --glass-bg-active: rgba(30, 30, 40, 0.96);
+    --glass-blur:      0px;
+    --bg-grain-opacity: 0;
+  }
+
+  #app-body.bg-bright {
+    --glass-bg:        rgba(245, 245, 245, 0.94);
+    --glass-bg-hover:  rgba(240, 240, 240, 0.96);
+    --glass-bg-active: rgba(235, 235, 235, 0.98);
+  }
+}
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 16 — Responsive
+   ──────────────────────────────────────────────────────────── */
+
+@media (min-width: 2560px) {
+  :root {
+    --glass-blur: 24px;
+  }
+}
+
+/* Custom Engine Icon Tuning */
+img[alt="Claude"] {
+  transform: scale(1.18);
+  filter: brightness(1.3) saturate(1.8);
+}
+
+img[alt="ChatGPT"], img[alt="Grok"], img[alt="DeepSeek"], img[alt="DuckDuckGo"], img[alt="YouTube"] {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+
+img[alt="Perplexity"] {
+  filter: brightness(1.2);
+}
+
+img[alt="Brave"] {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35)) hue-rotate(200deg) saturate(0.85) brightness(0.85);
+}

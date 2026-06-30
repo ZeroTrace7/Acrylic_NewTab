@@ -1,0 +1,307 @@
+/*
+ * Acrylic - New Tab
+ * Copyright (C) 2026 Shreyash Gupta
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ */
+
+/* ============================================================
+   ACRYLIC — modules/storage.js
+   Unified storage abstraction: Prefs (sync) + Store (local)
+   ============================================================ */
+
+// ─── PART 1 — Prefs (chrome.storage.sync) ───────────────────
+
+export const Prefs = {
+  defaults: {
+    theme:           'carbon',
+    wallpaperUrl:    'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=1920&q=80',
+    wallpaperBlur:   0,
+    wallpaperDarken: 0.3,
+    grainOpacity:    0.035,
+    userName:        '',
+    searchEngine:    'default',
+    searchHistory:   false,
+    clockFormat:     '12h',
+    dashboardFont:   'gloria',
+    textDepth:       true,
+    editLayoutMode:  false,
+    showClock:       true,
+    showGreeting:    true,
+    showSearchBar:   true,
+    showQuickLinks:  true,
+    showMostVisited: true,
+    showToDoList:    true,
+    showQuickTools:  true,
+    showZenButton:   true,
+    layoutOffsets: {
+      clockX:      0,
+      clockY:      0,
+      centerX:     0,
+      centerY:     0,
+      quicklinksX: 0,
+      quicklinksY: 0,
+      sidebarX:    0,
+      sidebarY:    0,
+      tasksX:      0,
+      tasksY:      0,
+      zenX:        0,
+      zenY:        0,
+    },
+    quickLinksMax:   6,
+    onboardingDone:  false,
+  },
+
+  /** Gets a single preference by key, falling back to its default value. */
+  async get(key) {
+    const result = await chrome.storage.sync.get(key);
+    return result[key] ?? this.defaults[key];
+  },
+
+  /** Gets all preferences, merging stored values over defaults. */
+  async getAll() {
+    const result = await chrome.storage.sync.get(null);
+    const merged = { ...this.defaults, ...result };
+    merged.clockFormat = normalizeClockFormat(merged.clockFormat);
+    merged.dashboardFont = normalizeDashboardFont(merged.dashboardFont);
+    merged.quickLinksMax = normalizeQuickLinksMax(merged.quickLinksMax);
+    merged.searchEngine = normalizeSearchEngine(merged.searchEngine);
+    return merged;
+  },
+
+  /** Sets a single preference by key. */
+  async set(key, value) {
+    if (key === 'clockFormat') {
+      await chrome.storage.sync.set({ [key]: normalizeClockFormat(value) });
+      return;
+    }
+    if (key === 'dashboardFont') {
+      await chrome.storage.sync.set({ [key]: normalizeDashboardFont(value) });
+      return;
+    }
+    if (key === 'quickLinksMax') {
+      await chrome.storage.sync.set({ [key]: normalizeQuickLinksMax(value) });
+      return;
+    }
+    if (key === 'searchEngine') {
+      await chrome.storage.sync.set({ [key]: normalizeSearchEngine(value) });
+      return;
+    }
+    await chrome.storage.sync.set({ [key]: value });
+  },
+
+  /** Sets multiple preferences at once. */
+  async setMany(obj) {
+    const next = { ...obj };
+    if ('clockFormat' in next) next.clockFormat = normalizeClockFormat(next.clockFormat);
+    if ('dashboardFont' in next) next.dashboardFont = normalizeDashboardFont(next.dashboardFont);
+    if ('quickLinksMax' in next) next.quickLinksMax = normalizeQuickLinksMax(next.quickLinksMax);
+    if ('searchEngine' in next) next.searchEngine = normalizeSearchEngine(next.searchEngine);
+    await chrome.storage.sync.set(next);
+  },
+
+  /** Listens for sync storage changes and calls callback with flattened {key: newValue} pairs. */
+  onChange(callback) {
+    const handler = (changes) => {
+      const flat = {};
+      for (const key in changes) {
+        flat[key] = changes[key].newValue;
+      }
+      callback(flat);
+    };
+    chrome.storage.sync.onChanged.addListener(handler);
+    return () => chrome.storage.sync.onChanged.removeListener(handler);
+  },
+};
+
+function normalizeClockFormat(value) {
+  return value === '24h' ? '24h' : '12h';
+}
+
+function normalizeDashboardFont(value) {
+  return ['system', 'poppins', 'gloria', 'silkscreen'].includes(value) ? value : 'gloria';
+}
+
+function normalizeQuickLinksMax(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 6;
+  return Math.min(9, Math.max(4, Math.round(numeric)));
+}
+
+const VALID_ENGINE_IDS = ['default', 'chatgpt', 'gemini', 'claude', 'perplexity', 'grok', 'deepseek'];
+
+function normalizeSearchEngine(value) {
+  return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'default';
+}
+
+// ─── PART 2 — Store (chrome.storage.local) ──────────────────
+
+export const Store = {
+
+  // ── Quick Links ──────────────────────────────────────────
+
+  /** Gets the quick links array from local storage. */
+  async getLinks() {
+    const result = await chrome.storage.local.get('quickLinks');
+    return result.quickLinks || [];
+  },
+
+  /** Saves the quick links array to local storage. */
+  async setLinks(links) {
+    await chrome.storage.local.set({ quickLinks: links });
+  },
+
+  // ── Tasks ────────────────────────────────────────────────
+
+  /** Gets the tasks array from local storage. */
+  async getTasks() {
+    const result = await chrome.storage.local.get('tasks');
+    return result.tasks || [];
+  },
+
+  /** Saves the tasks array to local storage. */
+  async setTasks(tasks) {
+    await chrome.storage.local.set({ tasks });
+  },
+
+  // ── Search History ───────────────────────────────────────
+
+  /** Gets the recent search query list from local storage. */
+  async getSearchHistory() {
+    const result = await chrome.storage.local.get('searchHistoryItems');
+    return Array.isArray(result.searchHistoryItems) ? result.searchHistoryItems : [];
+  },
+
+  /** Saves the recent search query list to local storage. */
+  async setSearchHistory(items) {
+    const next = Array.isArray(items) ? items.filter((item) => typeof item === 'string' && item.trim()) : [];
+    await chrome.storage.local.set({ searchHistoryItems: next.slice(0, 8) });
+  },
+
+  // ── Notes ────────────────────────────────────────────────
+
+  /** Gets the array of note IDs from local storage. */
+  async getNoteIds() {
+    const result = await chrome.storage.local.get('noteIds');
+    return result.noteIds || [];
+  },
+
+  /** Gets a single note object by ID, or null if not found. */
+  async getNote(id) {
+    const key = `note_${id}`;
+    const result = await chrome.storage.local.get(key);
+    return result[key] || null;
+  },
+
+  /** Gets all notes by fetching IDs then batch-loading all note keys at once. */
+  async getAllNotes() {
+    const ids = await this.getNoteIds();
+    if (!ids.length) return [];
+    const keys = ids.map((id) => `note_${id}`);
+    const result = await chrome.storage.local.get(keys);
+    return keys.map((k) => result[k]).filter(Boolean);
+  },
+
+  /** Saves a note — prepends its ID to the index if new, then stores the note object in one operation. */
+  async saveNote(note) {
+    const ids = await this.getNoteIds();
+    const update = { [`note_${note.id}`]: note };
+    if (!ids.includes(note.id)) {
+      ids.unshift(note.id);
+      update.noteIds = ids;
+    }
+    await chrome.storage.local.set(update);
+  },
+
+  /** Deletes a note by removing its ID from the index and its data key concurrently. */
+  async deleteNote(id) {
+    const ids = await this.getNoteIds();
+    const updated = ids.filter((i) => i !== id);
+    await Promise.all([
+      chrome.storage.local.set({ noteIds: updated }),
+      chrome.storage.local.remove(`note_${id}`),
+    ]);
+  },
+
+  // ── Pomodoro Timer ───────────────────────────────────────
+
+  /** Gets the persisted timer state, or a default idle pomodoro state. */
+  async getTimerState() {
+    const result = await chrome.storage.local.get('timerState');
+    return result.timerState || { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 };
+  },
+
+  /** Saves the current timer state to local storage. */
+  async setTimerState(state) {
+    await chrome.storage.local.set({ timerState: state });
+  },
+
+  /** Gets today's pomodoro stats, resetting if the stored date doesn't match today. */
+  async getDailyStats() {
+    const today = new Date().toISOString().split('T')[0];
+    const result = await chrome.storage.local.get('dailyStats');
+    if (!result.dailyStats || result.dailyStats.date !== today) {
+      return { date: today, count: 0 };
+    }
+    return result.dailyStats;
+  },
+
+  /** Saves the daily pomodoro stats object. */
+  async setDailyStats(stats) {
+    await chrome.storage.local.set({ dailyStats: stats });
+  },
+
+  // ── Clipboard History ────────────────────────────────────
+
+  /** Gets the clipboard history array from local storage. */
+  async getClipboard() {
+    const result = await chrome.storage.local.get('clipboardItems');
+    return result.clipboardItems || [];
+  },
+
+  /** Saves the clipboard history, capping at 20 items max. */
+  async setClipboard(items) {
+    await chrome.storage.local.set({ clipboardItems: items.slice(0, 20) });
+  },
+
+  // ── Saved Tab Groups ─────────────────────────────────────
+
+  /** Gets the saved tab groups array from local storage. */
+  async getTabGroups() {
+    const result = await chrome.storage.local.get('savedTabGroups');
+    return result.savedTabGroups || [];
+  },
+
+  /** Saves the tab groups array to local storage. */
+  async setTabGroups(groups) {
+    await chrome.storage.local.set({ savedTabGroups: groups });
+  },
+
+  // ── Generic Helpers ──────────────────────────────────────
+
+  /** Gets any key from local storage with an optional fallback value. */
+  async get(key, fallback = null) {
+    const result = await chrome.storage.local.get(key);
+    return result[key] ?? fallback;
+  },
+
+  /** Sets any key/value pair in local storage. */
+  async set(key, value) {
+    await chrome.storage.local.set({ [key]: value });
+  },
+
+  /** Listens for local storage changes and calls callback with flattened {key: newValue} pairs. */
+  onChange(callback) {
+    const handler = (changes) => {
+      const flat = {};
+      for (const key in changes) {
+        flat[key] = changes[key].newValue;
+      }
+      callback(flat);
+    };
+    chrome.storage.local.onChanged.addListener(handler);
+    return () => chrome.storage.local.onChanged.removeListener(handler);
+  },
+};
