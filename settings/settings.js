@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { Prefs } from '../modules/storage.js';
 import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance, getCurrentTheme } from '../modules/background.js';
 import { toast } from '../modules/toast.js';
@@ -165,7 +166,7 @@ function openWhatsNew() {
 
   const htitle = document.createElement('div');
   htitle.className = 'whats-new-title';
-  htitle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex-shrink:0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>What's New`;
+  safeInject(htitle, `<svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;flex-shrink:0"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>What's New`);
 
   const hbadge = document.createElement('div');
   hbadge.className = 'whats-new-version';
@@ -175,7 +176,7 @@ function openWhatsNew() {
   hclose.type = 'button';
   hclose.className = 'whats-new-close';
   hclose.setAttribute('aria-label', 'Close');
-  hclose.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  safeInject(hclose, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`);
 
   hdr.append(htitle, hbadge, hclose);
 
@@ -275,7 +276,7 @@ async function importData() {
 function mkAboutIcon(svgInner, colorClass) {
   const wrap = document.createElement('div');
   wrap.className = `about-card-icon ${colorClass}`;
-  wrap.innerHTML = svgInner;
+  wrap.textContent = svgInner;
   wrap.setAttribute('aria-hidden', 'true');
   return wrap;
 }
@@ -298,7 +299,7 @@ function buildAboutSection() {
   };
   const rateIcon = document.createElement('div');
   rateIcon.className = 'about-card-feature-icon';
-  rateIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+  safeInject(rateIcon, `<svg viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`);
   const rateTitle = document.createElement('div');
   rateTitle.className = 'about-card-feature-title';
   rateTitle.textContent = 'Rate Acrylic';
@@ -413,7 +414,7 @@ function buildAboutFooter() {
     a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
     a.className = 'about-social-btn';
     a.setAttribute('aria-label', label);
-    a.innerHTML = svgInner;
+    a.textContent = svgInner;
     return a;
   };
 
@@ -494,7 +495,7 @@ function buildAppearanceSection() {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = `appearance-tab${def.id === activeTab ? ' is-active' : ''}`;
-    btn.innerHTML = `${def.icon}${def.label}`;
+    safeInject(btn, `${def.icon}${def.label}`);
     btn.setAttribute('aria-label', `${def.label} tab`);
     btn.addEventListener('click', () => switchTab(def.id));
     tabBar.appendChild(btn);
@@ -608,7 +609,7 @@ function buildAppearanceSection() {
   presetsGrid.className = 'wallpaper-presets-grid';
 
   const renderPresets = () => {
-    presetsGrid.innerHTML = '';
+    presetsGrid.textContent = '';
     WALLPAPER_PRESETS.forEach(preset => {
       const card = document.createElement('button');
       card.type = 'button';
@@ -625,7 +626,7 @@ function buildAppearanceSection() {
 
       const check = document.createElement('div');
       check.className = 'preset-check';
-      check.innerHTML = `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+      safeInject(check, `<svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`);
 
       card.append(img, check);
 
@@ -655,7 +656,7 @@ function buildAppearanceSection() {
   const randomBtn = document.createElement('button');
   randomBtn.type = 'button';
   randomBtn.className = 'random-wallpaper-btn';
-  randomBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg><span>Random Wallpaper</span>`;
+  safeInject(randomBtn, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg><span>Random Wallpaper</span>`);
   randomBtn.setAttribute('aria-label', 'Apply a random wallpaper');
   randomBtn.addEventListener('click', async () => {
     const randomIndex = Math.floor(Math.random() * WALLPAPER_PRESETS.length);
@@ -687,7 +688,7 @@ function buildAppearanceSection() {
   paletteGrid.className = 'palette-grid';
 
   const renderPalette = () => {
-    paletteGrid.innerHTML = '';
+    paletteGrid.textContent = '';
     getAvailableThemes().forEach(t => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -787,7 +788,7 @@ function buildAppearanceSection() {
 
   const customControls = document.createElement('div');
   const rebuildCustomControls = () => {
-    customControls.innerHTML = '';
+    customControls.textContent = '';
     if (!prefs.wallpaperUrl) return;
 
     const group = document.createElement('div');
@@ -813,7 +814,7 @@ function buildAppearanceSection() {
     const clrBtn = document.createElement('button');
     clrBtn.type = 'button';
     clrBtn.className = 'custom-clear-btn';
-    clrBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear wallpaper`;
+    safeInject(clrBtn, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Clear wallpaper`);
     clrBtn.setAttribute('aria-label', 'Clear wallpaper');
     clrBtn.addEventListener('click', () => {
       clearWallpaper();
@@ -842,7 +843,7 @@ function buildFontSection() {
   const fontGrid = document.createElement('div');
   fontGrid.className = 'settings-font-grid';
   const renderFonts = () => {
-    fontGrid.innerHTML = '';
+    fontGrid.textContent = '';
     const activeFont = FONT_OPTIONS.some((font) => font.id === prefs.dashboardFont) ? prefs.dashboardFont : 'gloria';
     FONT_OPTIONS.forEach((font) => {
       const btn = document.createElement('button');
@@ -872,7 +873,7 @@ function buildDisplaySection() {
   sec3.appendChild(sectionLabel('Display'));
   const displayRows = document.createElement('div');
   const renderDisplay = () => {
-    displayRows.innerHTML = '';
+    displayRows.textContent = '';
     displayRows.append(
       toggleRow(
         'Text depth effect',
@@ -932,7 +933,7 @@ function buildWidgetsSection() {
     if (label) label.textContent = widgetsExpanded ? 'Fewer widgets' : 'More widgets';
   };
   const renderWidgets = () => {
-    widgetRows.innerHTML = '';
+    widgetRows.textContent = '';
     const primaryWidgetOptions = [
       ['showClock', 'Time', 'Show or hide the clock and date block'],
       ['showGreeting', 'Greeting', 'Show or hide the greeting above the search bar'],
@@ -960,7 +961,7 @@ function buildWidgetsSection() {
     disclosure.type = 'button';
     disclosure.className = 'settings-widget-disclosure';
     disclosure.setAttribute('aria-expanded', 'false');
-    disclosure.innerHTML = `
+    safeInject(disclosure, `
       <span class="settings-widget-disclosure-copy">
         <span class="settings-widget-disclosure-label">More widgets</span>
         <span class="settings-widget-disclosure-meta">${secondaryWidgetOptions.length} controls</span>
@@ -968,7 +969,7 @@ function buildWidgetsSection() {
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
-    `;
+    `);
     disclosure.addEventListener('click', () => {
       setWidgetsExpanded(!widgetsExpanded);
     });
@@ -1029,7 +1030,7 @@ function buildWallpaperSection() {
   sec5.appendChild(wpRow);
   const wpControls = document.createElement('div');
   const rebuildWpControls = () => {
-    wpControls.innerHTML = '';
+    wpControls.textContent = '';
     if (!prefs.wallpaperUrl) return;
     const clrBtn = document.createElement('button');
     clrBtn.textContent = 'Clear wallpaper';
@@ -1131,7 +1132,7 @@ function buildModal() {
   h2.textContent = 'Preferences';
   h2.setAttribute('style', 'font-size:1.2rem;font-weight:700;color:var(--text-primary);');
   const closeBtn = document.createElement('button');
-  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  safeInject(closeBtn, '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>');
   closeBtn.ariaLabel = 'Close preferences';
   closeBtn.setAttribute('style', 'width:32px;height:32px;border-radius:50%;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;justify-content:center;');
   closeBtn.onclick = closeSettings;

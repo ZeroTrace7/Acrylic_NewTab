@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
 
 let containerEl = null;
@@ -99,12 +100,12 @@ function createSearchRow() {
 
   const searchShell = document.createElement('label');
   searchShell.className = 'qt-search-shell';
-  searchShell.innerHTML = `
+  safeInject(searchShell, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
-  `;
+  `);
 
   const input = document.createElement('input');
   input.type = 'search';
@@ -137,14 +138,14 @@ function createWarningBanner() {
 
   const banner = document.createElement('div');
   banner.className = 'qt-warning-banner';
-  banner.innerHTML = `
+  safeInject(banner, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 9v4"></path>
       <path d="M12 17h.01"></path>
       <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
     </svg>
     <span>Heavy extension load detected</span>
-  `;
+  `);
   return banner;
 }
 
@@ -160,12 +161,12 @@ function createToggleButton(item) {
   button.type = 'button';
   button.className = `qt-ext-toggle${item.enabled ? ' is-on' : ''}`;
   button.disabled = isBusy || isLocked;
-  button.innerHTML = `
+  safeInject(button, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 2v10"></path>
       <path d="M18.36 5.64a9 9 0 1 1-12.73 0"></path>
     </svg>
-  `;
+  `);
 
   if (item.isCurrent) {
     button.title = 'Acrylic cannot disable itself';
@@ -218,7 +219,7 @@ function createExtensionRow(item) {
 
 function renderAll(options = {}) {
   if (!containerEl) return;
-  containerEl.innerHTML = '';
+  containerEl.textContent = '';
 
   const warning = createWarningBanner();
   if (warning) containerEl.appendChild(warning);
@@ -232,12 +233,12 @@ function renderAll(options = {}) {
   if (visible.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'qt-empty qt-ext-empty';
-    empty.innerHTML = `
+    safeInject(empty, `
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M20 13v3a2 2 0 0 1-2 2h-3v-3a2 2 0 1 0-4 0v3H8a2 2 0 0 1-2-2v-3H3a2 2 0 1 1 0-4h3V8a2 2 0 0 1 2-2h3V3a2 2 0 1 1 4 0v3h3a2 2 0 0 1 2 2v3h-3a2 2 0 1 0 0 4z"></path>
       </svg>
       <div>No extensions match this view</div>
-    `;
+    `);
     list.appendChild(empty);
   } else {
     visible.forEach((item) => list.appendChild(createExtensionRow(item)));
@@ -289,11 +290,11 @@ export async function initExtensions(container) {
     renderAll();
   } catch (error) {
     console.error('Failed to load extensions', error);
-    containerEl.innerHTML = `
+    safeInject(containerEl, `
       <div class="qt-card qt-ext-error">
         <p class="qt-text qt-mb-md">Extensions Manager needs the Chrome management permission to load installed extensions.</p>
       </div>
-    `;
+    `);
     toast.error('Could not load extensions');
   }
 }

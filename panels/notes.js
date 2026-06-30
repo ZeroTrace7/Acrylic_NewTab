@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { Store } from '../modules/storage.js';
 import { generateId, truncate, copyToClipboard, downloadTextFile } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
@@ -56,7 +57,7 @@ function mountAnimatedStage(builder) {
     noteMenuCleanup = null;
   }
 
-  containerEl.innerHTML = '';
+  containerEl.textContent = '';
 
   const stage = document.createElement('div');
   stage.className = 'qt-note-stage';
@@ -86,7 +87,7 @@ function iconBtn({ title, icon, onclick, extraClass = '' }) {
   button.className = `qt-note-action ${extraClass}`.trim();
   button.ariaLabel = title;
   button.title = title;
-  button.innerHTML = icon;
+  button.textContent = icon;
   button.onclick = onclick;
   return button;
 }
@@ -131,7 +132,7 @@ function createDetailOverflowMenu(note) {
     button.type = 'button';
     button.className = `qt-note-menu-item ${extraClass}`.trim();
     button.setAttribute('role', 'menuitem');
-    button.innerHTML = `${icon}<span>${label}</span>`;
+    safeInject(button, `${icon}<span>${label}</span>`);
     button.onclick = () => {
       closeMenu();
       action();
@@ -233,14 +234,14 @@ function renderList() {
 
     const trigger = document.createElement('div');
     trigger.className = 'qt-trigger-btn';
-    trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`;
+    safeInject(trigger, `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg><span class="qt-muted" style="font-size:0.8rem;">Take a note...</span>`);
     trigger.onclick = () => openEditor(null);
     stage.appendChild(trigger);
 
     if (notes.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'qt-empty';
-      empty.innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No notes yet</div>`;
+      safeInject(empty, `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div>No notes yet</div>`);
       stage.appendChild(empty);
       return;
     }

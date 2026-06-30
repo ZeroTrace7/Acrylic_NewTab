@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { Store } from '../modules/storage.js';
 import { truncate, generateId, getDomain, debounce } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
@@ -33,7 +34,7 @@ function stopLiveSync() {
 function ibtn(svg, onclick, extraClass = '') {
   const b = document.createElement('button');
   b.type = 'button';
-  b.innerHTML = svg;
+  b.textContent = svg;
   b.className = `qt-icon-btn ${extraClass}`.trim();
   b.onclick = onclick;
   return b;
@@ -42,7 +43,7 @@ function ibtn(svg, onclick, extraClass = '') {
 function faviconImg(src, size = 14) {
   if (!src || src.startsWith('chrome://') || src.startsWith('chrome-extension://')) {
     const span = document.createElement('span');
-    span.innerHTML = GLOBE;
+    safeInject(span, GLOBE);
     span.style.cssText = `flex-shrink:0;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;`;
     return span;
   }
@@ -55,7 +56,7 @@ function faviconImg(src, size = 14) {
   img.onerror = () => {
     img.style.display = 'none';
     const fallback = document.createElement('span');
-    fallback.innerHTML = GLOBE;
+    safeInject(fallback, GLOBE);
     fallback.style.cssText = `flex-shrink:0;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;`;
     img.replaceWith(fallback);
   };
@@ -156,14 +157,14 @@ function focusSearchInput() {
 function renderAll(options = {}) {
   if (!containerEl) return;
 
-  containerEl.innerHTML = '';
+  containerEl.textContent = '';
 
   const visibleOpenTabs = getVisibleOpenTabs();
   const visibleCount = visibleOpenTabs.length;
   const totalCount = openTabs.length;
 
   const h1 = document.createElement('h3');
-  h1.innerHTML = `Open Tabs <span style="font-weight:400;color:var(--text-ghost);">(${visibleCount === totalCount ? totalCount : `${visibleCount}/${totalCount}`})</span>`;
+  safeInject(h1, `Open Tabs <span style="font-weight:400;color:var(--text-ghost);">(${visibleCount === totalCount ? totalCount : `${visibleCount}/${totalCount}`})</span>`);
   h1.className = 'qt-title';
 
   const saveRow = document.createElement('div');
@@ -192,12 +193,12 @@ function renderAll(options = {}) {
 
   const searchShell = document.createElement('label');
   searchShell.className = 'qt-search-shell';
-  searchShell.innerHTML = `
+  safeInject(searchShell, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
     </svg>
-  `;
+  `);
 
   const searchInput = document.createElement('input');
   searchInput.type = 'search';
@@ -217,9 +218,9 @@ function renderAll(options = {}) {
   const tabList = document.createElement('div');
   tabList.className = 'qt-tab-list';
   if (totalCount === 0) {
-    tabList.innerHTML = `<div class="qt-empty">No tabs open</div>`;
+    safeInject(tabList, `<div class="qt-empty">No tabs open</div>`);
   } else if (visibleCount === 0) {
-    tabList.innerHTML = `<div class="qt-empty">No tabs match your search</div>`;
+    safeInject(tabList, `<div class="qt-empty">No tabs match your search</div>`);
   } else {
     visibleOpenTabs.forEach((tab) => tabList.appendChild(createTabRow(tab)));
   }
@@ -319,7 +320,7 @@ function createTabRow(tab) {
   closeBtn.className = 'qt-tab-close';
   closeBtn.ariaLabel = `Close ${tab.title || 'tab'}`;
   closeBtn.title = 'Close tab';
-  closeBtn.innerHTML = CLOSE_ICON;
+  closeBtn.textContent = CLOSE_ICON;
   closeBtn.onclick = async (event) => {
     event.stopPropagation();
     await closeTab(tab.id);
@@ -490,7 +491,7 @@ async function clearAllGroups() {
  * event to satisfy Chrome's user-gesture requirement for runtime requests.
  */
 function renderPermissionGate(container, onGranted) {
-  container.innerHTML = '';
+  container.textContent = '';
 
   const wrapper = document.createElement('div');
   wrapper.className = 'qt-empty';
@@ -553,7 +554,7 @@ export async function initTabs(container) {
     };
   }
 
-  containerEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:32px 0;">Loading tabs...</div>`;
+  safeInject(containerEl, `<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:32px 0;">Loading tabs...</div>`);
 
   [openTabs, savedGroups] = await Promise.all([
     loadOpenTabs(),

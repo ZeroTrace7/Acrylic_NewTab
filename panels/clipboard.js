@@ -79,7 +79,7 @@ function toggleBtn(on, onclick) {
 
 function renderAll() {
   if (!containerEl) return;
-  containerEl.innerHTML = '';
+  containerEl.textContent = '';
 
   if (!permissionGranted) {
     const card = document.createElement('div');
@@ -128,7 +128,7 @@ function renderAll() {
   if (items.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'qt-empty';
-    empty.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><div>Copy something to get started</div>`;
+    safeInject(empty, `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><div>Copy something to get started</div>`);
     containerEl.appendChild(empty);
     return;
   }
@@ -165,16 +165,16 @@ function createItemCard(item) {
   acts.style.right = '6px';
 
   const pinBtn = document.createElement('button');
-  pinBtn.innerHTML = item.pinned
+  safeInject(pinBtn, item.pinned
     ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
-    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>');
   pinBtn.className = 'qt-icon-btn';
   pinBtn.style.width = '24px';
   pinBtn.style.height = '24px';
   pinBtn.onclick = (e) => { e.stopPropagation(); item.pinned = !item.pinned; Store.setClipboard(items); renderAll(); };
 
   const delBtn = document.createElement('button');
-  delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  safeInject(delBtn, '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>');
   delBtn.className = 'qt-icon-btn';
   delBtn.style.width = '24px';
   delBtn.style.height = '24px';

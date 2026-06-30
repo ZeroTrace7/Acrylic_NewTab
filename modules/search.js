@@ -1,3 +1,4 @@
+import { safeInject } from './utils.js';
 /*
  * Acrylic - New Tab
  * Copyright (C) 2026 Shreyash Gupta
@@ -78,7 +79,7 @@ function renderHistoryPanel(filterText = '') {
     .filter((item) => !needle || item.toLowerCase().includes(needle))
     .slice(0, 6);
 
-  panel.innerHTML = '';
+  panel.textContent = '';
   if (!searchHistoryEnabled || !matches.length) {
     closeHistoryPanel();
     return false;
@@ -86,10 +87,10 @@ function renderHistoryPanel(filterText = '') {
 
   const header = document.createElement('div');
   header.className = 'search-history-header';
-  header.innerHTML = `
+  safeInject(header, `
     <span class="search-history-title">Recent Searches</span>
     <button type="button" class="search-history-clear">Clear</button>
-  `;
+  `);
 
   header.querySelector('.search-history-clear')?.addEventListener('click', async (event) => {
     event.preventDefault();
@@ -218,7 +219,7 @@ function syncAssistantMode() {
   const submit = DOM.searchSubmit;
   const isAssistant = isAssistantEngine(currentEngine);
   if (submit) {
-    submit.innerHTML = isAssistant ? SEND_ICON_SVG : SEARCH_ICON_SVG;
+    safeInject(submit, isAssistant ? SEND_ICON_SVG : SEARCH_ICON_SVG);
     submit.setAttribute('aria-label', isAssistant ? `Send to ${currentEngine.name}` : 'Search the web');
     submit.setAttribute('title', currentEngine.name);
   }
@@ -392,7 +393,7 @@ function setOptionHighlight(index) {
 function buildPicker() {
   const picker = DOM.enginePicker;
   if (!picker) return;
-  picker.innerHTML = '';
+  picker.textContent = '';
   picker.setAttribute('role', 'listbox');
   picker.setAttribute('aria-label', 'Search destination');
   picker.setAttribute('aria-hidden', 'true');

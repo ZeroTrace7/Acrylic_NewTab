@@ -1,3 +1,4 @@
+import { safeInject } from './utils.js';
 import { Prefs, Store } from './storage.js';
 import { generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
 import { toast } from './toast.js';
@@ -220,16 +221,16 @@ function getLinkById(id) {
 
 function renderFallbackIcon(iconEl, link) {
   if (!iconEl) return;
-  iconEl.innerHTML = '';
+  iconEl.textContent = '';
 
   const iconKey = resolveIconKey(link);
   if (iconKey && MONO_ICONS[iconKey]) {
     const iconData = MONO_ICONS[iconKey];
     if (typeof iconData === 'string') {
-      iconEl.innerHTML = iconData;
+      safeInject(iconEl, iconData);
     } else if (iconData && iconData.path) {
       const vb = iconData.viewBox || '0 0 24 24';
-      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
+      safeInject(iconEl, `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`);
     }
     const svgEl = iconEl.querySelector('svg');
     if (svgEl) svgEl.style.cssText = 'width:22px;height:22px;opacity:0.9;';
@@ -289,7 +290,7 @@ function migrateStoredLinks(stored) {
 
 function setTileIcon(iconEl, link, useRawFavicon = false) {
   if (!iconEl) return;
-  iconEl.innerHTML = '';
+  iconEl.textContent = '';
   if (useRawFavicon) {
     const primaryUrl = link?.favicon || getFaviconUrl(link?.url || '');
     const fallbackUrl = getFaviconFallbackUrl(link?.url || '');
@@ -317,10 +318,10 @@ function setTileIcon(iconEl, link, useRawFavicon = false) {
   if (iconKey && MONO_ICONS[iconKey]) {
     const iconData = MONO_ICONS[iconKey];
     if (typeof iconData === 'string') {
-      iconEl.innerHTML = iconData;
+      safeInject(iconEl, iconData);
     } else if (iconData && iconData.path) {
       const vb = iconData.viewBox || '0 0 24 24';
-      iconEl.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
+      safeInject(iconEl, `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`);
     }
     const svgEl = iconEl.querySelector('svg');
     if (svgEl) svgEl.style.cssText = 'width:22px;height:22px;opacity:0.9;';
@@ -863,10 +864,10 @@ function createManageLibraryTile(entry) {
   `;
   const iconData = MONO_ICONS[normalizeIconKey(entry.key)];
   if (typeof iconData === 'string') {
-    tile.innerHTML = iconData;
+    safeInject(tile, iconData);
   } else if (iconData && iconData.path) {
     const vb = iconData.viewBox || '0 0 24 24';
-    tile.innerHTML = `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`;
+    safeInject(tile, `<svg viewBox="${vb}" fill="white" fill-rule="evenodd" clip-rule="evenodd"><path d="${iconData.path}"/></svg>`);
   }
   const svg = tile.querySelector('svg');
   if (svg) svg.style.cssText = 'width:17px;height:17px;opacity:0.85;display:block;';
@@ -882,10 +883,10 @@ function createManageLibraryTile(entry) {
     const added = addQuickLink(entry);
     if (!added) return;
     const orig = tile.innerHTML;
-    tile.innerHTML = `<svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    safeInject(tile, `<svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`);
     tile.style.background = 'rgba(52,211,153,0.2)';
     setTimeout(() => {
-      tile.innerHTML = orig;
+      tile.textContent = orig;
       tile.style.background = 'var(--glass-bg)';
     }, 800);
   });
@@ -1072,12 +1073,12 @@ function buildManagePanelHeader() {
   closeBtn.className = 'manage-links-close';
   closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', 'Close quick links panel');
-  closeBtn.innerHTML = `
+  safeInject(closeBtn, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <line x1="6" y1="6" x2="18" y2="18"></line>
       <line x1="6" y1="18" x2="18" y2="6"></line>
     </svg>
-  `;
+  `);
   closeBtn.addEventListener('click', closeManagePanel);
   header.append(title, closeBtn);
   return header;
@@ -1204,12 +1205,12 @@ function buildManagePanelAddForm() {
     pointer-events: none;
     z-index: 1;
   `;
-  urlIcon.innerHTML = `
+  safeInject(urlIcon, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 1 0-7.07-7.07L11.6 4.34"></path>
       <path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L12.4 19.66"></path>
     </svg>
-  `;
+  `);
   urlWrap.append(urlIcon, manageUrlInputEl);
 
   manageNameInputEl = document.createElement('input');
@@ -1266,12 +1267,12 @@ function buildManagePanelAddForm() {
     pointer-events: none;
     z-index: 1;
   `;
-  nameIcon.innerHTML = `
+  safeInject(nameIcon, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M12 20h9"></path>
       <path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
     </svg>
-  `;
+  `);
   nameWrap.append(nameIcon, manageNameInputEl);
 
   fragment.append(addLabel, urlWrap, nameWrap);

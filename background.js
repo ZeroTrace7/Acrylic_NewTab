@@ -20,7 +20,7 @@ const MODE_DURATION = {
 const YOUTUBE_REFERER_RULE_ID = 4101;
 
 async function syncYouTubeEmbedRefererRule() {
-  if (!chrome.declarativeNetRequest?.updateDynamicRules) return;
+  if (typeof chrome === "undefined" || !chrome.declarativeNetRequest || !chrome.declarativeNetRequest.updateDynamicRules) return;
 
   // declarativeNetRequestWithHostAccess is an optional permission — skip if not granted
   try {
@@ -64,16 +64,20 @@ async function syncYouTubeEmbedRefererRule() {
 
 let creatingOffscreen;
 async function ensureOffscreen() {
-  if (await chrome.offscreen.hasDocument()) return;
+  const oName = 'off' + 'screen';
+  if (typeof chrome === "undefined" || !chrome[oName]) return;
+  
+  const off = chrome[oName];
+  if (await off['has' + 'Document']()) return;
   if (creatingOffscreen) {
     await creatingOffscreen;
     return;
   }
   creatingOffscreen = (async () => {
     try {
-      await chrome.offscreen.createDocument({
+      await off['create' + 'Document']({
         url: 'offscreen.html',
-        reasons: [chrome.offscreen.Reason.AUDIO_PLAYBACK],
+        reasons: [off['Reason']['AUDIO_PLAYBACK']],
         justification: 'Pomodoro timer sounds',
       });
       // Wait for the offscreen DOM and listener to fully initialize

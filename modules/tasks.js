@@ -1,3 +1,4 @@
+import { safeInject } from './utils.js';
 import { DOM } from './dom.js';
 import { Store } from './storage.js';
 import { generateId } from './utils.js';
@@ -73,11 +74,11 @@ function createTaskRow(task) {
   const toggleBtn = document.createElement('button');
   toggleBtn.className = 'tasks-check';
   toggleBtn.type = 'button';
-  toggleBtn.innerHTML = `
+  safeInject(toggleBtn, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
-  `;
+  `);
   toggleBtn.addEventListener('click', () => toggleTask(row.dataset.taskId));
 
   const textEl = document.createElement('span');
@@ -87,12 +88,12 @@ function createTaskRow(task) {
   deleteBtn.className = 'tasks-delete';
   deleteBtn.type = 'button';
   deleteBtn.setAttribute('aria-label', 'Delete task');
-  deleteBtn.innerHTML = `
+  safeInject(deleteBtn, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <line x1="6" y1="6" x2="18" y2="18"></line>
       <line x1="6" y1="18" x2="18" y2="6"></line>
     </svg>
-  `;
+  `);
   deleteBtn.addEventListener('click', () => deleteTask(row.dataset.taskId));
 
   row.append(toggleBtn, textEl, deleteBtn);
@@ -391,12 +392,12 @@ function buildPanel() {
   addBtn.className = 'tasks-add-btn';
   addBtn.type = 'button';
   addBtn.setAttribute('aria-label', 'Add task');
-  addBtn.innerHTML = `
+  safeInject(addBtn, `
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <line x1="12" y1="5" x2="12" y2="19"></line>
       <line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
-  `;
+  `);
   addBtn.addEventListener('click', () => addTask(inputEl?.value || ''));
 
   inputRowEl.append(inputEl, addBtn);
@@ -418,12 +419,12 @@ function buildPanel() {
 
   successEl = document.createElement('div');
   successEl.className = 'tasks-success-card';
-  successEl.innerHTML = `
+  safeInject(successEl, `
     <div class="tasks-success-icon" aria-hidden="true">
       <span class="tasks-success-emoji">🎉</span>
     </div>
     <p class="tasks-success-text">That's it, good job!</p>
-  `;
+  `);
 
   panel.append(header, contentEl, successEl);
   return panel;

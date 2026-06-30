@@ -1,3 +1,4 @@
+import { safeInject } from './utils.js';
 import { Prefs } from './storage.js';
 import { getGreeting } from './utils.js';
 import { DOM } from './dom.js';
@@ -24,7 +25,7 @@ function updateClock() {
   } else {
     const period = h >= 12 ? 'PM' : 'AM';
     h = h % 12 || 12;
-    el.innerHTML = `${h}:${m}<span class="clock-period">${period}</span>`;
+    safeInject(el, `${h}:${m}<span class="clock-period">${period}</span>`);
   }
 }
 

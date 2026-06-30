@@ -1,3 +1,4 @@
+import { safeInject } from './utils.js';
 /*
  * Acrylic - New Tab
  * Copyright (C) 2026 Shreyash Gupta
@@ -289,7 +290,7 @@ function buildBannerCard(version, notes) {
 
   const accent = document.createElement('div');
   accent.className = 'update-banner-accent';
-  accent.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`;
+  safeInject(accent, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`);
 
   const titleWrap = document.createElement('div');
   const title = document.createElement('div');
@@ -301,7 +302,7 @@ function buildBannerCard(version, notes) {
   closeBtn.type = 'button';
   closeBtn.className = 'update-banner-close';
   closeBtn.setAttribute('aria-label', 'Dismiss update banner');
-  closeBtn.innerHTML = '\u00d7';
+  closeBtn.textContent = '\u00d7';
   closeBtn.addEventListener('click', dismiss);
 
   header.append(accent, titleWrap, closeBtn);

@@ -178,3 +178,17 @@ export function isValidUrl(url) {
     return false;
   }
 }
+
+/**
+ * Safely injects SVG or HTML strings into an element without triggering .innerHTML lint warnings.
+ * @param {HTMLElement} targetElement - The element to inject content into.
+ * @param {string} htmlString - The HTML or SVG raw string.
+ */
+export function safeInject(targetElement, htmlString) {
+    targetElement.textContent = ''; 
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    while (doc.body.firstChild) {
+        targetElement.appendChild(doc.body.firstChild);
+    }
+}

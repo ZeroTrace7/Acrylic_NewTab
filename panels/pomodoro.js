@@ -76,7 +76,7 @@ function createStatsSection() {
   statsDiv.style.alignItems = 'center';
   statsDiv.style.gap = '4px';
   statsDiv.style.flexShrink = '0';
-  statsDiv.innerHTML = `<span style="font-size:1.0rem">🍅</span> <span style="font-size:1.0rem; font-weight:600; display:inline-block; transform:translateY(2px);">${dailyCount}</span>`;
+  safeInject(statsDiv, `<span style="font-size:1.0rem">🍅</span> <span style="font-size:1.0rem; font-weight:600; display:inline-block; transform:translateY(2px);">${dailyCount}</span>`);
   return statsDiv;
 }
 
@@ -86,7 +86,7 @@ function createTimerWrapper() {
   timerWrapper.style.position = 'relative'; 
   timerWrapper.style.width = '100%';
   timerWrapper.style.minHeight = '172px';
-  timerWrapper.innerHTML = `
+  safeInject(timerWrapper, `
     <!-- The Ring -->
     <svg width="188" height="188" viewBox="0 0 100 100" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
       <circle cx="50" cy="50" r="44" fill="none" stroke="var(--glass-subtle)" stroke-width="4"/>
@@ -100,7 +100,7 @@ function createTimerWrapper() {
       <div id="pomo-time" style="font-family:var(--font-ui),sans-serif;font-size:3rem;font-weight:700;color:var(--text-primary);letter-spacing:1px;line-height:1.2;">${formatTime(state.timeLeft)}</div>
       <div class="qt-muted" style="text-transform:capitalize;margin-top:2px;font-size:0.75rem;">${state.isRunning ? 'Focusing...' : 'Ready For Focus'}</div>
     </div>
-  `;
+  `);
   return timerWrapper;
 }
 
@@ -118,9 +118,9 @@ function createControlsRow() {
   toggleBtn.style.borderRadius = '50%';
   toggleBtn.style.background = 'var(--glass-bg)';
   toggleBtn.style.color = 'var(--text-primary)';
-  toggleBtn.innerHTML = running
+  safeInject(toggleBtn, running
     ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>'
-    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>';
+    : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>');
   toggleBtn.onclick = toggleTimer;
 
   const resetBtn = document.createElement('button');
@@ -129,7 +129,7 @@ function createControlsRow() {
   resetBtn.style.height = '36px';
   resetBtn.style.borderRadius = '50%';
   resetBtn.disabled = !running && full;
-  resetBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+  safeInject(resetBtn, '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>');
   resetBtn.onclick = resetTimer;
 
   controlsRow.append(toggleBtn, resetBtn);
@@ -176,7 +176,7 @@ function createModeRow() {
 function render() {
   if (!containerEl) return;
 
-  containerEl.innerHTML = '';
+  containerEl.textContent = '';
   
   containerEl.style.display = 'flex';
   containerEl.style.flexDirection = 'column';

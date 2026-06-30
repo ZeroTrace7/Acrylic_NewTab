@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { Prefs } from '../modules/storage.js';
 
 /**
@@ -265,7 +266,7 @@ export async function initOnboarding() {
 
   const header = document.createElement('div');
   header.className = 'welcome-header';
-  header.innerHTML = '<div class="welcome-logo">A</div><div><div class="welcome-title">Welcome to Acrylic! ✨</div><div class="welcome-subtitle">Let\u2019s clean up your browser for the best experience.</div></div><button class="welcome-close">&times;</button>';
+  safeInject(header, '<div class="welcome-logo">A</div><div><div class="welcome-title">Welcome to Acrylic! ✨</div><div class="welcome-subtitle">Let\u2019s clean up your browser for the best experience.</div></div><button class="welcome-close">&times;</button>');
 
   const tips = document.createElement('div');
   tips.className = 'welcome-tips';
@@ -291,7 +292,7 @@ export async function initOnboarding() {
   tipData.forEach(t => {
     const tip = document.createElement('div');
     tip.className = 'welcome-tip';
-    tip.innerHTML = '<div class="welcome-tip-icon">' + t.icon + '</div><div class="welcome-tip-text"><div class="welcome-tip-label">' + t.label + '</div><div class="welcome-tip-desc">' + t.desc + '</div></div>';
+    safeInject(tip, '<div class="welcome-tip-icon">' + t.icon + '</div><div class="welcome-tip-text"><div class="welcome-tip-label">' + t.label + '</div><div class="welcome-tip-desc">' + t.desc + '</div></div>');
     tips.appendChild(tip);
   });
 

@@ -1,3 +1,4 @@
+import { safeInject } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
 import { DOM } from '../modules/dom.js';
 
@@ -38,7 +39,7 @@ function buildPanel() {
   closeBtn.id = 'panel-close-btn';
   closeBtn.className = 'panel-close-btn';
   closeBtn.ariaLabel = 'Close tools panel';
-  closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  safeInject(closeBtn, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`);
   header.append(h2, closeBtn);
 
   // Tab bar
@@ -49,7 +50,7 @@ function buildPanel() {
     btn.className = 'panel-tab-btn';
     btn.ariaLabel = `Open ${tab.label} tab`;
     btn.dataset.tabId = tab.id;
-    btn.innerHTML = `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`;
+    safeInject(btn, `<span class="tab-icon">${tab.icon}</span><span class="tab-label">${tab.label}</span>`);
     if (tab.id === activeTab) btn.classList.add('is-active');
     btn.onclick = () => switchTab(tab.id);
     tabBar.appendChild(btn);
@@ -75,7 +76,7 @@ function createContentStage(tabId) {
 
   const loading = document.createElement('div');
   loading.className = 'panel-stage-loading';
-  loading.innerHTML = '<div class="panel-loading panel-loading-surface">Loading...</div>';
+  safeInject(loading, '<div class="panel-loading panel-loading-surface">Loading...</div>');
 
   const mount = document.createElement('div');
   mount.className = 'panel-stage-mount';
@@ -152,7 +153,7 @@ function switchTab(tabId) {
     .catch(() => {
       if (requestId !== tabSwitchToken || !stage.isConnected) return;
       stage.classList.add('is-ready');
-      mount.innerHTML = '<div class="panel-loading">Failed to load panel</div>';
+      safeInject(mount, '<div class="panel-loading">Failed to load panel</div>');
       toast.error('Failed to load panel');
     });
 }
@@ -188,7 +189,7 @@ function openPanel(callback) {
     closePanel();
     return;
   }
-  panelContent.innerHTML = '';
+  panelContent.textContent = '';
   currentStageEl = null;
   tabSwitchToken++;
 
