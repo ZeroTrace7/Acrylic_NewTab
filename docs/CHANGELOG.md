@@ -8,6 +8,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v1.1.2 — 2026-06-30
+
+*Focus: Chrome Web Store launch hotfix.*
+
+### Fixed
+- **Rate Us Link** — Replaced the placeholder extension ID with the real Chrome Web Store extension ID (`cfoafjghblbnolmmkglboeddfpohjihi`) in `settings/settings.js`. The "Rate Acrylic" button now correctly opens the actual CWS review page.
+
+---
+
 ## v1.1.1 — 2026-05-29
 
 *Focus: Premium micro-interactions, cinematic UI polish, and timer reliability.*
