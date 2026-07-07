@@ -36,8 +36,7 @@
     "alarms",
     "contextMenus",
     "offscreen",
-    "management",
-    "search"
+    "management"
   ],
 
   "optional_permissions": [

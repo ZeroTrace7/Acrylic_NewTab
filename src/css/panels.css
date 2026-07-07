@@ -1211,3 +1211,30 @@
     width: auto;
   }
 }
+
+@media screen and (max-height: 900px) {
+  .quick-tools-panel {
+    max-height: 82vh;
+    overflow-y: auto;
+    padding-bottom: 1rem;
+  }
+
+  .quick-tools-panel::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .quick-tools-panel::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 10px;
+  }
+
+  .quick-tools-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  .quick-tools-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+

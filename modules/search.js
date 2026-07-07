@@ -512,7 +512,10 @@ async function performSearch(query) {
   if (isValidUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
   } else if (!isAssistantEngine(currentEngine)) {
-    chrome.search.query({ text: q, disposition: 'CURRENT_TAB' });
+    /* Web search: use default browser search engine via location.href */
+    const searchUrl = new URL('https://www.google.com/search');
+    searchUrl.searchParams.set('q', q);
+    window.location.href = searchUrl.href;
   } else {
     /* AI assistants use direct destination URLs. */
     window.location.href = currentEngine.url + encodeURIComponent(q);

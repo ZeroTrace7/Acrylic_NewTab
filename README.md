@@ -160,7 +160,7 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 - **Styling**: Vanilla CSS with custom properties (no Tailwind, no SCSS)
 - **Storage**: `chrome.storage.sync` for preferences, `chrome.storage.local` for app data
 - **Build**: None — the extension loads directly from source files
-- **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime. All search operations use `window.location.href`, maintaining zero telemetry principles.
+- **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime.
 
 ---
 

@@ -97,7 +97,6 @@ Acrylic requests only the minimum browser permissions strictly necessary for its
 | `contextMenus` | Creates a "Save to Acrylic Notes" option in the browser's right-click context menu, allowing users to save selected text to their local notes. | **None.** The selected text is saved to `chrome.storage.local` on the user's device. |
 | `offscreen` | Creates an offscreen document to play Pomodoro ambient audio (rain, cafe, fireplace) using the Web Audio API while the New Tab page is not focused. | **None.** Audio files are bundled locally within the extension package. |
 | `management` | Powers the Extensions panel in Quick Tools, allowing users to view and toggle their installed Chrome extensions via `chrome.management.getAll()` and `chrome.management.setEnabled()`. | **None.** Extension metadata is provided by Chrome's local extension registry and never leaves the device. |
-| `search` | Sends user-entered queries to the user's existing default search provider via `chrome.search.query()`. Acrylic does not select, override, or change the user's default search provider. | **None.** The query is passed to Chrome's built-in search routing. Acrylic does not receive, intercept, store, or transmit the query text. |
 
 ### 5.2 Optional Permissions (Requested at Runtime)
 

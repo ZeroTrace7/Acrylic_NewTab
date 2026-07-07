@@ -39,7 +39,6 @@ To ensure **Acrylic** reaches the maximum number of users globally and optimizes
 
 ### Permission Optimization (CWS Conversion Rate)
 *   **`tabs` → Optional:** Moved from static `permissions` to `optional_permissions`. Created `modules/permissions.js` with `hasTabsPermission()` / `requestTabsPermission()` helpers. Added glassmorphism permission-gate UI to `panels/tabs.js` — renders a lock icon + "Grant Permission" button when user first opens Tab Manager. Background service worker (`background.js`) `GET_TABS` and `CREATE_TAB` handlers wrapped in `chrome.permissions.contains()` guard. Eliminates the "Read your browsing history" install warning.
-*   **`search` → Removed:** Phantom permission — declared in manifest but never used in codebase (search bar uses `window.location.href`, not `chrome.search.query()`). Removed from `manifest.json`, `PRIVACY_POLICY.md`, and `Launching.md` to eliminate shadowban risk.
 
 ### Final Permission State
 Static permissions:

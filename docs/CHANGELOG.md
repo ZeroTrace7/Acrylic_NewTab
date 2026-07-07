@@ -8,6 +8,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v1.1.3 — 2026-07-08
+
+*Focus: Hardware layout optimization and user retention tracking.*
+
+### Added
+- Uninstall Feedback Loop via `chrome.runtime.setUninstallURL` to gather anonymous retention data.
+
+### Changed
+- Responsive layout protections for 1366x768 and 1536x864 displays to prevent Quick Tools panel clipping.
+
+### Security & Privacy
+- Completely scrubbed the legacy `search` permission from documentation and manifest. Web queries safely utilize native `window.location.href`.
+
+---
+
 ## v1.1.2 — 2026-06-30
 
 *Focus: Chrome Web Store launch hotfix.*
