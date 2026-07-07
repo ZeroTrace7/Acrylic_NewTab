@@ -1,6 +1,7 @@
 # Acrylic — New Tab
 
 [![Available on Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Available-blue?style=flat-square&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi?authuser=0&hl=en-GB)
+[![Available on Mozilla Firefox](https://img.shields.io/badge/Firefox_Add--ons-Available-FF7139?style=flat-square&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Pure ES Modules](https://img.shields.io/badge/Pure%20ES%20Modules-No%20Bundler-brightgreen?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 [![Zero Telemetry](https://img.shields.io/badge/Telemetry-Zero-critical?style=flat-square)](./AGENTS.md)
@@ -18,8 +19,8 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
   <a href="https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi">
     <img src="https://img.shields.io/badge/Available_in_the-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Available in the Chrome Web Store">
   </a>
-  <br><br>
-  <i>Ready to upgrade your browser? Install Acrylic for free on Chrome, Edge, and Brave.</i>
+  <br>
+  <i>Ready to upgrade your browser? Install Acrylic for free on Chrome, Firefox, Edge, and Brave.</i>
   <br><br>
 </div>
 
@@ -37,12 +38,15 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.2
+## 🎉 What's New in v1.1.3
 
-This update includes everything from the massive v1.1.1 overhaul plus a critical Chrome Web Store launch hotfix:
-- **Store Launch (v1.1.2):** Acrylic is now officially live on the Chrome Web Store! The extension ID has been finalized and the "Rate Us" buttons now point directly to our permanent store listing.
+This release focuses on hardware optimization, multi-platform support, and uninstall feedback integration:
+- **Hardware Layout Protection:** Added responsive CSS media queries for displays with max-height 900px, preventing panel overflow on cramped laptop displays with custom glassmorphism webkit scrollbars.
+- **Multi-Platform Support:** Acrylic is now available on Firefox Add-ons alongside Chrome, Edge, and Brave.
+- **Uninstall Feedback Loop:** Integrated user feedback collection via `chrome.runtime.setUninstallURL()` to improve post-uninstall insights.
+- **Documentation Cleansing:** Scrubbed phantom search permission references; Acrylic safely uses `window.location.href` for all search operations.
 
-**Previous Highlights (Premium micro-interactions, cinematic UI polish, and timer reliability):**
+**Previous Release Highlights (v1.1.2 — Store Launch):**
 - **Search Bar Polish:** The default web search icon has been upgraded to a polished, recognizable design, giving the search bar a more premium look.
 - **AI Destination Picker:** The destination picker button now features a subtle glass border and background, making it clearly visible as an interactive element. Hover and active states are more prominent so users can discover the AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Custom Glassmorphism Tooltips:** Replaced native browser hover tooltips with a custom glassmorphism system using event delegation for zero-flicker pointer mechanics.
@@ -156,7 +160,7 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 - **Styling**: Vanilla CSS with custom properties (no Tailwind, no SCSS)
 - **Storage**: `chrome.storage.sync` for preferences, `chrome.storage.local` for app data
 - **Build**: None — the extension loads directly from source files
-- **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime. The `search` permission strictly passes queries to your browser's existing default search engine.
+- **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime. All search operations use `window.location.href`, maintaining zero telemetry principles.
 
 ---
 

@@ -264,6 +264,10 @@ chrome.runtime.onStartup.addListener(() => {
 
 syncYouTubeEmbedRefererRule().catch((err) => console.error('Initial YouTube embed rule sync error:', err));
 
+// ── Uninstall feedback loop ────────────────────────────────
+
+chrome.runtime.setUninstallURL('https://forms.gle/PLACEHOLDER');
+
 // ── Context menu click ──────────────────────────────────────
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
