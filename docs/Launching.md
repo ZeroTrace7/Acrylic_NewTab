@@ -1,6 +1,6 @@
-# 🚀 Chrome Web Store Pre-Launch & SEO Checklist for Acrylic
+# 🚀 Multi-Store Pre-Launch & SEO Checklist for Acrylic
 
-To ensure **Acrylic** reaches the maximum number of users globally and optimizes for both the Chrome Web Store native search and modern AI search engines, you must execute a strict, multi-layered SEO and GEO (Generative Engine Optimization) strategy. 
+To ensure **Acrylic** reaches the maximum number of users globally and optimizes for both the Chrome Web Store, Mozilla Add-ons, and Microsoft Edge Add-ons native search and modern AI search engines, you must execute a strict, multi-layered SEO and GEO (Generative Engine Optimization) strategy. 
 
 ---
 
@@ -50,6 +50,12 @@ Optional permissions (requested at runtime):
 tabs, declarativeNetRequestWithHostAccess
 ```
 *   ⚠️ `management` triggers a "Manage your apps, extensions, and themes" warning — consider moving to `optional_permissions` in v1.1 (same pattern as `tabs`)
+
+### Cross-Browser Publishing (✅ LIVE)
+*   **Chrome Web Store:** Live and available as of June 30, 2026 (v1.1.2). Extension ID: `cfoafjghblbnolmmkglboeddfpohjihi`
+*   **Firefox Add-ons (AMO):** Live as of v1.1.3. Reuses same MV3 codebase with zero modifications. Privacy-conscious user base aligns perfectly with zero-telemetry architecture.
+*   **Microsoft Edge Add-ons Store:** Live as of v1.1.3. Same MV3 codebase, significantly less competition than CWS.
+*   **Brave Browser:** Natively compatible (uses Chromium engine). Users can install directly from Chrome Web Store.
 
 ---
 
@@ -169,24 +175,27 @@ Once a landing page/website exists:
 *   Add an `llms.txt` file to the website root for AI model consumption
 *   Use question-based headers (e.g., "What features does Acrylic include?") for LLM pattern-matching
 
-### 13. Cross-Browser Publishing
-*   **Microsoft Edge Add-ons Store:** Same MV3 codebase, significantly less competition
-*   **Firefox Add-ons (AMO):** Privacy-conscious user base aligns perfectly with zero-telemetry architecture
+### 12. Generative Engine Optimization (GEO)
+Once a landing page/website exists:
+*   Do not block AI crawlers (`GPTBot`, `ClaudeBot`, `PerplexityBot`) in `robots.txt`
+*   Implement `SoftwareApplication` and `FAQPage` JSON-LD schema markup
+*   Add an `llms.txt` file to the website root for AI model consumption
+*   Use question-based headers (e.g., "What features does Acrylic include?") for LLM pattern-matching
 
-### 14. In-App Virality — "Share Your Setup" (v2.5)
+### 13. In-App Virality — "Share Your Setup" (v2.5)
 *   Build a "Take a Snapshot" button using HTML Canvas
 *   Export branded screenshots with "Made with Acrylic ✦" watermark
 *   Users share on Pinterest, TikTok, Twitter, Reddit (`r/desktops`)
 *   *Deferred per `Improvements.md` — significant engineering effort*
 
-### 15. Programmatic SEO Landing Pages
+### 14. Programmatic SEO Landing Pages
 Build a website with dedicated competitor comparison pages:
 *   `/momentum-dash-alternative`
 *   `/tabliss-alternative`
 *   `/bonjourr-alternative`
 *   Direct, honest breakdowns of why Acrylic's architecture is superior
 
-### 16. The Open-Source "Trust" Funnel
+### 15. The Open-Source "Trust" Funnel
 *   Host codebase publicly on GitHub (already in progress)
 *   Captures searches for "open source new tab extension github"
 *   Developers trust readable code — this lowers the install barrier dramatically
@@ -197,7 +206,7 @@ Build a website with dedicated competitor comparison pages:
 
 The following ideas were evaluated during the v1.0 launch planning cycle and **explicitly deferred** because they conflict with the current privacy-first architecture or are premature for an unvalidated product. They are preserved here for future reference only.
 
-> ⚠️ **CODEBASE LOCK:** The Acrylic v1.0 codebase is officially locked for Chrome Web Store submission as of April 19, 2026. No further JS/CSS feature additions will be made until v1.0 is live and validated with real users. Only bug fixes and CWS compliance adjustments are permitted.
+> ⚠️ **CODEBASE LOCK:** The Acrylic v1.0 codebase is officially locked for Chrome, Edge, and Firefox Web Store submissions as of April 19, 2026. No further JS/CSS feature additions will be made until v1.0 is live and validated with real users. Only bug fixes and store compliance adjustments are permitted.
 
 ### A. Referral Tracking & Gated Themes
 *   **Concept:** Unlock exclusive themes (e.g., "Jet Black Matte", "Neon Synthwave") when a user successfully refers 3+ peers to install Acrylic. Use a lightweight referral tracking mechanism (e.g., GrowSurf) to count installs.

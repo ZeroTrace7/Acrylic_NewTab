@@ -28,22 +28,24 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## Table of Contents
 
-- [What's New in v1.1.2](#🎉-whats-new-in-v111)
-- [Why Acrylic?](#✨-why-acrylic)
-- [Architecture vs. Competitors](#⚡-architecture-vs-competitors)
-- [Features](#🚀-features)
-- [Keyboard Shortcuts](#⌨️-keyboard-shortcuts)
-- [Tech Stack](#🛠️-tech-stack)
-- [Manual Installation & Verification](#🛡️-manual-installation--verification)
+- [What's New in v1.1.3](#-whats-new-in-v113)
+- [Why Acrylic?](#-why-acrylic)
+- [Architecture vs. Competitors](#-architecture-vs-competitors)
+- [Features](#-features)
+- [Keyboard Shortcuts](#️-keyboard-shortcuts)
+- [Tech Stack](#️-tech-stack)
+- [Manual Installation & Verification](#️-manual-installation--verification)
 
 ---
 
 ## 🎉 What's New in v1.1.3
 
-This release focuses on hardware optimization, multi-platform support, and uninstall feedback integration:
-- **Hardware Layout Protection:** Added responsive CSS media queries for displays with max-height 900px, preventing panel overflow on cramped laptop displays with custom glassmorphism webkit scrollbars.
+This release focuses on hardware optimization, multi-platform support, compositor bugfixes, and a professional uninstall feedback experience:
+
+- **Sidebar Glassmorphism Fix:** Resolved a Chromium compositor bug where `will-change: transform` on the `#left-dock` parent was promoting it to an isolated compositing layer, silently breaking `backdrop-filter` on all child `.ql-pill` elements. Removing the property fully restores the premium glass tint on the left app bar.
+- **Hardware Layout Protection:** Added responsive CSS media queries for displays with `max-height: 900px`, preventing panel overflow on cramped laptop screens with custom glassmorphism webkit scrollbars.
+- **Branded Uninstall Feedback Page:** Replaced the broken placeholder URL with a full glassmorphism `uninstall/index.html` page — one-tap reason chips, an optional one-line comment, a reinstall CTA, and a Formspree endpoint for zero-backend response collection. Responses land in your dashboard instantly with no server required.
 - **Multi-Platform Support:** Acrylic is now available on Firefox Add-ons alongside Chrome, Edge, and Brave.
-- **Uninstall Feedback Loop:** Integrated user feedback collection via `chrome.runtime.setUninstallURL()` to improve post-uninstall insights.
 - **Documentation Cleansing:** Scrubbed phantom search permission references; Acrylic safely uses `window.location.href` for all search operations.
 
 **Previous Release Highlights (v1.1.2 — Store Launch):**
@@ -115,7 +117,7 @@ Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensio
 - **Personalization Engine:** 8 premium baseline themes, custom YouTube video ambient background support, and user greeting toggles.
 - **Search & AI:** Default web search via Chrome Search API (respects your browser's default provider), plus AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
 - **Data Sovereignty:** 100% localized standard. JSON Export/Import for backup workflows.
-- **Performance First:** Sub-100ms load times, CSS `will-change` hardware acceleration, zero React/framework overhead, and custom `cubic-bezier(0.16, 1, 0.3, 1)` motion curves.
+- **Performance First:** Sub-100ms load times, zero React/framework overhead, and custom `cubic-bezier(0.16, 1, 0.3, 1)` motion curves throughout.
 
 ### Tasks Panel (Top-Right)
 
@@ -155,12 +157,24 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 
 ## 🛠️ Tech Stack
 
-- **Runtime**: Manifest V3 Chrome Extension
+- **Runtime**: Manifest V3 Chrome Extension (also Firefox-compatible via `manifest_firefox.json`)
 - **Language**: Pure ES modules (no TypeScript, no bundler, no transpiler)
 - **Styling**: Vanilla CSS with custom properties (no Tailwind, no SCSS)
 - **Storage**: `chrome.storage.sync` for preferences, `chrome.storage.local` for app data
 - **Build**: None — the extension loads directly from source files
 - **Privacy & Permissions**: Zero telemetry, zero accounts, zero external API calls (except favicon fetches). Install warnings are minimized because `tabs` and `declarativeNetRequestWithHostAccess` are requested dynamically at runtime.
+
+### Uninstall Feedback
+
+When a user uninstalls Acrylic, `chrome.runtime.setUninstallURL()` redirects them to a branded glassmorphism goodbye page (`uninstall/index.html`). The page offers:
+
+- **One-tap reason chips** — "Missing a feature", "Had bugs", "Found a better option", etc.
+- **Optional one-line comment** — shown conditionally only for specific reasons
+- **Reinstall CTA** — catches accidental uninstalls immediately
+- **Zero-backend collection** — responses POST to [Formspree](https://formspree.io) and appear instantly in your dashboard with no server required
+
+> [!NOTE]
+> To activate response collection, create a free Formspree account, copy your form endpoint (e.g. `https://formspree.io/f/xkgnbbba`), and replace `REPLACE_ME` in `uninstall/index.html`. Then host the page on Netlify, GitHub Pages, or any static host and update the URL in `background.js`.
 
 ---
 

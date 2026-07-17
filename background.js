@@ -265,8 +265,9 @@ chrome.runtime.onStartup.addListener(() => {
 syncYouTubeEmbedRefererRule().catch((err) => console.error('Initial YouTube embed rule sync error:', err));
 
 // ── Uninstall feedback loop ────────────────────────────────
-
-chrome.runtime.setUninstallURL('https://forms.gle/PLACEHOLDER');
+// Redirects to our branded goodbye page when user uninstalls.
+// Page lives at: /uninstall/index.html (host on GitHub Pages or Netlify)
+chrome.runtime.setUninstallURL('https://acrylic-extension.netlify.app/uninstall/');
 
 // ── Context menu click ──────────────────────────────────────
 
