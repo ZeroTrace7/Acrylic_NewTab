@@ -27,6 +27,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ### Removed
 - **Bloated Custom Uninstall Page** — Deleted the `uninstall/` directory and its `src/pages/uninstall/` mirror (310 lines of HTML/CSS/JS). Replaced entirely by the external Tally.so link. This reduces extension package size and eliminates the risk of Chrome deleting local extension files before the redirect page can load.
 
+### Documentation
+- **`search` Permission Scrub** — The `search` permission was removed from all manifest files and documentation in this cycle. Web search now uses `window.location.href` navigation directly, which requires zero permissions. The stale `chrome.search.query()` reference in the v1.0.0 compliance notes and `store/cws_long_description.txt` has been corrected to prevent CWS policy rejection.
+
 
 ---
 
@@ -142,7 +145,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - GPLv3 license headers applied to all source files.
 - `PRIVACY_POLICY.md` — 12-section privacy policy with per-permission justification.
 - `tabs` moved to `optional_permissions` to eliminate "Read your browsing history" install warning.
-- Web search uses `chrome.search.query()` via the `search` permission to respect the user's default browser search provider. AI destinations navigate directly to their respective URLs.
+- Web search navigates via `window.location.href` — no `search` permission required. AI destinations open their respective URLs directly. *(Note: the `search` permission reference was removed in v1.1.3 — see Documentation note above.)*
 
 ---
 
