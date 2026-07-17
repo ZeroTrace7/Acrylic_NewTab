@@ -13,8 +13,9 @@ Acrylic breaks the tradeoff. **Native Manifest V3 architecture** means:
 - **Sub-100ms load**: No bundler, no transpiler, no React hydration. Pure ES modules loaded straight from `<script type="module">` in newtab.html. Critical rendering path never waits on chrome.runtime.
 - **Zero-telemetry by design**: 100% local storage. No accounts. No CDN calls except favicon fetches. Every setting lives in chrome.storage.sync (encrypted, user-owned).
 - **Full productivity suite**: Tasks (with strike-through animations), Pomodoro (30-min long breaks, 100% reliable audio), Notes (web clipper via right-click), Tab Manager, Extensions Manager, Clipboard history.
-- **Hardware-accelerated cinematics**: Custom cubic-bezier(0.16, 1, 0.3, 1) motion curves, FLIP animations for tile removal, spring-pop badges. All CSS will-change. No frame drops.
+- **Hardware-accelerated cinematics**: Custom cubic-bezier(0.16, 1, 0.3, 1) motion curves, FLIP animations for tile removal, spring-pop badges. Zero frame drops.
 - **Glassmorphism + brightness adaptation**: 8 premium themes, YouTube video wallpapers (with declarativeNetRequest referer masking), and automatic luminosity sampling to flip text colors on bright backgrounds for legibility.
+- **Compositor-correct sidebar**: Resolved a Chromium GPU compositing bug where `will-change: transform` on the dock parent was breaking `backdrop-filter` on child tiles. Glass tint is now pixel-perfect on all Chromium-based browsers.
 
 **What makes it technically distinct:**
 
@@ -129,6 +130,7 @@ GPL-3 licensed. Fork away. Build your own version.
 - "Firefox + Chrome + Edge + Brave support"
 
 ### For Twitter/X
+- "Acrylic v1.1.3 is live. Fixed a Chromium GPU compositor bug that was silently killing backdrop-filter on the sidebar. `will-change: transform` on a parent creates an isolated compositing layer — backdrop-filter needs to sample the layer below it. Removing it restores the glass. Native MV3, zero telemetry. https://github.com/ZeroTrace7/Acrylic_NewTab"
 - "Acrylic v1.1.3 ships on Firefox today. Native MV3, zero telemetry, 8 themes, Pomodoro + Tasks + Notes. Sub-100ms load. No paywalls. Pure ES modules. https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/"
 - "Built natively for Manifest V3. No Webpack. No React. No build step. Just browserified HTML+CSS+JS. 285 lines of service worker. https://github.com/ZeroTrace7/Acrylic_NewTab"
 

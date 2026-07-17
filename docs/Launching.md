@@ -103,10 +103,10 @@ After CWS assigns your extension ID:
 *   **Done:** Replaced `EXTENSION_ID_HERE` with the real extension ID (`cfoafjghblbnolmmkglboeddfpohjihi`) in `settings/settings.js`. The "Rate Acrylic" button now opens the actual CWS review page.
 *   Pushed hotfix update to `main`.
 
-### 6. Add Uninstall Feedback Form (v1.1)
-*   Create a Google Form or Typeform asking why users are uninstalling
-*   Add back `chrome.runtime.setUninstallURL('YOUR_FORM_URL')` in `background.js`
-*   This is valuable data for improving retention
+### 6. Add Uninstall Feedback Form (✅ COMPLETED — v1.1.3)
+*   ~~Create a Google Form or Typeform asking why users are uninstalling~~
+*   **Implemented:** `chrome.runtime.setUninstallURL('https://tally.so/r/Gx4WRz')` live in `background.js`
+*   **Approach:** Tally.so hosted form — zero local files, zero hosting cost, zero maintenance. Responses visible instantly in the Tally dashboard. Fully disclosed in `PRIVACY_POLICY.md §3.6`.
 
 ---
 

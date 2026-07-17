@@ -266,8 +266,7 @@ syncYouTubeEmbedRefererRule().catch((err) => console.error('Initial YouTube embe
 
 // ── Uninstall feedback loop ────────────────────────────────
 // Routes to a zero-maintenance Tally.so form — no local files, no hosting.
-// ⚠ Replace YOUR_FORM_ID after creating your form at https://tally.so
-chrome.runtime.setUninstallURL('https://tally.so/r/YOUR_FORM_ID');
+chrome.runtime.setUninstallURL('https://tally.so/r/Gx4WRz');
 
 // ── Context menu click ──────────────────────────────────────
 
