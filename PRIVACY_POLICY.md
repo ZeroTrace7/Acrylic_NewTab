@@ -1,6 +1,6 @@
 # Privacy Policy — Acrylic: New Tab
 
-**Last Updated:** April 25, 2026
+**Last Updated:** July 17, 2026
 **Extension Name:** Acrylic - New Tab
 **Developer:** Shreyash Gupta
 **Manifest Version:** 3
@@ -64,6 +64,16 @@ If a user uses a YouTube video as a wallpaper, an embedded YouTube player (via `
 
 ### 3.5 Declarative Net Request (YouTube Referer)
 If YouTube wallpaper functionality is enabled and the user grants the optional `declarativeNetRequestWithHostAccess` permission, Acrylic injects a `Referer` header on YouTube embed requests to enable playback. This is a browser-level network rule — no user data is transmitted.
+
+### 3.6 Uninstall Feedback (Optional & Anonymous)
+When you uninstall Acrylic, Chrome's standard `chrome.runtime.setUninstallURL` API may redirect your browser to an optional feedback form hosted by **[Tally.so](https://tally.so)**. Participation is entirely voluntary — closing the browser tab at any point constitutes opting out.
+
+Key disclosures:
+- The form does **not** collect personally identifiable information (PII) unless voluntarily entered in an open-text field.
+- No data from the Acrylic extension itself (tasks, notes, preferences, browsing history) is transmitted to this form.
+- Responses are used exclusively to understand why users uninstall and to improve the extension.
+- Data collected via this form is governed by [Tally's Privacy Policy](https://tally.so/help/privacy-policy). Acrylic has no access to Tally's server infrastructure.
+- This redirect is a one-time event triggered by the Chrome browser upon uninstall; no background process sends any data.
 
 ---
 

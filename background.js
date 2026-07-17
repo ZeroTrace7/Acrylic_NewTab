@@ -265,9 +265,9 @@ chrome.runtime.onStartup.addListener(() => {
 syncYouTubeEmbedRefererRule().catch((err) => console.error('Initial YouTube embed rule sync error:', err));
 
 // ── Uninstall feedback loop ────────────────────────────────
-// Redirects to our branded goodbye page when user uninstalls.
-// Page lives at: /uninstall/index.html (host on GitHub Pages or Netlify)
-chrome.runtime.setUninstallURL('https://acrylic-extension.netlify.app/uninstall/');
+// Routes to a zero-maintenance Tally.so form — no local files, no hosting.
+// ⚠ Replace YOUR_FORM_ID after creating your form at https://tally.so
+chrome.runtime.setUninstallURL('https://tally.so/r/YOUR_FORM_ID');
 
 // ── Context menu click ──────────────────────────────────────
 

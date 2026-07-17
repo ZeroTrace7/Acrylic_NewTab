@@ -8,18 +8,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## v1.1.3 — 2026-07-08
+## v1.1.3 — 2026-07-17
 
-*Focus: Hardware layout optimization and user retention tracking.*
+*Focus: Compositor bugfix, hardware layout protection, and zero-maintenance feedback loop.*
+
+### Fixed
+- **Sidebar Glassmorphism Regression** — Removed `will-change: transform` from `.left-dock / #left-dock` in `css/layout.css`. This property was silently promoting the dock container to an isolated GPU compositing layer in Chromium, causing `backdrop-filter: blur(40px)` on all child `.ql-pill` elements to stop blending against the background. Glass tint on the left app bar is fully restored.
+- **Broken Uninstall URL** — The previous `chrome.runtime.setUninstallURL('https://forms.gle/PLACEHOLDER')` was routing uninstalling users to a dead Firebase "Dynamic Link Not Found" page. Replaced with a reliable external Tally.so endpoint.
 
 ### Added
-- Uninstall Feedback Loop via `chrome.runtime.setUninstallURL` to gather anonymous retention data.
+- **Tally.so Uninstall Feedback Loop** — `chrome.runtime.setUninstallURL` now points to a hosted Tally.so form. Zero local files, zero hosting, zero maintenance. Responses appear instantly in the Tally dashboard. Fully disclosed in `PRIVACY_POLICY.md §3.6`.
+- **Firefox Add-ons Support** — Added `manifest_firefox.json` with `browser_specific_settings.gecko` targeting Firefox 109.0+ and Mozilla's required `data_collection_permissions`. Acrylic is now available on [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/).
 
 ### Changed
-- Responsive layout protections for 1366x768 and 1536x864 displays to prevent Quick Tools panel clipping.
+- **Hardware Layout Protection** — Added `@media screen and (max-height: 900px)` block in `css/panels.css` giving `.quick-tools-panel` a capped `82vh` height with glassmorphism webkit scrollbars. Prevents panel overflow and clipping on 1366×768 and 1536×864 laptop displays.
+- **Privacy Policy** — Updated `Last Updated` date to July 17, 2026. Added §3.6 disclosing the voluntary, anonymous Tally.so uninstall feedback redirect in full legal detail.
 
-### Security & Privacy
-- Completely scrubbed the legacy `search` permission from documentation and manifest. Web queries safely utilize native `window.location.href`.
+### Removed
+- **Bloated Custom Uninstall Page** — Deleted the `uninstall/` directory and its `src/pages/uninstall/` mirror (310 lines of HTML/CSS/JS). Replaced entirely by the external Tally.so link. This reduces extension package size and eliminates the risk of Chrome deleting local extension files before the redirect page can load.
+
 
 ---
 
