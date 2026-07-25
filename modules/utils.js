@@ -180,15 +180,16 @@ export function isValidUrl(url) {
 }
 
 /**
- * Safely injects SVG or HTML strings into an element without triggering .innerHTML lint warnings.
+ * Safely injects SVG or HTML strings into an element.
+ * Uses the <template> API which correctly preserves both HTML and SVG
+ * namespaces — unlike DOMParser('text/html') which strips SVG namespace
+ * and renders all SVG elements as dead HTMLUnknownElement text nodes.
  * @param {HTMLElement} targetElement - The element to inject content into.
  * @param {string} htmlString - The HTML or SVG raw string.
  */
 export function safeInject(targetElement, htmlString) {
-    targetElement.textContent = ''; 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    while (doc.body.firstChild) {
-        targetElement.appendChild(doc.body.firstChild);
-    }
+  targetElement.textContent = '';
+  const template = document.createElement('template');
+  template.innerHTML = htmlString;
+  targetElement.appendChild(template.content.cloneNode(true));
 }

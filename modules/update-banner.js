@@ -1,4 +1,3 @@
-import { safeInject } from './utils.js';
 /*
  * Acrylic - New Tab
  * Copyright (C) 2026 Shreyash Gupta
@@ -18,6 +17,7 @@ import { safeInject } from './utils.js';
    ============================================================ */
 
 import { Store } from './storage.js';
+import { safeInject } from './utils.js';
 
 // ─── Versioned Release Notes ────────────────────────────────
 // Add a new key here whenever you push a version to the store.
@@ -38,6 +38,14 @@ const RELEASE_NOTES = {
       { icon: '🔍', text: 'Polished search bar icon & discoverable AI destination picker' },
       { icon: '✨', text: 'Custom glassmorphism tooltips & cinematic panel animations' },
       { icon: '🍅', text: 'Pomodoro audio engine re-built for 100% reliable playback' },
+    ],
+  },
+  '1.1.3': {
+    headline: 'Privacy-first search, sidebar icons & code hardening',
+    items: [
+      { icon: '🔒', text: 'Removed search permission — zero API footprint, full privacy' },
+      { icon: '🎨', text: 'Sidebar icons fully restored with the complete icon library' },
+      { icon: '🛡️', text: 'CSP-hardened SVG rendering across all panels & components' },
     ],
   },
 };

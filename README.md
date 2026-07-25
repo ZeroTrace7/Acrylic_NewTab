@@ -38,15 +38,25 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.3
+## 🎉 What's New in v1.1.3 — 2026-07-25
 
-This release focuses on hardware optimization, multi-platform support, compositor bugfixes, and a professional uninstall feedback experience:
+*Focus: Core stability, XSS security hardening, and UI layout optimization.*
 
-- **Sidebar Glassmorphism Fix:** Resolved a Chromium compositor bug where `will-change: transform` on the `#left-dock` parent was promoting it to an isolated compositing layer, silently breaking `backdrop-filter` on all child `.ql-pill` elements. Removing the property fully restores the premium glass tint on the left app bar.
-- **Hardware Layout Protection:** Added responsive CSS media queries for displays with `max-height: 900px`, preventing panel overflow on cramped laptop screens with custom glassmorphism webkit scrollbars.
-- **Branded Uninstall Feedback Page:** Replaced the broken placeholder URL with a full glassmorphism `uninstall/index.html` page — one-tap reason chips, an optional one-line comment, a reinstall CTA, and a Formspree endpoint for zero-backend response collection. Responses land in your dashboard instantly with no server required.
-- **Multi-Platform Support:** Acrylic is now available on Firefox Add-ons alongside Chrome, Edge, and Brave.
-- **Documentation Cleansing:** Scrubbed phantom search permission references; Acrylic safely uses `window.location.href` for all search operations.
+### Added
+- **Uninstall Feedback Loop:** Added `chrome.runtime.setUninstallURL` routing to a lightweight, hosted Tally.so form to gather anonymous churn data.
+- **Cross-Platform Support:** Officially verified and documented support for Mozilla Firefox (AMO).
+
+### Changed
+- **Viewport Protections:** Added responsive `@media` layout protections for smaller displays (1366x768 and 1536x864) to prevent the Quick Tools panel from clipping off-screen. Custom glassmorphism scrollbars added for overflow.
+- **Codebase Optimization:** Permanently deleted 300+ lines of legacy custom HTML/CSS feedback pages, significantly reducing the extension footprint.
+
+### Fixed
+- **Critical SVG Rendering Bug:** Fixed a massive UI parser issue where SVG icons across the app (sidebar, settings, productivity tools) were rendering as raw text. Safely migrated DOM injection to the modern `<template>` API to properly preserve XML namespaces.
+- **Asset Recovery:** Restored a missing local icon library file, fixing the blank app icons in the Quick Links sidebar.
+- **Encoding Artifacts:** Fixed a UTF-8 "mojibake" character encoding issue in the Pomodoro timer panel.
+
+### Security & Privacy
+- **Permission Cleansing:** Completely scrubbed the legacy `search` permission from the manifest and Chrome Web Store descriptions. Web queries now safely utilize native `window.location.href`.
 
 **Previous Release Highlights (v1.1.2 — Store Launch):**
 - **Search Bar Polish:** The default web search icon has been upgraded to a polished, recognizable design, giving the search bar a more premium look.
@@ -166,15 +176,7 @@ Quick Links use three distinct presentation modes tuned for the Acrylic UI:
 
 ### Uninstall Feedback
 
-When a user uninstalls Acrylic, `chrome.runtime.setUninstallURL()` redirects them to a branded glassmorphism goodbye page (`uninstall/index.html`). The page offers:
-
-- **One-tap reason chips** — "Missing a feature", "Had bugs", "Found a better option", etc.
-- **Optional one-line comment** — shown conditionally only for specific reasons
-- **Reinstall CTA** — catches accidental uninstalls immediately
-- **Zero-backend collection** — responses POST to [Formspree](https://formspree.io) and appear instantly in your dashboard with no server required
-
-> [!NOTE]
-> To activate response collection, create a free Formspree account, copy your form endpoint (e.g. `https://formspree.io/f/xkgnbbba`), and replace `REPLACE_ME` in `uninstall/index.html`. Then host the page on Netlify, GitHub Pages, or any static host and update the URL in `background.js`.
+When a user uninstalls Acrylic, `chrome.runtime.setUninstallURL()` redirects them to a lightweight, hosted Tally.so form to gather anonymous churn data without requiring any backend infrastructure or local HTML assets in the extension bundle.
 
 ---
 

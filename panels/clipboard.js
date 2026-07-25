@@ -1,3 +1,4 @@
+﻿import { safeInject } from '../modules/utils.js';
 import { Store } from '../modules/storage.js';
 import { copyToClipboard } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';

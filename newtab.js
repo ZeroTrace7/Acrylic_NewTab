@@ -1,4 +1,3 @@
-import { safeInject } from './modules/utils.js';
 /*
  * Acrylic - New Tab
  * Copyright (C) 2026 Shreyash Gupta
@@ -8,17 +7,18 @@ import { safeInject } from './modules/utils.js';
  * the Free Software Foundation, version 3.
  */
 
-import { initBackground } from './modules/background.js';
-import { initClock }      from './modules/clock.js';
-import { initSearch }     from './modules/search.js';
-import { initQuickLinks } from './modules/quicklinks.js';
-import { initTasks }      from './modules/tasks.js';
-import { Prefs }          from './modules/storage.js';
-import { toast }          from './modules/toast.js';
-import { DOM }            from './modules/dom.js';
-import { bus }            from './modules/event-bus.js';
-import { UI_CONFIG }      from './modules/ui-config.js';
+import { initBackground }  from './modules/background.js';
+import { initClock }       from './modules/clock.js';
+import { initSearch }      from './modules/search.js';
+import { initQuickLinks }  from './modules/quicklinks.js';
+import { initTasks }       from './modules/tasks.js';
+import { Prefs }           from './modules/storage.js';
+import { toast }           from './modules/toast.js';
+import { DOM }             from './modules/dom.js';
+import { bus }             from './modules/event-bus.js';
+import { UI_CONFIG }       from './modules/ui-config.js';
 import { initPreferences } from './modules/preferences.js';
+import { safeInject }      from './modules/utils.js';
 
 let settingsOpen = false;
 

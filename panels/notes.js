@@ -1,6 +1,5 @@
-import { safeInject } from '../modules/utils.js';
+import { safeInject, generateId, truncate, copyToClipboard, downloadTextFile } from '../modules/utils.js';
 import { Store } from '../modules/storage.js';
-import { generateId, truncate, copyToClipboard, downloadTextFile } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
 
 let containerEl = null;
@@ -87,7 +86,7 @@ function iconBtn({ title, icon, onclick, extraClass = '' }) {
   button.className = `qt-note-action ${extraClass}`.trim();
   button.ariaLabel = title;
   button.title = title;
-  button.textContent = icon;
+  safeInject(button, icon);
   button.onclick = onclick;
   return button;
 }

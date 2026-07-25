@@ -1,4 +1,3 @@
-import { safeInject } from './utils.js';
 /*
  * Acrylic - New Tab
  * Copyright (C) 2026 Shreyash Gupta
@@ -9,7 +8,7 @@ import { safeInject } from './utils.js';
  */
 
 import { Prefs, Store } from './storage.js';
-import { sanitizeUrl, isValidUrl } from './utils.js';
+import { safeInject, sanitizeUrl, isValidUrl } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';

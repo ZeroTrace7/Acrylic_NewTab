@@ -1,7 +1,7 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
-const rootDir = 'C:/Users/HP/IdeaProjects/Acrylic';
+const rootDir = path.resolve(__dirname);
 
 function getUtilsPath(filePath) {
     const relative = path.relative(path.dirname(filePath), path.join(rootDir, 'modules', 'utils.js'));

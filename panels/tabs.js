@@ -1,6 +1,5 @@
-import { safeInject } from '../modules/utils.js';
+import { safeInject, truncate, generateId, getDomain, debounce } from '../modules/utils.js';
 import { Store } from '../modules/storage.js';
-import { truncate, generateId, getDomain, debounce } from '../modules/utils.js';
 import { toast } from '../modules/toast.js';
 import { hasTabsPermission, requestTabsPermission } from '../modules/permissions.js';
 
@@ -34,7 +33,7 @@ function stopLiveSync() {
 function ibtn(svg, onclick, extraClass = '') {
   const b = document.createElement('button');
   b.type = 'button';
-  b.textContent = svg;
+  safeInject(b, svg);
   b.className = `qt-icon-btn ${extraClass}`.trim();
   b.onclick = onclick;
   return b;
@@ -320,7 +319,7 @@ function createTabRow(tab) {
   closeBtn.className = 'qt-tab-close';
   closeBtn.ariaLabel = `Close ${tab.title || 'tab'}`;
   closeBtn.title = 'Close tab';
-  closeBtn.textContent = CLOSE_ICON;
+  safeInject(closeBtn, CLOSE_ICON);
   closeBtn.onclick = async (event) => {
     event.stopPropagation();
     await closeTab(tab.id);

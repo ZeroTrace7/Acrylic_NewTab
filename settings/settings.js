@@ -276,7 +276,7 @@ async function importData() {
 function mkAboutIcon(svgInner, colorClass) {
   const wrap = document.createElement('div');
   wrap.className = `about-card-icon ${colorClass}`;
-  wrap.textContent = svgInner;
+  safeInject(wrap, svgInner);
   wrap.setAttribute('aria-hidden', 'true');
   return wrap;
 }
@@ -414,13 +414,13 @@ function buildAboutFooter() {
     a.href = href; a.target = '_blank'; a.rel = 'noopener noreferrer';
     a.className = 'about-social-btn';
     a.setAttribute('aria-label', label);
-    a.textContent = svgInner;
+    safeInject(a, svgInner);
     return a;
   };
 
   socials.append(
     mkSocial(
-      'https://github.com/ZeroTrace7', 'Portfolio (coming soon)',
+      'https://tally.so/r/Gx4WRz', 'Provide Feedback',
       `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
     ),
     mkSocial(

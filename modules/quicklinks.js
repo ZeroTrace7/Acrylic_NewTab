@@ -1,6 +1,5 @@
-import { safeInject } from './utils.js';
+import { safeInject, generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
 import { Prefs, Store } from './storage.js';
-import { generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
@@ -886,7 +885,7 @@ function createManageLibraryTile(entry) {
     safeInject(tile, `<svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`);
     tile.style.background = 'rgba(52,211,153,0.2)';
     setTimeout(() => {
-      tile.textContent = orig;
+      safeInject(tile, orig);
       tile.style.background = 'var(--glass-bg)';
     }, 800);
   });
@@ -1000,7 +999,7 @@ function openManagePanel() {
   // Top: vertically centered in viewport
   const topPos = Math.max(16, (window.innerHeight - panelH) / 2);
 
-  // Apply — do NOT use cssText += as it appends and conflicts
+  // Apply â€” do NOT use cssText += as it appends and conflicts
   // Set each property individually
   panel.style.position = 'fixed';
   panel.style.left = `${leftPos}px`;
@@ -1335,7 +1334,7 @@ function buildManagePanel() {
   header.dataset.stagger = '0';
 
   const addedSection = buildManagePanelAddedSection();
-  // addedSection is a DocumentFragment — wrap children with stagger
+  // addedSection is a DocumentFragment â€” wrap children with stagger
   const addedWrapper = document.createElement('div');
   addedWrapper.classList.add('manage-panel-stagger');
   addedWrapper.dataset.stagger = '1';
@@ -1781,7 +1780,7 @@ function removeLink(id) {
   toast.info('Link removed');
 }
 
-/* ── Premium Glassmorphism Tooltip Engine ── */
+/* â”€â”€ Premium Glassmorphism Tooltip Engine â”€â”€ */
 let tooltipEl = null;
 let tooltipShowTimer = null;
 const TOOLTIP_DELAY_MS = 600;
@@ -1813,7 +1812,7 @@ function showTooltip(targetEl) {
   let left = rect.right + 12;
   let top = rect.top + (rect.height / 2);
 
-  // Viewport clamping — prevent overflow
+  // Viewport clamping â€” prevent overflow
   tip.style.left = '0px';
   tip.style.top = '0px';
   tip.classList.remove('visible');
@@ -1855,7 +1854,7 @@ function scheduleTooltip(targetEl, delay = TOOLTIP_DELAY_MS) {
 function initSidebarTooltips() {
   ensureTooltipNode();
 
-  // Event delegation on the sidebar grid — handles dynamic tile lifecycle
+  // Event delegation on the sidebar grid â€” handles dynamic tile lifecycle
   const sidebarGrid = DOM.sidebarGrid;
   if (sidebarGrid) {
     sidebarGrid.addEventListener('pointerenter', (e) => {
