@@ -1467,6 +1467,13 @@ function applyTileStyles(wrapper, tile, iconEl, labelEl, hideLabel, useRawFavico
 
 function updateTile(wrapper, link, hideLabel = false, useRawFavicon = false) {
   if (!(wrapper instanceof HTMLElement)) return createTile(link, hideLabel, useRawFavicon);
+
+  const renderSignature = `${link.id}|${link.url}|${link.title}|${hideLabel}|${useRawFavicon}`;
+  if (wrapper.dataset.renderSignature === renderSignature) {
+    return wrapper;
+  }
+  wrapper.dataset.renderSignature = renderSignature;
+
   wrapper.dataset.linkId = link.id;
   wrapper.dataset.id = link.id;
   wrapper.classList.toggle('quicklink-item-bottom', useRawFavicon);
@@ -1506,6 +1513,7 @@ function createTile(link, hideLabel = false, useRawFavicon = false) {
   const wrapper = document.createElement('div');
   wrapper.className = 'quicklink-item';
   wrapper.classList.toggle('quicklink-item-bottom', useRawFavicon);
+  wrapper.dataset.renderSignature = `${link.id}|${link.url}|${link.title}|${hideLabel}|${useRawFavicon}`;
   wrapper.dataset.linkId = link.id;
   wrapper.dataset.id = link.id;
   if (hideLabel && !useRawFavicon) wrapper.dataset.tooltip = link.title;
@@ -1936,8 +1944,12 @@ export async function initQuickLinks() {
   }
 
   const refreshTopSites = async () => {
-    topSiteLinks = await loadTopSiteLinks();
-    renderLinks();
+    const newTopSites = await loadTopSiteLinks();
+    const isUnchanged = topSiteLinks.length === newTopSites.length && topSiteLinks.every((link, i) => link.url === newTopSites[i].url && link.title === newTopSites[i].title);
+    if (!isUnchanged) {
+      topSiteLinks = newTopSites;
+      renderLinks();
+    }
   };
 
   window.addEventListener('focus', () => {
