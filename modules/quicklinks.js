@@ -1,4 +1,4 @@
-import { safeInject, generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName } from './utils.js';
+import { safeInject, generateId, getFaviconUrl, getFaviconFallbackUrl, sanitizeUrl, getDomain, getFriendlyName, isValidUrl } from './utils.js';
 import { Prefs, Store } from './storage.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
@@ -924,11 +924,15 @@ function addCustomLinkFromPanel() {
   if (!manageUrlInputEl || !manageNameInputEl) return;
   const rawUrl = manageUrlInputEl.value.trim();
   if (!rawUrl) {
-    toast.error('URL cannot be empty');
+    toast.error('Please enter a URL');
     return;
   }
 
   const normalizedUrl = sanitizeUrl(rawUrl);
+  if (!isValidUrl(normalizedUrl)) {
+    toast.error('Please enter a valid URL (e.g. youtube.com or https://example.com)');
+    return;
+  }
   const title = manageNameInputEl.value.trim() || getDomain(normalizedUrl) || 'Link';
   const exists = links.some((link) => link.isApp && sanitizeUrl(link.url) === normalizedUrl);
   if (exists) {
@@ -1138,9 +1142,9 @@ function buildManagePanelAddForm() {
   `;
 
   manageUrlInputEl = document.createElement('input');
-  manageUrlInputEl.type = 'url';
+  manageUrlInputEl.type = 'text';
   manageUrlInputEl.className = 'manage-links-input';
-  manageUrlInputEl.placeholder = 'https://example.com';
+  manageUrlInputEl.placeholder = 'Paste any URL (e.g. youtube.com/watch?v=...)';
   manageUrlInputEl.autocomplete = 'off';
   manageUrlInputEl.style.cssText = `
     font-family: 'Geist', 'Inter', system-ui, sans-serif;
@@ -1682,8 +1686,9 @@ function openLinkModal(existingLink = null) {
   saveBtn.style.fontWeight = '600';
   saveBtn.onclick = () => {
     const rawUrl = urlInput.value.trim();
-    if (!rawUrl) { toast.error('URL cannot be empty'); return; }
+    if (!rawUrl) { toast.error('Please enter a URL'); return; }
     const url = sanitizeUrl(rawUrl);
+    if (!isValidUrl(url)) { toast.error('Please enter a valid URL (e.g. youtube.com or https://example.com)'); return; }
     const title = titleInput.value.trim() || getDomain(url) || 'Link';
     const isApp = sidebarToggle.checked;
     if (existingLink) updateLink(existingLink.id, title, url, isApp);

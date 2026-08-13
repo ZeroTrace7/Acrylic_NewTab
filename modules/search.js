@@ -8,7 +8,7 @@
  */
 
 import { Prefs, Store } from './storage.js';
-import { safeInject, sanitizeUrl, isValidUrl } from './utils.js';
+import { safeInject, sanitizeUrl, isValidSearchUrl } from './utils.js';
 import { toast } from './toast.js';
 import { DOM } from './dom.js';
 import { bus } from './event-bus.js';
@@ -159,7 +159,7 @@ async function rememberSearchQuery(query) {
   if (!searchHistoryEnabled) return;
   const clean = query.trim();
   if (!clean) return;
-  if (isValidUrl(sanitizeUrl(clean))) return;
+  if (isValidSearchUrl(sanitizeUrl(clean))) return;
 
   searchHistoryItems = [
     clean,
@@ -508,7 +508,7 @@ async function performSearch(query) {
   if (!q) return;
   closeHistoryPanel();
   await rememberSearchQuery(q);
-  if (isValidUrl(sanitizeUrl(q))) {
+  if (isValidSearchUrl(sanitizeUrl(q))) {
     window.location.href = sanitizeUrl(q);
   } else if (!isAssistantEngine(currentEngine)) {
     /* Web search: use default browser search engine via location.href */

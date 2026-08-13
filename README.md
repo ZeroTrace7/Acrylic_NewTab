@@ -28,7 +28,7 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## Table of Contents
 
-- [What's New in v1.1.3](#-whats-new-in-v113)
+- [What's New in v1.1.4](#-whats-new-in-v114)
 - [Why Acrylic?](#-why-acrylic)
 - [Architecture vs. Competitors](#-architecture-vs-competitors)
 - [Features](#-features)
@@ -38,25 +38,29 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.3 — 2026-07-25
+## 🎉 What's New in v1.1.4 — *Unreleased*
 
-*Focus: Core stability, XSS security hardening, and UI layout optimization.*
-
-### Added
-- **Uninstall Feedback Loop:** Added `chrome.runtime.setUninstallURL` routing to a lightweight, hosted Tally.so form to gather anonymous churn data.
-- **Cross-Platform Support:** Officially verified and documented support for Mozilla Firefox (AMO).
-
-### Changed
-- **Viewport Protections:** Added responsive `@media` layout protections for smaller displays (1366x768 and 1536x864) to prevent the Quick Tools panel from clipping off-screen. Custom glassmorphism scrollbars added for overflow.
-- **Codebase Optimization:** Permanently deleted 300+ lines of legacy custom HTML/CSS feedback pages, significantly reducing the extension footprint.
+*Focus: Interaction reliability, URL validation robustness, and security.*
 
 ### Fixed
-- **Critical SVG Rendering Bug:** Fixed a massive UI parser issue where SVG icons across the app (sidebar, settings, productivity tools) were rendering as raw text. Safely migrated DOM injection to the modern `<template>` API to properly preserve XML namespaces.
-- **Asset Recovery:** Restored a missing local icon library file, fixing the blank app icons in the Quick Links sidebar.
-- **Encoding Artifacts:** Fixed a UTF-8 "mojibake" character encoding issue in the Pomodoro timer panel.
+- **Quick Links Double-Click Bug:** Resolved a race condition where transferring window focus from the browser Omnibox triggered an unconditional DOM teardown of quick link tiles mid-click. Fixed by implementing deterministic `renderSignature` diffing in `quicklinks.js`.
+- **Top Sites Render Optimization:** `refreshTopSites()` now deep-compares incoming data and skips the expensive `renderLinks()` call if nothing changed.
+- **Quick Links URL Rejection:** Resolved an issue where saving protocol-less URLs (e.g. `youtube.com/watch?v=...` or `youtu.be`) would silently fail. Changed to `type="text"` to allow the custom sanitizer to correctly prepend `https://`.
+- **Localhost and IP Domain Support:** Removed the `.` (dot) requirement from the Quick Links URL validator. Users can now save `localhost:8080`, IPs, and short domains.
+- **Search Bar Navigation Unaffected:** URL validation logic was bifurcated. The search bar retains its original dot-requiring heuristic, ensuring `localhost` still triggers a web search.
+- **Wallpaper URL Robustness:** Rewrote `normalizeWallpaperUrl` to use the same `sanitizeUrl()` + `isValidUrl()` pipeline as Quick Links.
 
-### Security & Privacy
-- **Permission Cleansing:** Completely scrubbed the legacy `search` permission from the manifest and Chrome Web Store descriptions. Web queries now safely utilize native `window.location.href`.
+### Security
+- **XSS Prevention in Custom Links:** Patched a vulnerability where `javascript:alert(1)` URIs could bypass the sanitizer and be saved to storage.
+
+### Added
+- **YouTube Background Audio Toggle:** A floating glassmorphic mute/unmute button (bottom-center) appears only when a YouTube video wallpaper is active.
+
+**Previous Release Highlights (v1.1.3 — Core Stability):**
+- **Critical SVG Bug:** Fixed UI parser issue where SVG icons rendered as raw text.
+- **Security & Privacy:** Completely scrubbed the legacy `search` permission from the manifest. Web queries now utilize native `window.location.href`.
+- **Uninstall Feedback Loop:** Added `chrome.runtime.setUninstallURL` routing to a lightweight Tally.so form.
+- **Viewport Protections:** Added `@media` layout protections for smaller displays.
 
 **Previous Release Highlights (v1.1.2 — Store Launch):**
 - **Search Bar Polish:** The default web search icon has been upgraded to a polished, recognizable design, giving the search bar a more premium look.

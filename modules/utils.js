@@ -1,4 +1,4 @@
-/** Returns a debounced version of fn that delays invocation until after delay ms since the last call. */
+﻿/** Returns a debounced version of fn that delays invocation until after delay ms since the last call. */
 export function debounce(fn, delay) {
   let timer;
   return (...args) => {
@@ -45,15 +45,15 @@ export function formatTime(date, use24 = false) {
 /** Locale-aware greeting lookup table — reads navigator.language, falls back to English. */
 const GREETINGS = {
   en: ['Good morning', 'Good afternoon', 'Good evening'],
-  es: ['Buenos días', 'Buenas tardes', 'Buenas noches'],
-  fr: ['Bonjour', 'Bon après-midi', 'Bonsoir'],
+  es: ['Buenos dias', 'Buenas tardes', 'Buenas noches'],
+  fr: ['Bonjour', 'Bon apres-midi', 'Bonsoir'],
   de: ['Guten Morgen', 'Guten Tag', 'Guten Abend'],
   pt: ['Bom dia', 'Boa tarde', 'Boa noite'],
-  ja: ['おはようございます', 'こんにちは', 'こんばんは'],
-  zh: ['早上好', '下午好', '晚上好'],
-  ko: ['좋은 아침이에요', '안녕하세요', '안녕하세요'],
-  ar: ['صباح الخير', 'مساء الخير', 'مساء النور'],
-  hi: ['सुप्रभात', 'नमस्ते', 'शुभ संध्या'],
+  ja: ["\u304a\u306f\u3088\u3046\u3054\u3056\u3044\u307e\u3059", "\u3053\u3093\u306b\u3061\u306f", "\u3053\u3093\u3070\u3093\u306f"],
+  zh: ["\u65e9\u4e0a\u597d", "\u4e0b\u5348\u597d", "\u665a\u4e0a\u597d"],
+  ko: ["\uc880\uc740 \uc544\uce68\uc774\uc5d0\uc694", "\uc548\ub155\ud558\uc138\uc694", "\uc548\ub155\ud558\uc138\uc694"],
+  ar: ["\u0635\u0628\u0627\u062d \u0627\u0644\u062e\u064a\u0631", "\u0645\u0633\u0627\u0621 \u0627\u0644\u062e\u064a\u0631", "\u0645\u0633\u0627\u0621 \u0627\u0644\u0646\u0648\u0631"],
+  hi: ["\u0938\u0941\u092a\u094d\u0930\u092d\u093e\u0924", "\u0928\u092e\u0938\u094d\u0924\u0947", "\u0936\u0941\u092d \u0938\u0902\u0927\u094d\u092f\u093e"],
 };
 
 /** Returns a locale-aware greeting string based on the hour, optionally appending a name. */
@@ -112,11 +112,11 @@ export function getFaviconFallbackUrl(url) {
   return `https://icon.horse/icon/${domain}`;
 }
 
-/** Truncates a string to maxLength characters, appending "…" if it exceeds the limit. */
+/** Truncates a string to maxLength characters, appending "..." if it exceeds the limit. */
 export function truncate(str, maxLength = 20) {
   const chars = [...str];
   if (chars.length <= maxLength) return str;
-  return chars.slice(0, maxLength).join('') + '…';
+  return chars.slice(0, maxLength).join('') + '\u2026';
 }
 
 /** Copies text to the clipboard, resolving to true on success or false on failure. */
@@ -166,8 +166,13 @@ export function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-/** Returns true if the string is a plausible http/https URL with a real domain, false otherwise. */
-export function isValidUrl(url) {
+/**
+ * Returns true if the string is a plausible http/https URL with a real domain.
+ * Requires at least one dot in hostname (e.g. google.com, example.org).
+ * Used by search.js ONLY to distinguish URL navigation from keyword searches.
+ * Do NOT use for Quick Links validation - use isValidUrl() instead.
+ */
+export function isValidSearchUrl(url) {
   if (!url || /\s/.test(url)) return false;
   try {
     const parsed = new URL(url);
@@ -180,9 +185,25 @@ export function isValidUrl(url) {
 }
 
 /**
+ * Returns true if the string is a valid http/https URL - permissive version.
+ * No dot requirement - accepts localhost, IPs, short domains, and all common formats.
+ * Only http: and https: protocols are allowed; javascript: and others are blocked (XSS guard).
+ * Used exclusively for Quick Links URL validation.
+ */
+export function isValidUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Safely injects SVG or HTML strings into an element.
  * Uses the <template> API which correctly preserves both HTML and SVG
- * namespaces — unlike DOMParser('text/html') which strips SVG namespace
+ * namespaces - unlike DOMParser('text/html') which strips SVG namespace
  * and renders all SVG elements as dead HTMLUnknownElement text nodes.
  * @param {HTMLElement} targetElement - The element to inject content into.
  * @param {string} htmlString - The HTML or SVG raw string.

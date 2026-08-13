@@ -8,7 +8,27 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## v1.1.3 — 2026-07-17
+## v1.1.4 — *Unreleased*
+
+*Focus: Interaction reliability, URL validation robustness, and security.*
+
+### Fixed
+- **Quick Links Double-Click Bug** — Resolved a race condition where transferring window focus from the browser Omnibox to the webpage triggered an unconditional DOM teardown of quick link tiles mid-click. The browser natively swallowed the event because the `mousedown` target was detached before `mouseup`. Fixed by implementing a deterministic `renderSignature` diffing check in `modules/quicklinks.js` to preserve existing DOM nodes if the tile data hasn't changed.
+- **Top Sites Render Optimization** — `refreshTopSites()` now performs a deep comparison of the incoming Chrome top sites array against the currently rendered `topSiteLinks`. The expensive `renderLinks()` routine is now completely bypassed if the top sites have not mutated, eliminating layout thrashing whenever the browser window regains focus.
+- **Quick Links URL Rejection** — Resolved an issue where saving protocol-less URLs (e.g. `youtube.com/watch?v=...` or `youtu.be`) in the manage panel would silently fail. Changed to `type="text"` to allow the custom sanitizer to correctly prepend `https://`.
+- **Localhost and IP Domain Support** — Removed the `.` (dot) requirement from the Quick Links URL validator. Users can now save `localhost:8080`, IPs, and single-word subdomains without them being incorrectly flagged as invalid.
+- **Search Bar Navigation Unaffected** — URL validation logic was bifurcated. The search bar retains its original dot-requiring heuristic (`isValidSearchUrl`), ensuring that typing `localhost` in the search bar still triggers a web search, not navigation.
+- **Wallpaper URL Robustness** — Rewrote `normalizeWallpaperUrl` to use the same `sanitizeUrl()` + `isValidUrl()` pipeline used by Quick Links, eliminating the strict regex that rejected valid protocol-less image URLs.
+
+### Security
+- **XSS Prevention in Custom Links** — Patched a vulnerability where `javascript:alert(1)` URIs could bypass the sanitizer and be saved to storage. Added a strict post-sanitization `isValidUrl()` gate to both Quick Links save paths.
+
+### Added
+- **YouTube Background Audio Toggle** — Added a floating glassmorphic mute/unmute button (bottom-center) that appears only when a YouTube video is active as the background wallpaper. Uses the YouTube IFrame API via `postMessage`. State resets per new tab open (Chrome autoplay policy limitation, by design).
+
+---
+
+## v1.1.3 — 2026-07-25
 
 *Focus: Compositor bugfix, hardware layout protection, and zero-maintenance feedback loop.*
 
