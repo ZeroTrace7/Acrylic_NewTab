@@ -676,3 +676,46 @@ img[alt="Brave"] {
   transform: scale(1.2);
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35)) hue-rotate(200deg) saturate(0.85) brightness(0.85);
 }
+
+/* ────────────────────────────────────────────────────────────
+   SECTION 17 — YouTube Mute Button
+   ──────────────────────────────────────────────────────────── */
+
+#yt-mute-btn {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 120; /* above iframe z:0, below panels z:200+ */
+  opacity: 0;
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+#yt-mute-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#yt-mute-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: translateX(-50%) scale(1.08);
+}
+
+#yt-mute-btn svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  transition: opacity 150ms ease;
+}
