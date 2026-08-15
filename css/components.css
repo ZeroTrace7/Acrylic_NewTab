@@ -1728,6 +1728,7 @@
   font-size: 0.78rem;
   color: var(--text-muted);
   line-height: 1.5;
+  margin-bottom: 6px;
 }
 
 .custom-wallpaper-row {
@@ -1795,11 +1796,12 @@
 .custom-controls-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 8px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 14px;
+  margin-top: 8px;
 }
 
 .custom-clear-btn {
@@ -1807,8 +1809,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
-  margin-top: 6px;
+  padding: 8px 16px;
+  margin-top: 2px;
   border-radius: 12px;
   background: rgba(248, 113, 113, 0.08);
   border: 1px solid rgba(248, 113, 113, 0.20);

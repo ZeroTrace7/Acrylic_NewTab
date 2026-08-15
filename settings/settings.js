@@ -758,16 +758,6 @@ function buildAppearanceSection() {
   urlInput.placeholder = 'Image URL or YouTube link';
   urlInput.value = (prefs.wallpaperUrl && prefs.wallpaperUrl !== LOCAL_VIDEO_SENTINEL) ? prefs.wallpaperUrl : '';
 
-  const clearUrlBtn = document.createElement('button');
-  clearUrlBtn.type = 'button';
-  clearUrlBtn.className = 'custom-wallpaper-apply';
-  clearUrlBtn.setAttribute('aria-label', 'Clear URL');
-  safeInject(clearUrlBtn, `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`);
-  clearUrlBtn.addEventListener('click', () => {
-    urlInput.value = '';
-    urlInput.focus();
-  });
-
   const applyBtn = document.createElement('button');
   applyBtn.type = 'button';
   applyBtn.className = 'custom-wallpaper-apply';
@@ -795,12 +785,12 @@ function buildAppearanceSection() {
     }
   });
 
-  urlRow.append(urlInput, clearUrlBtn, applyBtn);
+  urlRow.append(urlInput, applyBtn);
   customPane.appendChild(urlRow);
 
   // ── OR Divider ──
   const dividerRow = document.createElement('div');
-  dividerRow.setAttribute('style', 'display:flex;align-items:center;margin:16px 0;');
+  dividerRow.setAttribute('style', 'display:flex;align-items:center;margin:10px 0 8px;');
   const line1 = document.createElement('div');
   line1.setAttribute('style', 'flex:1;height:1px;background:var(--glass-border-soft);');
   const orText = document.createElement('span');
@@ -813,12 +803,12 @@ function buildAppearanceSection() {
 
   // ── Upload from Device ──
   const uploadLabel = document.createElement('p');
-  uploadLabel.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 6px 0;');
+  uploadLabel.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 5px 0;');
   uploadLabel.textContent = 'Upload from Device';
   customPane.appendChild(uploadLabel);
 
   const uploadBox = document.createElement('label');
-  uploadBox.setAttribute('style', 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;border:1px dashed var(--glass-border-soft);border-radius:12px;cursor:pointer;transition:background 0.2s, border-color 0.2s;');
+  uploadBox.setAttribute('style', 'display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;padding:14px 20px;border:1px dashed var(--glass-border-soft);border-radius:12px;cursor:pointer;transition:background 0.2s, border-color 0.2s;');
 
   const setUploadHighlight = (on) => {
     uploadBox.style.background = on ? 'var(--glass-subtle)' : 'transparent';
@@ -827,8 +817,8 @@ function buildAppearanceSection() {
   uploadBox.onmouseenter = () => setUploadHighlight(true);
   uploadBox.onmouseleave = () => setUploadHighlight(false);
 
-  const cloudUploadIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);margin-bottom:8px;"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 16 4-4 4 4"></path></svg>`;
-  safeInject(uploadBox, cloudUploadIcon + `<span style="font-size:0.85rem;color:var(--text-primary);font-weight:500;">Click to upload</span>`);
+  const cloudUploadIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);flex-shrink:0;"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 16 4-4 4 4"></path></svg>`;
+  safeInject(uploadBox, cloudUploadIcon + `<span style="font-size:0.82rem;color:var(--text-primary);font-weight:500;">Click to upload or drag & drop</span>`);
 
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
@@ -844,7 +834,8 @@ function buildAppearanceSection() {
     }
     const MAX_MB = 50;
     if (file.size > MAX_MB * 1024 * 1024) {
-      toast.warn(`Large file (${Math.round(file.size / 1024 / 1024)} MB) — may slow down new tabs`);
+      toast.error(`File too large (${Math.round(file.size / 1024 / 1024)} MB). Maximum size is 50MB.`);
+      return;
     }
     const span = uploadBox.querySelector('span');
     const oldText = span?.textContent || 'Click to upload';
@@ -891,8 +882,8 @@ function buildAppearanceSection() {
 
   // Max size hint
   const maxHint = document.createElement('p');
-  maxHint.setAttribute('style', 'font-size:0.65rem;color:var(--text-muted);text-align:center;margin:8px 0 0 0;opacity:0.7;');
-  maxHint.textContent = 'Max size ~4MB. Stored locally.';
+  maxHint.setAttribute('style', 'font-size:0.65rem;color:var(--text-muted);text-align:center;margin:5px 0 0 0;opacity:0.7;');
+  maxHint.textContent = 'Max size 50MB. Stored locally on device.';
   customPane.appendChild(maxHint);
 
   const customControls = document.createElement('div');
