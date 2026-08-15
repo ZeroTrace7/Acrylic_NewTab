@@ -169,7 +169,6 @@ function buildYouTubeEmbedUrl(videoId) {
     iv_load_policy: '3',
     loop: '1',
     modestbranding: '1',
-    origin: window.location.origin,
     playsinline: '1',
     playlist: videoId,
     rel: '0',
@@ -379,6 +378,24 @@ function createWallpaperYouTubeShell(embedUrl) {
   mask.setAttribute('aria-hidden', 'true');
 
   container.append(frame, mask);
+
+  // ═══════════════════════════════════════════════════════════════════
+  // [YT DEBUG] Temporary unfiltered postMessage logger.
+  // Logs EVERY message the window receives — no source, origin, or
+  // content filtering. Remove after diagnosis is complete.
+  // ═══════════════════════════════════════════════════════════════════
+  const _debugYTListener = (e) => {
+    let dataPreview;
+    try {
+      dataPreview = typeof e.data === 'string' ? e.data.substring(0, 300) : JSON.stringify(e.data).substring(0, 300);
+    } catch {
+      dataPreview = String(e.data).substring(0, 300);
+    }
+    console.log('[YT DEBUG] origin:', e.origin, '| source===iframe?', e.source === frame.contentWindow, '| data:', dataPreview);
+  };
+  window.addEventListener('message', _debugYTListener);
+  console.log('[YT DEBUG] Unfiltered listener installed. Embed URL:', embedUrl);
+  console.log('[YT DEBUG] window.location.origin:', window.location.origin);
 
   // Auto-detect embed failure via genuine YouTube Player API postMessages.
   // The iframe 'load' event is NOT used as a success signal — it fires for
