@@ -408,7 +408,6 @@ function createWallpaperYouTubeShell(embedUrl) {
     console.warn(`Acrylic: ${logLabel}`);
     container.remove();
     setYouTubeMuteButtonVisible(false);
-    toast.error(message);
     currentWallpaperUrl = '';
     Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
 
@@ -453,12 +452,10 @@ function createWallpaperYouTubeShell(embedUrl) {
       return;
     }
 
-    // Only accept genuine Player API events as confirmation.
-    // initialDelivery / onReady / infoDelivery with data are only sent
-    // by a successfully initialized YouTube player — never by error pages.
-    if (payload.event === 'initialDelivery' ||
-        payload.event === 'onReady' ||
-        (payload.event === 'infoDelivery' && payload.info)) {
+    // Accept any genuine Player API event as confirmation.
+    // Because we use a raw iframe instead of initializing YT.Player, it
+    // sends 'listening' rather than 'onReady'. Error pages never send these.
+    if (payload.event || payload.info || payload.id) {
       confirmEmbed();
     }
   };
