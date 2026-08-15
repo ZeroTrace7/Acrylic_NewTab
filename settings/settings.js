@@ -996,30 +996,34 @@ function buildWallpaperSection() {
   sec5.className = 'settings-card';
   sec5.appendChild(sectionLabel('Wallpaper'));
 
-  // ── Helper text ──
-  const helperText = document.createElement('p');
-  helperText.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 10px 0;line-height:1.5;');
-  helperText.textContent = 'Paste any image URL or YouTube link. Some YouTube videos block embedding and cannot be used as wallpapers.';
-  sec5.appendChild(helperText);
-
   // ── URL Input Row ──
+  const wpLabel = document.createElement('p');
+  wpLabel.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 6px 0;');
+  wpLabel.textContent = 'Paste Image Link';
+  sec5.appendChild(wpLabel);
+
   const wpRow = document.createElement('div');
   wpRow.setAttribute('style', 'display:flex;gap:8px;');
+  
   const wpIn = document.createElement('input');
   wpIn.type = 'text';
   wpIn.placeholder = 'Image URL or YouTube link';
   wpIn.value = (prefs.wallpaperUrl && prefs.wallpaperUrl !== LOCAL_VIDEO_SENTINEL) ? prefs.wallpaperUrl : '';
-  wpIn.setAttribute('style', 'flex:1;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;');
+  wpIn.setAttribute('style', 'flex:1;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:8px;font-size:0.9rem;color:var(--text-primary);outline:none;');
+  
   const applyBtn = document.createElement('button');
   applyBtn.textContent = 'Apply';
   applyBtn.ariaLabel = 'Apply wallpaper URL';
-  applyBtn.setAttribute('style', 'padding:10px 16px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--accent-blue);color:var(--accent-blue);font-size:0.85rem;font-weight:500;cursor:pointer;');
+  applyBtn.setAttribute('style', 'padding:10px 16px;border-radius:8px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-primary);font-size:0.85rem;font-weight:500;cursor:pointer;transition:background 0.2s;');
+  
+  applyBtn.onmouseenter = () => applyBtn.style.background = 'var(--glass-border-soft)';
+  applyBtn.onmouseleave = () => applyBtn.style.background = 'var(--glass-subtle)';
+
   applyBtn.onclick = async () => {
     const url = wpIn.value.trim();
     applyBtn.disabled = true;
-    applyBtn.textContent = 'Checking...';
+    applyBtn.textContent = '...';
     applyBtn.style.cursor = 'progress';
-    applyBtn.style.opacity = '0.72';
     try {
       const appliedUrl = await setWallpaper(url, prefs.wallpaperBlur, prefs.wallpaperDarken);
       prefs.wallpaperUrl = appliedUrl;
@@ -1034,60 +1038,77 @@ function buildWallpaperSection() {
       applyBtn.disabled = false;
       applyBtn.textContent = 'Apply';
       applyBtn.style.cursor = 'pointer';
-      applyBtn.style.opacity = '1';
     }
   };
   wpRow.append(wpIn, applyBtn);
   sec5.appendChild(wpRow);
 
-  // ── Video Upload Row ──
-  const videoRow = document.createElement('div');
-  videoRow.setAttribute('style', 'margin-top:12px;');
+  // ── OR Divider ──
+  const dividerRow = document.createElement('div');
+  dividerRow.setAttribute('style', 'display:flex;align-items:center;margin:16px 0;');
+  const line1 = document.createElement('div');
+  line1.setAttribute('style', 'flex:1;height:1px;background:var(--glass-border-soft);');
+  const orText = document.createElement('span');
+  orText.textContent = 'OR';
+  orText.setAttribute('style', 'padding:0 12px;font-size:0.7rem;color:var(--text-muted);letter-spacing:0.5px;');
+  const line2 = document.createElement('div');
+  line2.setAttribute('style', 'flex:1;height:1px;background:var(--glass-border-soft);');
+  dividerRow.append(line1, orText, line2);
+  sec5.appendChild(dividerRow);
 
+  // ── Video/Image Upload Dropzone ──
   const videoLabel = document.createElement('p');
   videoLabel.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 6px 0;');
-  videoLabel.textContent = 'Or upload a short video loop (MP4/WebM, under 50 MB) for an ambient background.';
-  videoRow.appendChild(videoLabel);
+  videoLabel.textContent = 'Upload from Device';
+  sec5.appendChild(videoLabel);
 
-  const videoInputRow = document.createElement('div');
-  videoInputRow.setAttribute('style', 'display:flex;gap:8px;align-items:center;');
+  const uploadBox = document.createElement('label');
+  uploadBox.setAttribute('style', 'display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;border:1px dashed var(--glass-border-soft);border-radius:12px;cursor:pointer;transition:background 0.2s, border-color 0.2s;');
+  
+  uploadBox.onmouseenter = () => {
+    uploadBox.style.background = 'var(--glass-subtle)';
+    uploadBox.style.borderColor = 'var(--text-muted)';
+  };
+  uploadBox.onmouseleave = () => {
+    uploadBox.style.background = 'transparent';
+    uploadBox.style.borderColor = 'var(--glass-border-soft)';
+  };
 
-  const videoFileInput = document.createElement('input');
-  videoFileInput.type = 'file';
-  videoFileInput.accept = 'video/mp4,video/webm';
-  videoFileInput.setAttribute('style', 'flex:1;font-size:0.85rem;color:var(--text-primary);');
+  const cloudUploadIcon = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);margin-bottom:8px;"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 16 4-4 4 4"></path></svg>`;
+  safeInject(uploadBox, cloudUploadIcon + `<span style="font-size:0.85rem;color:var(--text-primary);font-weight:500;">Click to upload</span>`);
 
-  const uploadBtn = document.createElement('button');
-  uploadBtn.textContent = 'Upload';
-  uploadBtn.ariaLabel = 'Upload video wallpaper';
-  uploadBtn.setAttribute('style', 'padding:10px 16px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--accent-blue);color:var(--accent-blue);font-size:0.85rem;font-weight:500;cursor:pointer;');
-  uploadBtn.onclick = async () => {
-    const file = videoFileInput.files?.[0];
-    if (!file) { toast.error('Select a video file first'); return; }
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/*,video/mp4,video/webm';
+  fileInput.setAttribute('style', 'display:none;');
 
-    // Validate MIME type (don't trust accept attribute alone)
-    if (!file.type.startsWith('video/')) {
-      toast.error('Only video files (MP4, WebM) are supported');
+  fileInput.onchange = async () => {
+    const file = fileInput.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
+      toast.error('Only images and videos (MP4, WebM) are supported');
       return;
     }
 
-    // Soft warning for large files
-    const MAX_RECOMMENDED_MB = 50;
-    if (file.size > MAX_RECOMMENDED_MB * 1024 * 1024) {
+    const MAX_MB = 50;
+    if (file.size > MAX_MB * 1024 * 1024) {
       toast.warn(`Large file (${Math.round(file.size / 1024 / 1024)} MB) — may slow down new tabs`);
     }
 
-    uploadBtn.disabled = true;
-    uploadBtn.textContent = 'Saving...';
-    uploadBtn.style.cursor = 'progress';
-    uploadBtn.style.opacity = '0.72';
+    const span = uploadBox.querySelector('span');
+    const oldText = span.textContent;
+    span.textContent = 'Saving...';
+    uploadBox.style.pointerEvents = 'none';
+    uploadBox.style.opacity = '0.7';
+
     try {
       await saveVideoBlob(file);
       const appliedUrl = await setWallpaper(LOCAL_VIDEO_SENTINEL, prefs.wallpaperBlur, prefs.wallpaperDarken);
       prefs.wallpaperUrl = appliedUrl;
       wpIn.value = '';
       rebuildWpControls();
-      toast.success('Video wallpaper applied');
+      toast.success('Media wallpaper applied');
     } catch (err) {
       if (err?.name === 'QuotaExceededError') {
         toast.error('Not enough storage space for this video');

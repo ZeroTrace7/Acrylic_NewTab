@@ -279,15 +279,18 @@ function validateImageDirect(url) {
 }
 
 async function resolveWallpaperSource(rawUrl, { requestPermission = false } = {}) {
-  // Handle local video wallpaper sentinel
+  // Handle local video/image wallpaper sentinel
   if (rawUrl === LOCAL_VIDEO_SENTINEL) {
     const blob = await getVideoBlob();
     if (!blob) {
       // Blob was deleted (user cleared browser data) — clean up gracefully
       await Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
-      throw new Error('Saved video not found — it may have been cleared by the browser.');
+      throw new Error('Saved file not found — it may have been cleared by the browser.');
     }
     const blobUrl = URL.createObjectURL(blob);
+    if (blob.type.startsWith('image/')) {
+      return { type: 'image', url: LOCAL_VIDEO_SENTINEL, blobUrl };
+    }
     return { type: 'local-video', url: LOCAL_VIDEO_SENTINEL, blobUrl };
   }
 
