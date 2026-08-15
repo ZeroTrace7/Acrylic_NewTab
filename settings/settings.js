@@ -1,6 +1,7 @@
 import { safeInject } from '../modules/utils.js';
 import { Prefs } from '../modules/storage.js';
-import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance, getCurrentTheme } from '../modules/background.js';
+import { setTheme, setWallpaper, clearWallpaper, setGrain, getAvailableThemes, setWallpaperAppearance, getCurrentTheme, LOCAL_VIDEO_SENTINEL } from '../modules/background.js';
+import { saveVideoBlob, deleteVideoBlob, hasVideoBlob } from '../modules/video-store.js';
 import { toast } from '../modules/toast.js';
 import { bus } from '../modules/event-bus.js';
 import { UI_CONFIG } from '../modules/ui-config.js';
@@ -994,10 +995,20 @@ function buildWallpaperSection() {
   const sec5 = document.createElement('div');
   sec5.className = 'settings-card';
   sec5.appendChild(sectionLabel('Wallpaper'));
+
+  // ── Helper text ──
+  const helperText = document.createElement('p');
+  helperText.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 10px 0;line-height:1.5;');
+  helperText.textContent = 'Paste any image URL or YouTube link. Some YouTube videos block embedding and cannot be used as wallpapers.';
+  sec5.appendChild(helperText);
+
+  // ── URL Input Row ──
   const wpRow = document.createElement('div');
   wpRow.setAttribute('style', 'display:flex;gap:8px;');
   const wpIn = document.createElement('input');
-  wpIn.type = 'text'; wpIn.placeholder = 'Paste image URL or YouTube link'; wpIn.value = prefs.wallpaperUrl || '';
+  wpIn.type = 'text';
+  wpIn.placeholder = 'Image URL or YouTube link';
+  wpIn.value = (prefs.wallpaperUrl && prefs.wallpaperUrl !== LOCAL_VIDEO_SENTINEL) ? prefs.wallpaperUrl : '';
   wpIn.setAttribute('style', 'flex:1;padding:10px 14px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);border-radius:12px;font-size:0.9rem;color:var(--text-primary);outline:none;');
   const applyBtn = document.createElement('button');
   applyBtn.textContent = 'Apply';
@@ -1028,15 +1039,92 @@ function buildWallpaperSection() {
   };
   wpRow.append(wpIn, applyBtn);
   sec5.appendChild(wpRow);
+
+  // ── Video Upload Row ──
+  const videoRow = document.createElement('div');
+  videoRow.setAttribute('style', 'margin-top:12px;');
+
+  const videoLabel = document.createElement('p');
+  videoLabel.setAttribute('style', 'font-size:0.75rem;color:var(--text-muted);margin:0 0 6px 0;');
+  videoLabel.textContent = 'Or upload a short video loop (MP4/WebM, under 50 MB) for an ambient background.';
+  videoRow.appendChild(videoLabel);
+
+  const videoInputRow = document.createElement('div');
+  videoInputRow.setAttribute('style', 'display:flex;gap:8px;align-items:center;');
+
+  const videoFileInput = document.createElement('input');
+  videoFileInput.type = 'file';
+  videoFileInput.accept = 'video/mp4,video/webm';
+  videoFileInput.setAttribute('style', 'flex:1;font-size:0.85rem;color:var(--text-primary);');
+
+  const uploadBtn = document.createElement('button');
+  uploadBtn.textContent = 'Upload';
+  uploadBtn.ariaLabel = 'Upload video wallpaper';
+  uploadBtn.setAttribute('style', 'padding:10px 16px;border-radius:12px;background:var(--glass-subtle);border:1px solid var(--accent-blue);color:var(--accent-blue);font-size:0.85rem;font-weight:500;cursor:pointer;');
+  uploadBtn.onclick = async () => {
+    const file = videoFileInput.files?.[0];
+    if (!file) { toast.error('Select a video file first'); return; }
+
+    // Validate MIME type (don't trust accept attribute alone)
+    if (!file.type.startsWith('video/')) {
+      toast.error('Only video files (MP4, WebM) are supported');
+      return;
+    }
+
+    // Soft warning for large files
+    const MAX_RECOMMENDED_MB = 50;
+    if (file.size > MAX_RECOMMENDED_MB * 1024 * 1024) {
+      toast.warn(`Large file (${Math.round(file.size / 1024 / 1024)} MB) — may slow down new tabs`);
+    }
+
+    uploadBtn.disabled = true;
+    uploadBtn.textContent = 'Saving...';
+    uploadBtn.style.cursor = 'progress';
+    uploadBtn.style.opacity = '0.72';
+    try {
+      await saveVideoBlob(file);
+      const appliedUrl = await setWallpaper(LOCAL_VIDEO_SENTINEL, prefs.wallpaperBlur, prefs.wallpaperDarken);
+      prefs.wallpaperUrl = appliedUrl;
+      wpIn.value = '';
+      rebuildWpControls();
+      toast.success('Video wallpaper applied');
+    } catch (err) {
+      if (err?.name === 'QuotaExceededError') {
+        toast.error('Not enough storage space for this video');
+      } else {
+        toast.error(err?.message || 'Failed to save video');
+      }
+    } finally {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Upload';
+      uploadBtn.style.cursor = 'pointer';
+      uploadBtn.style.opacity = '1';
+    }
+  };
+  videoInputRow.append(videoFileInput, uploadBtn);
+  videoRow.appendChild(videoInputRow);
+  sec5.appendChild(videoRow);
+
+  // ── Wallpaper Controls (sliders, clear button) ──
   const wpControls = document.createElement('div');
   const rebuildWpControls = () => {
     wpControls.textContent = '';
     if (!prefs.wallpaperUrl) return;
     const clrBtn = document.createElement('button');
-    clrBtn.textContent = 'Clear wallpaper';
-    clrBtn.ariaLabel = 'Clear wallpaper';
+    const isVideo = prefs.wallpaperUrl === LOCAL_VIDEO_SENTINEL;
+    clrBtn.textContent = isVideo ? '× Remove video' : '× Clear wallpaper';
+    clrBtn.ariaLabel = isVideo ? 'Remove video wallpaper' : 'Clear wallpaper';
     clrBtn.setAttribute('style', 'font-size:0.75rem;color:var(--accent-red);background:none;border:none;cursor:pointer;margin:8px 0;');
-    clrBtn.onclick = () => { clearWallpaper(); prefs.wallpaperUrl = ''; wpIn.value = ''; rebuildWpControls(); };
+    clrBtn.onclick = async () => {
+      clearWallpaper();
+      if (isVideo) {
+        await deleteVideoBlob().catch(() => {});
+      }
+      prefs.wallpaperUrl = '';
+      wpIn.value = '';
+      videoFileInput.value = '';
+      rebuildWpControls();
+    };
     wpControls.appendChild(clrBtn);
     wpControls.appendChild(slider('Blur', prefs.wallpaperBlur, 0, 20, 1, 'px', (v) => { prefs.wallpaperBlur = v; setWallpaperAppearance(v, prefs.wallpaperDarken); Prefs.set('wallpaperBlur', v); }));
     wpControls.appendChild(slider('Darken', prefs.wallpaperDarken, 0, 0.9, 0.05, '', (v) => { prefs.wallpaperDarken = v; setWallpaperAppearance(prefs.wallpaperBlur, v); Prefs.set('wallpaperDarken', v); }));

@@ -12,6 +12,9 @@ import { toast } from './toast.js';
 import { bus } from './event-bus.js';
 import { detectAndApplyBrightness, clearBrightnessAdaptation } from './brightness.js';
 import { sanitizeUrl, isValidUrl } from './utils.js';
+import { getVideoBlob } from './video-store.js';
+
+const LOCAL_VIDEO_SENTINEL = '__local_video__';
 
 const THEMES = [
   { id: 'midnight',  label: 'Midnight'  },
@@ -23,7 +26,7 @@ const THEMES = [
   { id: 'carbon',    label: 'Carbon'    },
   { id: 'synthwave', label: 'Synthwave' },
 ];
-export { THEMES };
+export { THEMES, LOCAL_VIDEO_SENTINEL };
 
 let currentTheme = 'carbon';
 let currentWallpaperUrl = '';
@@ -162,7 +165,7 @@ function buildYouTubeEmbedUrl(videoId) {
   const params = new URLSearchParams({
     autoplay: '1',
     mute: '1',
-    controls: '1',
+    controls: '0',
     disablekb: '1',
     enablejsapi: '1',
     fs: '0',
@@ -276,6 +279,18 @@ function validateImageDirect(url) {
 }
 
 async function resolveWallpaperSource(rawUrl, { requestPermission = false } = {}) {
+  // Handle local video wallpaper sentinel
+  if (rawUrl === LOCAL_VIDEO_SENTINEL) {
+    const blob = await getVideoBlob();
+    if (!blob) {
+      // Blob was deleted (user cleared browser data) — clean up gracefully
+      await Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
+      throw new Error('Saved video not found — it may have been cleared by the browser.');
+    }
+    const blobUrl = URL.createObjectURL(blob);
+    return { type: 'local-video', url: LOCAL_VIDEO_SENTINEL, blobUrl };
+  }
+
   const url = normalizeWallpaperUrl(rawUrl);
   const youtubeId = getYouTubeVideoId(url);
 
@@ -379,31 +394,16 @@ function createWallpaperYouTubeShell(embedUrl) {
 
   container.append(frame, mask);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // [YT DEBUG] Temporary unfiltered postMessage logger.
-  // Logs EVERY message the window receives — no source, origin, or
-  // content filtering. Remove after diagnosis is complete.
-  // ═══════════════════════════════════════════════════════════════════
-  const _debugYTListener = (e) => {
-    let dataPreview;
-    try {
-      dataPreview = typeof e.data === 'string' ? e.data.substring(0, 300) : JSON.stringify(e.data).substring(0, 300);
-    } catch {
-      dataPreview = String(e.data).substring(0, 300);
-    }
-    console.log('[YT DEBUG] origin:', e.origin, '| source===iframe?', e.source === frame.contentWindow, '| data:', dataPreview);
-  };
-  window.addEventListener('message', _debugYTListener);
-  console.log('[YT DEBUG] Unfiltered listener installed. Embed URL:', embedUrl);
-  console.log('[YT DEBUG] window.location.origin:', window.location.origin);
-
-  // Auto-detect embed failure via genuine YouTube Player API postMessages.
-  // The iframe 'load' event is NOT used as a success signal — it fires for
-  // error pages too (Error 153, private videos, etc.). Only real Player API
-  // events (initialDelivery, onReady, infoDelivery) prove a working player.
-  // If no genuine API message arrives within 6 seconds, the embed is broken.
-  const EMBED_TIMEOUT_MS = 6000;
+  // Auto-detect embed failure (Brave Shields, network errors, etc.)
+  // YouTube's iframe does NOT send postMessage events to chrome-extension://
+  // pages, so the iframe 'load' event is used as the primary confirmation.
+  // If neither confirms within 10 seconds, remove the embed gracefully
+  // but preserve persisted storage so the user can retry on next tab load.
+  const EMBED_TIMEOUT_MS = 10000;
+  const CURTAIN_DELAY_MS = 2500;
+  const LOAD_FALLBACK_DELAY_MS = 1500;
   let videoConfirmed = false;
+  let iframeLoaded = false;
   let embedFailed = false;
   let settleReady;
 
@@ -413,6 +413,7 @@ function createWallpaperYouTubeShell(embedUrl) {
 
   const cleanupEmbedListeners = () => {
     window.removeEventListener('message', onYTMessage);
+    frame.removeEventListener('load', onIframeLoad);
   };
 
   const failEmbed = (message, logLabel = message) => {
@@ -424,7 +425,6 @@ function createWallpaperYouTubeShell(embedUrl) {
 
     console.warn(`Acrylic: ${logLabel}`);
     container.remove();
-    setYouTubeMuteButtonVisible(false);
     currentWallpaperUrl = '';
     Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch(() => {});
 
@@ -441,15 +441,18 @@ function createWallpaperYouTubeShell(embedUrl) {
     cleanupEmbedListeners();
     settleReady?.resolve();
 
-    // Open the curtain immediately — the video is genuinely playing
-    if (mask.isConnected) {
-      mask.classList.add('curtain-open');
-    }
+    // Wait for YouTube's native UI (play button, title) to auto-hide,
+    // then pull the curtain to reveal the pristine video
+    setTimeout(() => {
+      if (mask.isConnected) {
+        mask.classList.add('curtain-open');
+      }
+    }, CURTAIN_DELAY_MS);
   };
 
-  // Listen for genuine YouTube Player API postMessage events.
-  // Only these events prove a real video player initialized —
-  // error pages and blocked embeds never send them.
+  // Method 1: Listen for any postMessage from the YouTube embed
+  // (kept as a best-effort signal — does not work on chrome-extension:// pages
+  // due to YouTube rejecting non-HTTPS origins, but costs nothing to keep)
   const onYTMessage = (e) => {
     if (e.source !== frame.contentWindow || !YOUTUBE_EMBED_ORIGINS.has(e.origin)) return;
 
@@ -469,26 +472,38 @@ function createWallpaperYouTubeShell(embedUrl) {
       return;
     }
 
-    // Accept any genuine Player API event as confirmation.
-    // Because we use a raw iframe instead of initializing YT.Player, it
-    // sends 'listening' rather than 'onReady'. Error pages never send these.
+    // Accept non-error YouTube API messages as confirmation
     if (payload.event || payload.info || payload.id) {
       confirmEmbed();
     }
   };
   window.addEventListener('message', onYTMessage);
 
-  // 6-second timeout: if no genuine YouTube Player API message arrived,
-  // the video is broken (embedding disabled, private, etc.).
-  // Clear storage immediately so the broken URL is never retried on
-  // subsequent new tab opens.
+  // Method 2: If the iframe loads but YouTube never sends an API message,
+  // reveal the wallpaper instead of treating it as a hard failure.
+  const onIframeLoad = () => {
+    iframeLoaded = true;
+    setTimeout(() => {
+      if (!videoConfirmed && container.isConnected) {
+        confirmEmbed();
+      }
+    }, LOAD_FALLBACK_DELAY_MS);
+  };
+  frame.addEventListener('load', onIframeLoad);
+
+  // 10-second silent cleanup: only remove the embed if it never loaded at all.
   setTimeout(() => {
     if (videoConfirmed || embedFailed || !container.isConnected) return;
+    cleanupEmbedListeners();
 
-    failEmbed(
-      "This video's owner disabled embedding — try a different one.",
-      'YouTube embed did not respond within 6s — removing and restoring theme.'
-    );
+    if (iframeLoaded) {
+      confirmEmbed();
+      return;
+    }
+
+    if (container.isConnected) {
+      failEmbed('YouTube wallpaper failed to initialize. Try a different video.', 'YouTube embed did not respond — removing and restoring theme.');
+    }
   }, EMBED_TIMEOUT_MS);
 
   return { container, ready };
@@ -563,9 +578,24 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
       const youtubeShell = createWallpaperYouTubeShell(source.embedUrl);
       layer.appendChild(youtubeShell.container);
       mediaReady = youtubeShell.ready;
-      setYouTubeMuteButtonVisible(true);
-    } else {
-      setYouTubeMuteButtonVisible(false);
+    } else if (layer && source.type === 'local-video') {
+      const video = document.createElement('video');
+      video.className = 'wallpaper-media wallpaper-media-video';
+      video.dataset.wallpaperMedia = 'true';
+      video.src = source.blobUrl;
+      video.autoplay = true;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.setAttribute('aria-hidden', 'true');
+
+      // Respect reduced motion: pause the video for users with vestibular sensitivity
+      if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+        video.autoplay = false;
+        video.addEventListener('loadeddata', () => video.pause(), { once: true });
+      }
+
+      layer.appendChild(video);
     }
 
     if (body) body.classList.add('has-wallpaper');
@@ -736,30 +766,11 @@ export async function setWallpaper(url, blur = 0, darken = 0.3) {
 export function clearWallpaper() {
   wallpaperRequestId++;
   applyWallpaperSourceToDom(null, 0, 0.3, { holdThemeReveal: true });
-  setYouTubeMuteButtonVisible(false);
   Prefs.setMany({ wallpaperUrl: '', wallpaperBlur: 0, wallpaperDarken: 0.3 }).catch((error) => {
     reportBackgroundError('Failed to persist wallpaper clear:', error);
   });
 }
 
-export function toggleYouTubeMute(muted) {
-  const frame = document.getElementById('youtube-bg-iframe');
-  if (!frame || !frame.contentWindow) return;
-  try {
-    frame.contentWindow.postMessage(JSON.stringify({
-      event: 'command',
-      func: muted ? 'mute' : 'unMute',
-      args: ''
-    }), '*');
-  } catch {
-    // no-op
-  }
-}
-
-export function setYouTubeMuteButtonVisible(visible) {
-  const btn = document.getElementById('yt-mute-btn');
-  if (btn) btn.classList.toggle('is-visible', visible);
-}
 
 export function setWallpaperAppearance(blur = 0, darken = 0.3) {
   applyWallpaperAppearance(blur, darken);

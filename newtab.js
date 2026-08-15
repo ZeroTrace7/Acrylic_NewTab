@@ -7,7 +7,7 @@
  * the Free Software Foundation, version 3.
  */
 
-import { initBackground, toggleYouTubeMute }  from './modules/background.js';
+import { initBackground }  from './modules/background.js';
 import { initClock }       from './modules/clock.js';
 import { initSearch }      from './modules/search.js';
 import { initQuickLinks }  from './modules/quicklinks.js';
@@ -22,37 +22,6 @@ import { safeInject }      from './modules/utils.js';
 
 let settingsOpen = false;
 
-function injectYouTubeMuteButton() {
-  const btn = document.createElement('div');
-  btn.id = 'yt-mute-btn';
-  btn.setAttribute('role', 'button');
-  btn.setAttribute('tabindex', '0');
-  btn.setAttribute('aria-label', 'Unmute background video');
-  
-  const iconMuted = `<svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>`;
-  const iconUnmuted = `<svg class="icon-unmuted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
-  
-  safeInject(btn, iconMuted + iconUnmuted);
-  
-  let isMuted = true;
-  const toggle = () => {
-    isMuted = !isMuted;
-    toggleYouTubeMute(isMuted);
-    btn.setAttribute('aria-label', isMuted ? 'Unmute background video' : 'Mute background video');
-    btn.querySelector('.icon-muted').style.display = isMuted ? 'block' : 'none';
-    btn.querySelector('.icon-unmuted').style.display = isMuted ? 'none' : 'block';
-  };
-  
-  btn.addEventListener('click', toggle);
-  btn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggle();
-    }
-  });
-  
-  document.body.appendChild(btn);
-}
 
 function armEntryAnimation() {
   requestAnimationFrame(() => {
@@ -89,9 +58,6 @@ async function initApp() {
 
     // Step 3.5 — Trigger foreground entry cascade (background + UI are ready)
     armEntryAnimation();
-
-    // Step 4 - Inject ambient controls
-    injectYouTubeMuteButton();
 
     // Step 4 — Non-blocking welcome card (first install only, after UI is fully loaded)
     import('./onboarding/onboarding.js').then(m => m.initOnboarding()).catch(() => {});
