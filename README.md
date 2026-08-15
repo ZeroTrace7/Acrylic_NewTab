@@ -38,9 +38,13 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.4 — *Unreleased*
+## 🎉 What's New in v1.1.4 — 2026-08-15
 
-*Focus: Interaction reliability, URL validation robustness, and security.*
+*Focus: Interaction reliability, URL validation robustness, ambient media, and security.*
+
+### Added
+- **Local Media Wallpapers:** Users can now upload local video loops (`.mp4`, `.webm`) or images up to ~50MB directly from their device to use as ambient backgrounds. Files are stored efficiently and privately in the browser's native IndexedDB.
+- **Wallpaper Settings Overhaul:** The settings panel was redesigned to feature a modern, dashed-border upload dropzone for local media, and a streamlined input layout for image URLs.
 
 ### Fixed
 - **Quick Links Double-Click Bug:** Resolved a race condition where transferring window focus from the browser Omnibox triggered an unconditional DOM teardown of quick link tiles mid-click. Fixed by implementing deterministic `renderSignature` diffing in `quicklinks.js`.
@@ -49,12 +53,10 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 - **Localhost and IP Domain Support:** Removed the `.` (dot) requirement from the Quick Links URL validator. Users can now save `localhost:8080`, IPs, and short domains.
 - **Search Bar Navigation Unaffected:** URL validation logic was bifurcated. The search bar retains its original dot-requiring heuristic, ensuring `localhost` still triggers a web search.
 - **Wallpaper URL Robustness:** Rewrote `normalizeWallpaperUrl` to use the same `sanitizeUrl()` + `isValidUrl()` pipeline as Quick Links.
+- **YouTube Wallpaper Detection:** Reverted the YouTube iframe detection logic to the stable v1.1.2 approach since YouTube's strict CSP now permanently blocks `postMessage` communication to `chrome-extension://` origins. Removed broken mute button logic.
 
 ### Security
 - **XSS Prevention in Custom Links:** Patched a vulnerability where `javascript:alert(1)` URIs could bypass the sanitizer and be saved to storage.
-
-### Added
-- **YouTube Background Audio Toggle:** A floating glassmorphic mute/unmute button (bottom-center) appears only when a YouTube video wallpaper is active.
 
 **Previous Release Highlights (v1.1.3 — Core Stability):**
 - **Critical SVG Bug:** Fixed UI parser issue where SVG icons rendered as raw text.

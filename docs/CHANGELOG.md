@@ -8,9 +8,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## v1.1.4 — *Unreleased*
+## v1.1.4 — 2026-08-15
 
-*Focus: Interaction reliability, URL validation robustness, and security.*
+*Focus: Interaction reliability, URL validation robustness, ambient media, and security.*
+
+### Added
+- **Local Media Wallpapers** — Users can now upload local video loops (`.mp4`, `.webm`) or images up to ~50MB directly from their device to use as ambient backgrounds. Files are stored efficiently and privately in the browser's native IndexedDB via `modules/video-store.js`.
+- **Wallpaper Settings Overhaul** — The settings panel was redesigned to feature a modern, dashed-border upload dropzone for local media, and a streamlined input layout for image URLs.
 
 ### Fixed
 - **Quick Links Double-Click Bug** — Resolved a race condition where transferring window focus from the browser Omnibox to the webpage triggered an unconditional DOM teardown of quick link tiles mid-click. The browser natively swallowed the event because the `mousedown` target was detached before `mouseup`. Fixed by implementing a deterministic `renderSignature` diffing check in `modules/quicklinks.js` to preserve existing DOM nodes if the tile data hasn't changed.
@@ -19,12 +23,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - **Localhost and IP Domain Support** — Removed the `.` (dot) requirement from the Quick Links URL validator. Users can now save `localhost:8080`, IPs, and single-word subdomains without them being incorrectly flagged as invalid.
 - **Search Bar Navigation Unaffected** — URL validation logic was bifurcated. The search bar retains its original dot-requiring heuristic (`isValidSearchUrl`), ensuring that typing `localhost` in the search bar still triggers a web search, not navigation.
 - **Wallpaper URL Robustness** — Rewrote `normalizeWallpaperUrl` to use the same `sanitizeUrl()` + `isValidUrl()` pipeline used by Quick Links, eliminating the strict regex that rejected valid protocol-less image URLs.
+- **YouTube Wallpaper Detection** — Reverted the YouTube iframe detection logic to the stable v1.1.2 approach (load event fallback + 10s timeout) since YouTube's strict CSP now permanently blocks `postMessage` communication to `chrome-extension://` origins. The broken mute button logic was completely removed since audio control is no longer possible.
 
 ### Security
 - **XSS Prevention in Custom Links** — Patched a vulnerability where `javascript:alert(1)` URIs could bypass the sanitizer and be saved to storage. Added a strict post-sanitization `isValidUrl()` gate to both Quick Links save paths.
-
-### Added
-- **YouTube Background Audio Toggle** — Added a floating glassmorphic mute/unmute button (bottom-center) that appears only when a YouTube video is active as the background wallpaper. Uses the YouTube IFrame API via `postMessage`. State resets per new tab open (Chrome autoplay policy limitation, by design).
 
 ---
 
