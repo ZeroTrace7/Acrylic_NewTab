@@ -522,6 +522,7 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
 
   clearThemeRevealHold();
   setWallpaperFadeOutState(false);
+  document.getElementById('cross-ghost')?.remove();
 
   if (!source) {
     const fadeDuration = getWallpaperFadeDuration();
@@ -541,12 +542,22 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
       return;
     }
 
-    // ── Cinematic Clear: crossfade wallpaper out, theme in ──
-    // 1. Wallpaper + overlay start fading to opacity 0 (0.4s CSS transition)
-    setWallpaperFadeOutState(true);
-    // 2. Theme-layer starts fading to opacity 1 simultaneously
+    // ── Cinematic Clear: crossfade wallpaper out, palette in ──
+    // Instantly snap the palette to visible behind the wallpaper,
+    // then fade the wallpaper layers out on top.
+    const themeLayer = document.getElementById('theme-layer');
+
+    // 1. Instantly show palette behind wallpaper (skip CSS transition)
+    if (themeLayer) themeLayer.style.transition = 'none';
     if (body) body.classList.remove('has-wallpaper');
     applyTheme(currentTheme);
+    if (themeLayer) {
+      void themeLayer.offsetHeight; // force reflow to apply instant opacity change
+      themeLayer.style.transition = '';
+    }
+
+    // 2. Fade wallpaper + overlay out (palette is fully opaque underneath)
+    setWallpaperFadeOutState(true);
 
     // 3. After fade completes, clean up DOM and revoke blob
     setTimeout(() => {
@@ -623,16 +634,37 @@ function applyWallpaperSourceToDom(source, blur = 0, darken = 0.3, { cinematic =
     const isReducedMotion = fadeDuration === 0;
 
     if (!hasExistingWallpaper) {
-      // ── PATH A: Palette → First Wallpaper ──────────────────
+      // ── PATH A: Palette → First Wallpaper (Ghost Crossfade) ─
       if (isReducedMotion) {
         applySource();
       } else {
-        setWallpaperFadeOutState(true);
+        // Snapshot the current palette as a ghost overlay above all layers
+        const themeLayer = document.getElementById('theme-layer');
+        const computed = themeLayer ? window.getComputedStyle(themeLayer) : null;
+
+        document.getElementById('cross-ghost')?.remove();
+
+        const ghost = document.createElement('div');
+        ghost.id = 'cross-ghost';
+        ghost.style.cssText = `position:fixed;inset:0;z-index:4;pointer-events:none;opacity:1;transition:opacity ${WALLPAPER_CROSSFADE_MS}ms ease-in-out;`;
+        if (computed) {
+          ghost.style.backgroundImage = computed.backgroundImage;
+          ghost.style.backgroundColor = computed.backgroundColor;
+        }
+        document.body.appendChild(ghost);
+
+        // Apply wallpaper immediately (hidden behind ghost)
         applySource();
+
+        // Fade ghost away to reveal wallpaper underneath
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            if (transitionToken !== backgroundTransitionToken) return;
-            setWallpaperFadeOutState(false);
+            if (transitionToken !== backgroundTransitionToken) {
+              ghost.remove();
+              return;
+            }
+            ghost.style.opacity = '0';
+            setTimeout(() => ghost.remove(), WALLPAPER_CROSSFADE_MS);
           });
         });
       }
