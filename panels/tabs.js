@@ -13,7 +13,7 @@ let liveSyncCleanup = null;
 const GLOBE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>`;
 const CLOSE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-async function loadOpenTabs() {
+export async function loadOpenTabs() {
   try {
     const tabs = await chrome.tabs.query({ currentWindow: true });
     return [...tabs].sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
