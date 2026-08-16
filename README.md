@@ -28,7 +28,7 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## Table of Contents
 
-- [What's New in v1.2.4](#-whats-new-in-v124)
+- [What's New in v1.2.4 — 2026-08-16](#-whats-new-in-v124---2026-08-16)
 - [Why Acrylic?](#-why-acrylic)
 - [Architecture vs. Competitors](#-architecture-vs-competitors)
 - [Features](#-features)
