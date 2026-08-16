@@ -28,7 +28,7 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ## Table of Contents
 
-- [What's New in v1.1.4](#-whats-new-in-v114)
+- [What's New in v1.2.4](#-whats-new-in-v124)
 - [Why Acrylic?](#-why-acrylic)
 - [Architecture vs. Competitors](#-architecture-vs-competitors)
 - [Features](#-features)
@@ -38,7 +38,16 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
 
 ---
 
-## 🎉 What's New in v1.1.4 — 2026-08-15
+## 🎉 What's New in v1.2.4 — 2026-08-16
+
+*Focus: Seamless background transitions and visual polish.*
+
+### Fixed
+- **Cross-Mode Background Transitions:** Resolved a visual glitch where switching between solid palettes and image wallpapers caused a harsh black flash. This was completely rewritten to use a cinematic ghost-overlay crossfade, ensuring perfect smoothness with zero black bleed-through.
+
+---
+
+## What's New in v1.1.4 — 2026-08-15
 
 *Focus: Interaction reliability, URL validation robustness, ambient media, and security.*
 

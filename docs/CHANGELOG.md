@@ -8,6 +8,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v1.2.4 — 2026-08-16
+
+*Focus: Seamless background transitions and visual polish.*
+
+### Fixed
+- **Cross-Mode Background Transitions:** Resolved a visual glitch where switching between solid palettes and image wallpapers caused a harsh black flash. The system previously faded both layers independently, causing mid-transition transparency. This was completely rewritten to use a cinematic ghost-overlay crossfade (for Palette → Wallpaper) and a snap-behind technique (for Wallpaper → Palette), matching the premium smoothness of same-mode transitions with zero black bleed-through.
+
+---
+
 ## v1.1.4 — 2026-08-15
 
 *Focus: Interaction reliability, URL validation robustness, ambient media, and security.*
