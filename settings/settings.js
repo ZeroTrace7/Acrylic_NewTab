@@ -17,6 +17,8 @@ let openModalRaf = 0;
 let openModalRaf2 = 0;
 let closeModalTimer = 0;
 let widgetsExpanded = false;
+let confirmDialogEl = null;
+let confirmDialogEscHandler = null;
 
 const SETTINGS_OPEN_CLASS = 'is-settings-open';
 const THEME_COLORS = { midnight:'#0f0f23', 'deep-blue':'#021b37', aurora:'#003840', 'rose-noir':'#2d0320', espresso:'#1c0f0a', forest:'#0d1f0f', carbon:'#0a0a0a', synthwave:'#1a0533' };
@@ -28,6 +30,107 @@ const FONT_OPTIONS = [
 ];
 
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+/**
+ * Promise-based custom confirm dialog that uses the project's glassmorphic
+ * modal styling instead of the blocking native window.confirm(). Replaces the
+ * only remaining native confirm() call site (settings.js → handleRestore).
+ *
+ * @param {string} message - Body text shown to the user.
+ * @param {{ title?: string, confirmLabel?: string, cancelLabel?: string, danger?: boolean }} [opts]
+ * @returns {Promise<boolean>} Resolves true if user confirms, false if they cancel or press Escape.
+ */
+function glassConfirm(message, opts = {}) {
+  const title = opts.title || 'Are you sure?';
+  const confirmLabel = opts.confirmLabel || 'Confirm';
+  const cancelLabel = opts.cancelLabel || 'Cancel';
+  const danger = opts.danger === true;
+
+  return new Promise((resolve) => {
+    if (confirmDialogEl) {
+      // Only one confirm dialog at a time — auto-cancel the previous one.
+      cleanupGlassConfirm(false);
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay confirm-dialog-overlay';
+    overlay.setAttribute('role', 'presentation');
+
+    const box = document.createElement('div');
+    box.className = 'modal-box confirm-dialog-box';
+    box.setAttribute('role', 'alertdialog');
+    box.setAttribute('aria-modal', 'true');
+    box.setAttribute('aria-labelledby', 'confirm-dialog-title');
+    box.setAttribute('aria-describedby', 'confirm-dialog-message');
+
+    const heading = document.createElement('h2');
+    heading.id = 'confirm-dialog-title';
+    heading.textContent = title;
+    heading.setAttribute('style', 'font-size:1.05rem;font-weight:700;color:var(--text-primary);margin:0;');
+
+    const body = document.createElement('p');
+    body.id = 'confirm-dialog-message';
+    body.textContent = message;
+    body.setAttribute('style', 'font-size:0.92rem;color:var(--text-secondary);margin:0;line-height:1.5;white-space:pre-line;');
+
+    const actions = document.createElement('div');
+    actions.setAttribute('style', 'display:flex;justify-content:flex-end;gap:8px;margin-top:8px;');
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.textContent = cancelLabel;
+    cancelBtn.setAttribute('style', 'padding:8px 16px;border-radius:10px;background:var(--glass-subtle);border:1px solid var(--glass-border-soft);color:var(--text-primary);cursor:pointer;font-weight:600;font-size:0.88rem;');
+    cancelBtn.addEventListener('click', () => cleanupGlassConfirm(false));
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.textContent = confirmLabel;
+    const confirmStyle = danger
+      ? 'padding:8px 16px;border-radius:10px;background:rgba(248,113,113,0.18);border:1px solid rgba(248,113,113,0.4);color:#f87171;cursor:pointer;font-weight:700;font-size:0.88rem;'
+      : 'padding:8px 16px;border-radius:10px;background:rgba(96,165,250,0.18);border:1px solid rgba(96,165,250,0.4);color:#93c5fd;cursor:pointer;font-weight:700;font-size:0.88rem;';
+    confirmBtn.setAttribute('style', confirmStyle);
+    confirmBtn.addEventListener('click', () => cleanupGlassConfirm(true));
+
+    actions.append(cancelBtn, confirmBtn);
+
+    const content = document.createElement('div');
+    content.setAttribute('style', 'display:flex;flex-direction:column;gap:14px;min-width:280px;max-width:420px;');
+    content.append(heading, body, actions);
+
+    box.appendChild(content);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    const escListener = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        cleanupGlassConfirm(false);
+      }
+    };
+    document.addEventListener('keydown', escListener);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) cleanupGlassConfirm(false);
+    });
+
+    confirmDialogEl = overlay;
+    confirmDialogEscHandler = escListener;
+
+    // Focus the confirm button by default for keyboard users.
+    requestAnimationFrame(() => confirmBtn.focus());
+  });
+
+  function cleanupGlassConfirm(result) {
+    if (confirmDialogEscHandler) {
+      document.removeEventListener('keydown', confirmDialogEscHandler);
+      confirmDialogEscHandler = null;
+    }
+    if (confirmDialogEl && confirmDialogEl.parentNode) {
+      confirmDialogEl.parentNode.removeChild(confirmDialogEl);
+    }
+    confirmDialogEl = null;
+    resolve(result);
+  }
+}
 
 function sectionLabel(text) {
   const el = document.createElement('div');
@@ -250,10 +353,16 @@ async function importData() {
         if (!data?._meta || data._meta.app !== 'Acrylic') {
           throw new Error('This file is not a valid Acrylic backup');
         }
-        const confirmed = confirm(
-          'This will replace ALL your current Acrylic data (preferences, tasks, notes, quick links, and more).\n\nThis action cannot be undone. Continue?'
-        );
-        if (!confirmed) { resolve(false); return; }
+        const confirmed = await glassConfirm(
+                  'This will replace ALL your current Acrylic data (preferences, tasks, notes, quick links, and more).\n\nThis action cannot be undone. Continue?',
+                  {
+                    title: 'Restore from backup',
+                    confirmLabel: 'Restore',
+                    cancelLabel: 'Cancel',
+                    danger: true,
+                  }
+                );
+                if (!confirmed) { resolve(false); return; }
         if (data.preferences && typeof data.preferences === 'object') {
           await chrome.storage.sync.clear();
           await chrome.storage.sync.set(data.preferences);
