@@ -12,6 +12,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 *Focus: Seamless background transitions and visual polish.*
 
+### Changed
+- **Theme Crossfade Architecture** — Refactored `crossfadeTheme()` in `modules/background.js` to use a cinematic ghost-overlay snapshot of the previous computed background, rather than fading the live `#theme-layer` in place. This decouples the swap timing from the user's GPU compositing rate and eliminates mid-transition transparency artefacts.
+- **Wallpaper Swap Pipeline** — Replaced the simultaneous fade-out / fade-in of the two image layers with a snap-behind technique: the outgoing layer is faded, the new layer is mounted already-rendered underneath, then the ghost is dissolved. Palette → Wallpaper transitions gained a separate ghost-overlay path because the destination layer is a fullscreen image rather than a CSS gradient.
+
 ### Fixed
 - **Cross-Mode Background Transitions:** Resolved a visual glitch where switching between solid palettes and image wallpapers caused a harsh black flash. The system previously faded both layers independently, causing mid-transition transparency. This was completely rewritten to use a cinematic ghost-overlay crossfade (for Palette → Wallpaper) and a snap-behind technique (for Wallpaper → Palette), matching the premium smoothness of same-mode transitions with zero black bleed-through.
 
