@@ -1,0 +1,32 @@
+{
+  "name": "acrylic-newtab",
+  "version": "1.2.4",
+  "private": true,
+  "description": "Acrylic — New Tab. A lightning-fast, premium glassmorphism New Tab dashboard. Zero build, zero bundler, pure ES modules.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:utils": "node --test tests/utils.test.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "firefox-extension",
+    "new-tab",
+    "manifest-v3",
+    "glassmorphism",
+    "productivity"
+  ],
+  "author": "Shreyash Gupta",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZeroTrace7/Acrylic_NewTab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZeroTrace7/Acrylic_NewTab/issues"
+  },
+  "homepage": "https://github.com/ZeroTrace7/Acrylic_NewTab#readme"
+}
