@@ -39,16 +39,14 @@ coverage/
 tmp/
 temp/
 
-# Local agent documentation
+# Local agent documentation (root-level; the canonical copies live in docs/)
 readfirst.md
-
-
 Improvements.md
 
 # Development diffs
 *.diff
 
-# Internal documentation (not for CWS package)
+# Internal documentation (not for CWS package; canonical copies in docs/)
 Launching.md
 AGENTS.md
 glassy.md
