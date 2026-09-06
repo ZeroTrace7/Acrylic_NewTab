@@ -8,6 +8,32 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## v1.2.5 — 2026-09-06
+
+*Focus: Production reliability, internationalization readiness, and zero-debt codebase hygiene.*
+
+### Added
+- **Test Infrastructure** — Added minimal `package.json` with `node --test` runner so `npm test` discovers and runs `tests/utils.test.js`. Four tests covering `sanitizeUrl`, `isValidUrl`, `getDomain`, and `getFriendlyName` now guard against regressions.
+- **Internationalization Scaffold** — `_locales/en/messages.json` populated with `extName` and `extDescription` keys. Both `manifest.json` and `manifest_firefox.json` updated to use `__MSG_extName__` and `__MSG_extDescription__` placeholders, enabling Chrome and Firefox to load translations from `messages.json` at runtime.
+
+### Changed
+- **`glassConfirm()` Modal Dialog** — Replaced the native browser `confirm()` popup in `settings/settings.js` with a custom promise-based `glassConfirm()` glassmorphism modal. This removes the browser's native dialog dependency, supports custom labels (Confirm/Cancel), and integrates with the extension's visual language.
+- **CHANGELOG Completeness** — Added the missing `### Changed` sub-heading to the v1.2.4 entry so all v1.2.4 theme crossfade improvements are properly categorized.
+
+### Fixed
+- **`glassConfirm()` Promise Resolution** — Resolved a critical JavaScript scope bug where `cleanupGlassConfirm()` called `resolve()` from outside the `new Promise()` executor arrow function, causing `ReferenceError: resolve is not defined` whenever a user clicked Confirm, Cancel, or pressed Escape. Fixed by declaring `let activeResolve = null` at the outer `glassConfirm()` scope, assigning `activeResolve = resolve` inside the executor, and invoking `activeResolve(result)` inside the cleanup function.
+- **`getFriendlyName()` IP Address Parsing** — `getFriendlyName()` in `modules/utils.js` was incorrectly returning the second octet for private IP addresses. For `http://192.168.1.1` it returned `"168"` instead of `"192"`. Added an explicit IP address check before the general domain-parsing logic so private IPs return their first octet, matching user expectations.
+- **Context Menu Note ID Prefix** — `background.js` was creating context menu notes with `id = 'note_' + Date.now()`, then `storage.set()` was redundantly prepending `note_` to the key again, resulting in double-prefixed storage keys (`note_note_<timestamp>`). Fixed by removing the `note_` prefix from the ID assignment, letting the storage layer handle it consistently.
+- **Quick Links Monochrome Icons** — `icon-paths.json` was listed in `.gitignore`, preventing the file from being committed to the repository. The file is required at runtime for monochrome SVG icon rendering in Quick Links. Removed from `.gitignore` and committed alongside its identical twin at `assets/icon-paths.json`.
+
+### Refactored
+- **Legacy `src/` Directory Removed** — Deleted the entire `src/` directory (36 files, 16,737 lines, 587 KB). This was the pre-v1.1.4 codebase snapshot that was never referenced by any version of `manifest.json` or `newtab.html`. Git history confirms it shipped inert to CWS once in v1.1.3 while the active extension ran from the root tree. Removing it eliminates 587 KB of stale, vulnerable code from the repository.
+
+### Documentation
+- **`.gitignore` Cleanup** — Removed misleading comment directives and stale documentation ignore patterns from `.gitignore`, replacing them with clear, accurate comments for each entry.
+
+---
+
 ## v1.2.4 — 2026-08-16
 
 *Focus: Seamless background transitions and visual polish.*
