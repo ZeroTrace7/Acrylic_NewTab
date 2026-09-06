@@ -80,6 +80,11 @@ export function getFriendlyName(url) {
   const safeUrl = sanitizeUrl(url);
   const domain = getDomain(safeUrl).replace(/^www\./i, '');
   if (!domain) return '';
+  // If the domain looks like an IP address (e.g. 192.168.1.1), return the
+  // first octet so "192" is shown instead of "168".
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(domain)) {
+    return domain.split('.')[0].toUpperCase();
+  }
   const parts = domain.split('.');
   if (parts.length === 0) return '';
   let word = parts.length > 2 ? parts[1] : parts[0];
@@ -214,3 +219,4 @@ export function safeInject(targetElement, htmlString) {
   template.innerHTML = htmlString;
   targetElement.appendChild(template.content.cloneNode(true));
 }
+
