@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Acrylic - New Tab",
+  "name": "__MSG_extName__",
   "version": "1.2.4",
   "author": "Shreyash Gupta",
-  "description": "A lightning-fast, premium glassmorphism New Tab. Transform your dashboard with Pomodoro, tasks, live wallpapers, and zero tracking.",
+  "description": "__MSG_extDescription__",
   "default_locale": "en",
 
   "chrome_url_overrides": {
