@@ -46,7 +46,12 @@ function glassConfirm(message, opts = {}) {
   const cancelLabel = opts.cancelLabel || 'Cancel';
   const danger = opts.danger === true;
 
+  // Lifted out of the executor so cleanupGlassConfirm (declared below the
+  // Promise) can reference it without a "resolve is not defined" error.
+  let activeResolve = null;
+
   return new Promise((resolve) => {
+    activeResolve = resolve;
     if (confirmDialogEl) {
       // Only one confirm dialog at a time — auto-cancel the previous one.
       cleanupGlassConfirm(false);
@@ -128,7 +133,7 @@ function glassConfirm(message, opts = {}) {
       confirmDialogEl.parentNode.removeChild(confirmDialogEl);
     }
     confirmDialogEl = null;
-    resolve(result);
+    if (activeResolve) { activeResolve(result); activeResolve = null; }
   }
 }
 
