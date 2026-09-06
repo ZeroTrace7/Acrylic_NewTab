@@ -55,7 +55,6 @@ archive/
 
 # Build/fetch tooling (dev-only scripts)
 fetch-icons.js
-icon-paths.json
 scripts/
 
 # UI snapshots
