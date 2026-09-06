@@ -273,7 +273,7 @@ chrome.runtime.setUninstallURL('https://tally.so/r/Gx4WRz');
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   try {
     if (info.menuItemId === 'addToNotes' && info.selectionText) {
-      const id = 'note_' + Date.now();
+      const id = Date.now();
       const note = {
         id,
         title: (tab.title || info.selectionText).slice(0, 50),
