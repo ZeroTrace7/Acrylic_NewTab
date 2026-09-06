@@ -1,1 +1,10 @@
-{}
+{
+  "extName": {
+    "message": "Acrylic — New Tab",
+    "description": "The display name for the extension."
+  },
+  "extDescription": {
+    "message": "A lightning-fast, premium glassmorphism New Tab. Transform your dashboard with Pomodoro, tasks, live wallpapers, and zero tracking.",
+    "description": "The description shown in the browser's extension manager and Chrome Web Store."
+  }
+}
