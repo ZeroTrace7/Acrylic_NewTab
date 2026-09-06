@@ -3,7 +3,7 @@
   "name": "Acrylic - New Tab",
   "version": "1.2.4",
   "author": "Shreyash Gupta",
-  "description": "A Lightning-Fast, Premium Glassmorphism New Tab. Transform Your Dashboard with Pomodoro, Tasks, Live Wallpapers, and Zero Tracking.",
+  "description": "A lightning-fast, premium glassmorphism New Tab. Transform your dashboard with Pomodoro, tasks, live wallpapers, and zero tracking.",
   "default_locale": "en",
 
   "chrome_url_overrides": {
