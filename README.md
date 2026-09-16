@@ -35,6 +35,7 @@ A clean, frosted-glass new tab page built with vanilla web technologies. Sub-100
 - [Tech Stack](#️-tech-stack)
 - [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
 - [Manual Installation & Verification](#️-manual-installation--verification)
+- [Community & Feedback](#-community--feedback)
 
 ---
 
@@ -262,3 +263,13 @@ For security researchers, developers, or anyone who prefers to verify the code t
 
 > [!IMPORTANT]
 > **No build step is required.** There is no `npm install`, Webpack, or Vite. The extension runs purely on native ES modules and vanilla CSS directly from the source files.
+
+---
+
+## 💬 Community & Feedback
+
+Acrylic is maintained by [Shreyash Gupta](https://github.com/ZeroTrace7) as an open-source project. If Acrylic makes your daily browsing calmer, faster, or more focused:
+
+- ⭐ **Star this repository** to help others discover the project.
+- ✍️ **Leave a review** on the [Chrome Web Store](https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi) or [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/).
+- 💡 **Share ideas or report issues:** Open a ticket on [GitHub Issues](https://github.com/ZeroTrace7/Acrylic_NewTab/issues) to suggest new widgets, report glitches, or request features.
