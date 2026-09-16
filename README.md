@@ -89,22 +89,27 @@ A clean, frosted-glass new tab page built with vanilla web technologies. Sub-100
 ## ✨ Why Acrylic?
 
 > [!NOTE]
-> The New Tab page is the most frequently rendered surface in any browser — opened dozens to hundreds of times daily. Chrome alone commands **~69% of global desktop market share** across **~178,000 active extensions**. This makes the New Tab the highest-visibility, most performance-sensitive real estate in the entire browser ecosystem.
+> Your new tab page is something you see dozens—maybe hundreds—of times a day. It should feel calm, responsive, and respectful of your attention, not like a sluggish corporate dashboard asking for your email or credit card.
 
-The current market forces users into a false choice:
+Most new tab extensions push users into one of two extremes:
+1. **Heavy dashboards** loaded with background trackers, cloud sync dependencies, and \$40/year paywalls.
+2. **Barebones minimalist tabs** that look pretty, but lack essential day-to-day tools like a task tracker, Pomodoro timer, or quick notes.
 
-| | Legacy Dashboards *(Momentum)* | Minimalist Tabs *(Tabliss, Bonjourr)* |
-|---|---|---|
-| **Performance** | ❌ Cloud sync, telemetry, heavy frameworks | ✅ Local-first, lightweight |
-| **Productivity** | ✅ Tasks, integrations, custom themes | ❌ Clock and wallpaper only |
-| **Privacy** | ❌ Account required, data collection | ✅ No tracking |
-| **Cost** | ❌ ~$40/yr paywall for basic customization | ✅ Free |
+| | Heavy Dashboards *(e.g. Momentum)* | Minimalist Tabs *(e.g. Tabliss, Bonjourr)* | Acrylic |
+|---|---|---|---|
+| **Startup Speed** | ❌ Laggy (framework hydration delays) | ✅ Fast & local | ⚡ Sub-100ms instant load |
+| **Productivity** | ✅ Tasks, widgets (often paywalled) | ❌ Clock & wallpaper only | 🛠️ Tasks, Pomodoro, Notes, Tabs, Extensions |
+| **Privacy** | ❌ Accounts, trackers, cloud telemetry | ✅ No tracking | 🔒 100% local, zero telemetry |
+| **Cost** | ❌ ~$40/year subscriptions | ✅ Free | 💚 Free & open source forever |
 
-**Acrylic breaks the tradeoff.** Premium glassmorphism aesthetics. Full productivity suite — tasks, Pomodoro, notes, tabs, extension manager. Zero accounts. Zero paywalls. Zero telemetry. Sub-100ms load.
+### Built Natively for Manifest V3
 
-### The Manifest V3 Advantage
+When Chrome deprecated Manifest V2, many extensions adapted by piling on bundlers, service worker messaging, and complex hydration logic. That means every time you open a tab, you end up waiting on background scripts just to paint the interface.
 
-Chrome [fully deprecated Manifest V2](https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline) in July 2025, introducing cold-start latency for every extension that relied on background pages to hydrate the DOM. Acrylic is built **natively for MV3** — pure ES modules loaded directly from `newtab.html`, no bundler, no transpiler, no service worker dependency for rendering. The critical path never waits on `chrome.runtime`; it just renders.
+Acrylic was engineered differently from day one:
+- **Zero build steps or runtimes:** Written directly in native ES modules with vanilla CSS.
+- **Instant paint:** The browser loads `newtab.html` directly without waiting on `chrome.runtime` roundtrips to hydrate the DOM.
+- **Light on memory:** No virtual DOM, no framework abstractions—just clean DOM manipulations that stay responsive all day.
 
 ---
 
