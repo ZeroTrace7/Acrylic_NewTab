@@ -4,15 +4,14 @@
 [![Available on Mozilla Firefox](https://img.shields.io/badge/Firefox_Add--ons-Available-FF7139?style=flat-square&logo=firefox&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Pure ES Modules](https://img.shields.io/badge/Pure%20ES%20Modules-No%20Bundler-brightgreen?style=flat-square)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
-[![Zero Telemetry](https://img.shields.io/badge/Telemetry-Zero-critical?style=flat-square)](./AGENTS.md)
+[![Zero Telemetry](https://img.shields.io/badge/Telemetry-Zero-critical?style=flat-square)](./PRIVACY_POLICY.md)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](./LICENSE)
 
 <div align="center">
   <img src="assets/marquee_promo.png" alt="Acrylic New Tab Dashboard" width="100%">
 </div>
 
-
-Premium glassmorphism new tab Chrome extension. Built from the ground up to be incredibly fast, feature-rich, and completely free.
+A clean, frosted-glass new tab page built with vanilla web technologies. Sub-100ms load times, zero analytics, zero paywalls, and a focused productivity toolkit right when you open a new tab.
 
 <div align="center">
   <br>
@@ -20,7 +19,7 @@ Premium glassmorphism new tab Chrome extension. Built from the ground up to be i
     <img src="https://img.shields.io/badge/Available_in_the-Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Available in the Chrome Web Store">
   </a>
   <br>
-  <i>Ready to upgrade your browser? Install Acrylic for free on Chrome, Firefox, Edge, and Brave.</i>
+  <i>Free and open-source for Google Chrome, Mozilla Firefox, Microsoft Edge, and Brave.</i>
   <br><br>
 </div>
 
