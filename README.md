@@ -132,22 +132,21 @@ Acrylic was engineered differently from day one:
 
 ## 🚀 Features
 
-- **Dynamic Background Brightness Adaptation:** Automatically samples wallpaper luminosity (Canvas BT.709) and flips text/UI colors to dark mode on bright backgrounds to maintain legibility.
-- **Total Blackout Zen Mode:** Single-click distraction-free experience featuring a pure #000 background and a massive retro-mechanical flip clock.
-- **Glassmorphism Architecture:** Custom CSS variables for mathematically perfect blur (16px), fill (0.04), and border offsets, with dynamic text-depth shadowing.
-- **Accessibility Engine:** Respects OS-level `prefers-reduced-transparency` (renders solid opaque panels) and `prefers-reduced-motion` settings.
-- **Productivity Suite (Quick Tools Panel):**
-  - ✅ **Smart Tasks:** Scribble strike animations, progress tracking, and reward states.
-  - ⏱️ **Pomodoro Timer:** Ambient sounds and dynamic focus states.
-  - 📝 **Notes:** Persistent draft saving via `chrome.storage.local` with a built-in **Web Clipper** (right-click any text on the web to save it instantly).
-  - 🗂️ **Tabs Manager:** Live DOM-synced open tab management with saved tab groups. (Requires optional permission, requested gracefully at runtime).
-  - 🧩 **Extensions Manager:** Full `chrome.management` interface.
-  - 📋 **Clipboard Manager:** Caches the last 20 copied items.
-- **Quick Links System:** Native drag-to-reorder layout, 50-app SVG library with `evenodd` clipping, and 128px fallback icon rendering (desaturated & inverted).
-- **Personalization Engine:** 8 premium baseline themes, custom YouTube video ambient background support, and user greeting toggles.
-- **Search & AI:** Direct web search without tracking permissions, plus 1-click AI destinations (ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek).
-- **Data Sovereignty:** 100% localized standard. JSON Export/Import for backup workflows.
-- **Performance First:** Sub-100ms load times, zero React/framework overhead, and custom `cubic-bezier(0.16, 1, 0.3, 1)` motion curves throughout.
+- **Intelligent Brightness Adaptation:** Automatically samples wallpaper brightness via canvas pixel analysis, flipping text and UI accents between light and dark so widgets always stay razor-sharp and legible.
+- **Blackout Zen Mode:** Press `Escape` to enter a pitch-black canvas with a smooth retro flip clock—ideal for deep focus sessions when you just need the noise to disappear.
+- **Tailored Frosted Glass Aesthetic:** Built with pure CSS backdrop-filters, subtle border highlights, and soft layered shadows that blend naturally with any wallpaper.
+- **Accessibility by Default:** Automatically detects OS-level `prefers-reduced-transparency` (switching to solid opaque panels) and `prefers-reduced-motion` for reduced animation intensity.
+- **Integrated Productivity Toolkit:**
+  - ✅ **Smart Tasks:** Quick to-do list with satisfying hand-drawn scribble strike animations, progress bars, and reward confetti.
+  - ⏱️ **Pomodoro Timer:** Built-in 25/5/30 minute intervals with ambient chime notifications handled reliably via offscreen audio.
+  - 📝 **Notes & Web Clipper:** Keep scratch notes right on your new tab, or right-click selected text anywhere on the web to clip it directly into your notes.
+  - 🗂️ **Tabs Manager:** View and search open tabs across windows, or save tab groups for later (requests tab permission only when you open this panel).
+  - 🧩 **Extensions Manager:** Toggle, inspect, or manage browser extensions in one click without leaving the page.
+  - 📋 **Clipboard History:** Instantly retrieve your last 20 copied text snippets.
+- **Quick Links Dock & Grid:** Organize your favorite bookmarks in a sleek left dock or bottom row with drag-and-drop reordering and a built-in SVG icon library.
+- **Ambient Media & Themes:** Choose from 8 handcrafted dark themes, link custom images, stream looping YouTube backgrounds, or drop in your own local video loops (`.mp4`, `.webm`) stored privately in IndexedDB.
+- **Search & AI Shortcuts:** Search the web directly with your default search engine, or jump straight into ChatGPT, Gemini, Claude, Perplexity, Grok, or DeepSeek with one keystroke.
+- **Your Data Stays Yours:** Export your complete setup (tasks, notes, bookmarks, settings) to a portable JSON backup anytime, or restore it onto another device with one click.
 
 ### Tasks Panel (Top-Right)
 
