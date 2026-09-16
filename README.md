@@ -202,44 +202,44 @@ When a user uninstalls Acrylic, `chrome.runtime.setUninstallURL()` redirects the
 ## ❓ Frequently Asked Questions (FAQ)
 
 ### What is Acrylic?
-Acrylic is a zero-bloat, privacy-first vanilla JavaScript new tab page for Google Chrome, Mozilla Firefox, Microsoft Edge, and Brave. It combines high-performance glassmorphism aesthetics with an integrated productivity suite—including smart tasks, a Pomodoro timer, persistent notes with a web clipper, tab grouping, an extension manager, and instant AI search shortcuts.
+Acrylic is a zero-bloat, privacy-first vanilla JavaScript new tab page for Google Chrome, Mozilla Firefox, Microsoft Edge, and Brave. It turns your blank new tab into a calm, frosted-glass dashboard equipped with daily productivity tools—like to-do lists, a Pomodoro timer, scratch notes with a web clipper, and instant AI search shortcuts—all without trackers, accounts, or subscriptions.
 
 ### Does Acrylic track my browsing history, searches, or personal data?
-No. Acrylic collects zero telemetry, zero analytics, zero search queries, and zero browsing data. Acrylic has no remote servers, accounts, tracking pixels, or third-party SDKs. All preferences and personal data remain strictly on your local device via `chrome.storage` and native browser IndexedDB.
+Never. Acrylic has zero telemetry, zero analytics scripts, and zero remote databases. It doesn't send your searches anywhere, it doesn't log your keystrokes, and it doesn't phone home. All of your notes, tasks, and settings stay strictly on your local machine in browser storage.
 
-### How does Acrylic achieve sub-100ms load times?
-Acrylic is built natively for Manifest V3 using pure ES modules loaded directly from `<script type="module">`. Unlike competing dashboard extensions that rely on heavy React/Webpack bundles requiring DOM hydration through service workers, Acrylic requires zero build steps, zero bundling, and zero framework overhead. It executes instantly on tab creation.
+### How does Acrylic load so fast (under 100ms)?
+Most modern new tab extensions bundle heavy frameworks like React with Webpack, then spend hundreds of milliseconds hydrating state through background service workers. Acrylic is written entirely in native ES modules and clean CSS. The browser opens `newtab.html` and renders it immediately—no bundlers, no build steps, and no waiting on background roundtrips.
 
-### Is Acrylic free and open-source?
-Yes. Acrylic is 100% free and open source under the [GNU General Public License v3.0 (GPLv3)](./LICENSE). There are no paid tiers, subscriptions, paywalled features, or sponsored promotions.
+### Is Acrylic really free and open-source?
+Yes, 100%. Acrylic is released under the [GNU General Public License v3.0 (GPLv3)](./LICENSE). There are no paywalls, no 'Pro' subscriptions, no locked features, and no sponsored ads. What you see is what you get, and you can inspect or fork the source code anytime.
 
 ### What productivity tools and widgets are built in?
-Acrylic includes a comprehensive local-first productivity suite:
-- **Smart Tasks:** Interactive task management with hand-drawn scribble strike animations, progress metrics, and celebration states.
-- **Pomodoro Focus Timer:** Structured focus and break intervals (25-min focus, 5-min short break, 30-min long break) with audio chimes and ambient sounds.
-- **Notes & Web Clipper:** Local draft notepad with right-click context menu web clipping to save snippets from any website.
-- **Tabs Manager:** Live sync of open browser windows, active tabs, and saved tab groups.
-- **Extensions Manager:** Fast toggling and inspection of installed browser extensions without opening `chrome://extensions`.
+Acrylic includes a full set of focused tools built directly into the new tab page:
+- **Smart Tasks:** Quick to-do list with hand-drawn scribble strike animations, progress metrics, and celebration states.
+- **Pomodoro Focus Timer:** Structured focus and break intervals (25-min work, 5-min short break, 30-min long break) with ambient audio chimes.
+- **Notes & Web Clipper:** Scratch notepad with right-click context menu web clipping to save snippets from any website you visit.
+- **Tabs Manager:** Search active browser tabs across windows and save tab groups for later.
+- **Extensions Manager:** Fast toggling and inspection of installed extensions without digging into browser settings.
 - **Clipboard History:** Quick access to your last 20 copied text snippets.
-- **Quick Links:** Customizable squircle dock and grid layouts with a 50+ SVG preset icon library.
+- **Quick Links:** Clean squircle dock and grid layouts with drag-and-drop reordering and a 50+ SVG preset icon library.
 
 ### Can I customize the Pomodoro timer duration or add more widgets?
-Customizable timer durations (allowing users to set custom focus, short break, and long break intervals) and additional modular widgets are actively in development for upcoming updates based on user community feedback.
+Yes! Customizable timer durations (setting your own work and break intervals) and additional modular widgets are currently in active development. We're prioritizing these directly from recent community feedback and Chrome Web Store reviews.
 
 ### How does the search bar and AI assistant integration work?
-The search bar supports direct web searching using your browser's default engine without requiring intrusive permissions. With a single click or keyboard navigation, you can toggle destinations to launch queries directly into AI assistants, including **ChatGPT**, **Gemini**, **Claude**, **Perplexity**, **Grok**, and **DeepSeek**.
+By default, typing a query searches the web using your browser's default search engine without needing any invasive permissions. With a single click or keyboard shortcut, you can switch destinations to send your query directly into **ChatGPT**, **Gemini**, **Claude**, **Perplexity**, **Grok**, or **DeepSeek**.
 
-### Can I set custom wallpapers, local videos, or YouTube loops?
-Yes. Acrylic supports 8 built-in glassmorphic color themes, custom image URLs, embedded looping YouTube videos, and local video file uploads (`.mp4`, `.webm`) up to ~50MB. Uploaded local media is stored securely and privately in the browser's native IndexedDB rather than bloated base64 strings.
+### Can I use custom wallpapers, local videos, or YouTube loops?
+Definitely. Acrylic includes 8 handcrafted dark themes, supports custom image URLs, embeds looping YouTube videos, and lets you upload local video loops (`.mp4`, `.webm`) up to ~50MB. Uploaded local media is stored securely and privately in your browser's native IndexedDB.
 
-### Does Acrylic support Zen Mode or distraction-free viewing?
-Yes. Pressing `Escape` or toggling Zen Mode enables a pure blackout `#000` screen with a retro mechanical flip clock, removing all docks, buttons, and widgets for deep focus sessions.
+### Does Acrylic support Zen Mode for deep focus?
+Yes. Pressing `Escape` or toggling Zen Mode clears all panels, widgets, and buttons, leaving a pure blackout `#000` canvas with a smooth retro mechanical flip clock.
 
 ### How do I back up or transfer my data across computers?
-Acrylic provides full JSON Export and Import capabilities in the Preferences panel (`Ctrl+,` / `⌘,`). You can back up your entire setup—tasks, notes, quick links, and preferences—into an encrypted or plaintext local JSON file and restore it on any device.
+Open preferences anytime (`Ctrl+,` or `⌘,`) and head to the Data section. You can export your entire setup—tasks, notes, bookmarks, and preferences—into a clean JSON backup and restore it on any other computer in seconds.
 
 ### Which browsers are supported?
-Acrylic is available on the [Chrome Web Store](https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi) for Google Chrome, Brave, and Microsoft Edge, as well as on [Firefox Add-ons (AMO)](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/) for Mozilla Firefox.
+Acrylic is officially available on the [Chrome Web Store](https://chromewebstore.google.com/detail/acrylic-new-tab/cfoafjghblbnolmmkglboeddfpohjihi) for Google Chrome, Brave, and Microsoft Edge, as well as on [Firefox Add-ons (AMO)](https://addons.mozilla.org/en-US/firefox/addon/acrylic-new-tab/) for Mozilla Firefox.
 
 ---
 
