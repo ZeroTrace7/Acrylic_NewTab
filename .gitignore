@@ -69,6 +69,7 @@ docs/*audit*.md
 
 # Build/fetch tooling (dev-only scripts)
 fetch-icons.js
+fix-innerhtml.js
 scripts/
 
 # UI snapshots
