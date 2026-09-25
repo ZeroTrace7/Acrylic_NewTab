@@ -1,6 +1,6 @@
 # Privacy Policy — Acrylic: New Tab
 
-**Last Updated:** July 17, 2026
+**Last Updated:** September 26, 2026
 **Extension Name:** Acrylic - New Tab
 **Developer:** Shreyash Gupta
 **Manifest Version:** 3
@@ -31,14 +31,15 @@ Specifically, Acrylic does **not** collect, process, or transmit:
 
 ## 2. Data Storage
 
-All user-created data — including tasks, notes, clipboard history, Quick Links, Pomodoro session records, and personalization preferences — is stored **exclusively on the user's local device** using Chrome's built-in storage APIs:
+All user-created data — including tasks, notes, clipboard history, Quick Links, Pomodoro session records, uploaded wallpaper media, and personalization preferences — is stored **exclusively on the user's local device** using the browser's built-in storage APIs:
 
 | Storage API | Data Stored | Scope |
 |---|---|---|
 | `chrome.storage.sync` | Lightweight preferences (theme selection, clock format, greeting name, search engine choice) | Syncs across the user's Chrome browsers via their Google account. This is a native Chrome platform feature — no Acrylic server is involved. |
 | `chrome.storage.local` | Application data (tasks, notes, clipboard history, Quick Links, tab groups, Pomodoro statistics) | Remains exclusively on the user's local device. |
+| `IndexedDB` (`acrylic-media`) | User-uploaded custom wallpaper images and video files (stored as local Blobs in the `videos` object store) | Remains exclusively on the user's local device. |
 
-No external databases, IndexedDB wrappers, or custom caching layers are used. Data portability is provided through a user-initiated JSON Export/Import function accessible via the Preferences panel, which writes and reads files on the user's local filesystem only.
+No external remote databases or server-side caching layers are used. Data portability for preferences and application data is provided through a user-initiated JSON Export/Import function accessible via the Preferences panel, which writes and reads files on the user's local filesystem only.
 
 ---
 
@@ -75,6 +76,9 @@ Key disclosures:
 - Data collected via this form is governed by [Tally's Privacy Policy](https://tally.so/help/privacy-policy). Acrylic has no access to Tally's server infrastructure.
 - This redirect is a one-time event triggered by the Chrome browser upon uninstall; no background process sends any data.
 
+### 3.7 Typography (Google Fonts)
+Dashboard typography (`Gloria Hallelujah`, `Poppins`, `Silkscreen`, and `Geist`) is loaded via standard stylesheet requests to Google Fonts (`fonts.googleapis.com` and `fonts.gstatic.com`). No extension user data, tasks, notes, or identifiers are transmitted by Acrylic in these requests. Font delivery is governed by the [Google Privacy Policy](https://policies.google.com/privacy).
+
 ---
 
 ## 4. Third-Party Services
@@ -88,7 +92,7 @@ Acrylic does **not** integrate with, load, or embed any third-party analytics, a
 - No crash reporting services (Sentry, Bugsnag, or equivalent)
 - No customer data platforms (CDPs) or data management platforms (DMPs)
 - No social media tracking widgets or share button scripts
-- No external fonts loaded from CDNs (all fonts are bundled locally within the extension package)
+- No third-party JavaScript CDNs (static typography stylesheets are loaded from Google Fonts as disclosed in Section 3.7)
 
 ---
 
@@ -105,7 +109,7 @@ Acrylic requests only the minimum browser permissions strictly necessary for its
 | `notifications` | Displays desktop notifications when a Pomodoro timer session (focus, short break, or long break) completes. | **None.** Notifications are rendered locally by the operating system. |
 | `alarms` | Schedules Pomodoro timer intervals and daily statistic resets via `chrome.alarms.create()`. | **None.** Alarms execute locally within the browser's alarm scheduler. |
 | `contextMenus` | Creates a "Save to Acrylic Notes" option in the browser's right-click context menu, allowing users to save selected text to their local notes. | **None.** The selected text is saved to `chrome.storage.local` on the user's device. |
-| `offscreen` | Creates an offscreen document to play Pomodoro ambient audio (rain, cafe, fireplace) using the Web Audio API while the New Tab page is not focused. | **None.** Audio files are bundled locally within the extension package. |
+| `offscreen` | Creates an offscreen document to play Pomodoro timer start and end chime sounds using the HTML5 Audio API while the New Tab page is not focused. | **None.** Audio files are bundled locally within the extension package. |
 | `management` | Powers the Extensions panel in Quick Tools, allowing users to view and toggle their installed Chrome extensions via `chrome.management.getAll()` and `chrome.management.setEnabled()`. | **None.** Extension metadata is provided by Chrome's local extension registry and never leaves the device. |
 
 ### 5.2 Optional Permissions (Requested at Runtime)
@@ -166,7 +170,7 @@ Users maintain complete control over their data at all times:
 
 - **Export:** All Acrylic data (preferences, tasks, notes, Quick Links, Pomodoro statistics) can be exported as a JSON file at any time via the Preferences panel.
 - **Import:** A previously exported JSON file can be imported to restore data on any Chrome installation.
-- **Deletion:** Uninstalling the Acrylic extension **permanently and irrevocably** removes all data stored in `chrome.storage.sync` and `chrome.storage.local`. No residual data remains on any external server, because no external server was ever used at any point during the extension's operation.
+- **Deletion:** Uninstalling the Acrylic extension removes all data stored in `chrome.storage.sync` and `chrome.storage.local`. Locally uploaded wallpaper media stored in the browser's IndexedDB (`acrylic-media`) is managed by the browser's origin storage cleanup upon uninstall, and can also be manually deleted at any time prior to uninstallation via the Preferences panel ("Remove media") or browser Developer Tools. No residual data remains on any external server, because no external server was ever used at any point during the extension's operation.
 
 ---
 
