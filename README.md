@@ -27,6 +27,7 @@ A clean, frosted-glass new tab page built with vanilla web technologies. Sub-100
 
 ## Table of Contents
 
+- [Acrylic v2.0.0 — Roadmap](#-acrylic-v200--roadmap)
 - [What's New in v1.2.4 — 2026-08-16](#-whats-new-in-v124---2026-08-16)
 - [Why Acrylic?](#-why-acrylic)
 - [Architecture vs. Competitors](#-architecture-vs-competitors)
@@ -36,6 +37,77 @@ A clean, frosted-glass new tab page built with vanilla web technologies. Sub-100
 - [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
 - [Manual Installation & Verification](#️-manual-installation--verification)
 - [Community & Feedback](#-community--feedback)
+
+---
+
+## 🗺️ Acrylic v2.0.0 — Roadmap
+
+*Acrylic's biggest release yet — turning the new tab from a dashboard into a full focus environment. Site blocking, a to-do list deep enough to replace your task app, real productivity reports, ambient soundscapes, and wallpapers that follow the time of day.*
+
+> [!NOTE]
+> Everything listed as **🟢 Free** ships free for all users forever. Features marked **✨ Pro** will be available with **Acrylic Pro**, launching with v2.0.0. All existing v1.x features remain 100% free and untouched.
+
+### 🟢 Free for Everyone in v2.0.0
+
+#### 🚫 Site Blocker
+Block distracting websites right from your new tab, or flip on **Deep Focus** to block everything except an allowlist. Set focus hours to auto-block on a schedule, or have blocking activate automatically when your Pomodoro starts. Free tier covers **5 blocked sites**.
+
+#### ⏱️ Pomodoro Presets & Improvements
+Choose from **Classic 25/5**, **Lock-In 50/10**, and **Rhythm 90/20** presets, plus fully custom durations — free for everyone. The timer ring, mini widget, and popup now always stay in sync.
+
+#### 📊 Productivity Stats
+Focus time, sessions, and completed tasks are recorded automatically with a daily goal and streak tracker. Time-per-website tracking is **strictly opt-in**, stores only the site name, and never leaves your device.
+
+#### 🌅 Time-of-Day Wallpaper Packs
+Curated wallpaper packs that shift from morning to day to evening to night. **Natural Light** pack is free. A pack never overwrites your own wallpaper — turn it off and yours comes straight back.
+
+#### 📋 Clipboard History (Mounted)
+The clipboard history panel (auto-captures last 20 copied text snippets with pin, copy, and delete) is now accessible in Quick Tools.
+
+---
+
+### ✨ Acrylic Pro Exclusives in v2.0.0
+
+#### 🚫 Unlimited Site Blocking (Pro)
+Unlimited blocked sites (free tier caps at 5). Block entire categories or use wildcard patterns.
+
+#### ✅ To-Do Depth (Pro)
+Due dates, times, reminders, repeating tasks, and priority levels. Finishing a repeating task auto-creates the next occurrence so habits build a real history. Overdue tasks turn red and move to the top without ever nagging you.
+
+#### 📈 Focus Reports (Pro)
+Weekly and monthly views of your focus time, sessions, and tasks with insights on your best hours, strongest weekday, habit streaks, and **PDF export**.
+
+#### 🌊 Time-of-Day Wallpaper Packs — Premium Collections (Pro)
+**Coastal**, **Metropolis**, and **Ambient** wallpaper packs that shift with the time of day. Free users get **Natural Light** only.
+
+#### 🎬 Curated 4K Dynamic Motion Video Loops (Pro)
+Hand-picked 4K motion video loops (abstract gradients, northern lights, flowing water, city timelapse) streamed from a curated gallery with poster thumbnails. Free users can still upload their own videos — only the curated gallery is Pro.
+
+#### 🎧 Multi-Track Ambient Soundscape Mixer (Pro)
+Layer simultaneous ambient audio tracks — Rain, Café, Lo-Fi, Fireplace, Ocean Waves, Wind — with individual volume sliders and a master control. Free users keep the standard Pomodoro chime sounds.
+
+#### 🎨 Deep Theme Architect (Pro)
+Unlock custom glass panel styling with live sliders: blur radius (8px–32px), backdrop saturation (0.5–2.5), tint color via hex picker, and tint opacity (0–50%). Free users keep the 8 built-in preset themes.
+
+#### 📊 Productivity Heatmaps (Pro)
+GitHub-style weekly focus heatmap grid (90 days of history) with color intensity scaling by session count. Summary stats: *"This week: 14 sessions · Best streak: 5 days"*. Free users see today's count only.
+
+#### 🗂️ Advanced Workspaces — Unlimited Saved Tab Groups (Pro)
+Save unlimited tab group workspaces with naming and organization. Free users can save up to 3 groups.
+
+#### 📋 Extended Clipboard History — 100 Items (Pro)
+Clipboard history expands from 20 to 100 items for Pro users, with the same pin, copy, and delete interface.
+
+#### ✨ Golden Glass Supporter Badge (Pro)
+A shimmering golden badge displayed next to your name in Settings as a thank-you for supporting indie development.
+
+#### 🖼️ Screenshot Editor Additions (Pro)
+A blending highlighter that keeps text readable, auto-incrementing step numbers for walkthroughs, and a watermark applied at export across PNG, JPEG, PDF, and clipboard.
+
+---
+
+> [!NOTE]
+> **Acrylic Pro** launches with v2.0.0. All existing free features will **never** be paywalled — Pro is purely additive, bringing aesthetic and power-user enhancements on top of the same fast, private, zero-telemetry core.
 
 ---
 
@@ -96,12 +168,13 @@ Most new tab extensions push users into one of two extremes:
 1. **Heavy dashboards** loaded with background trackers, cloud sync dependencies, and \$40/year paywalls.
 2. **Barebones minimalist tabs** that look pretty, but lack essential day-to-day tools like a task tracker, Pomodoro timer, or quick notes.
 
-| | Heavy Dashboards *(e.g. Momentum)* | Minimalist Tabs *(e.g. Tabliss, Bonjourr)* | Acrylic |
+| | Heavy Dashboards *(e.g. Momentum, Glassy)* | Minimalist Tabs *(e.g. Tabliss, Bonjourr)* | Acrylic |
 |---|---|---|---|
 | **Startup Speed** | ❌ Laggy (framework hydration delays) | ✅ Fast & local | ⚡ Sub-100ms instant load |
-| **Productivity** | ✅ Tasks, widgets (often paywalled) | ❌ Clock & wallpaper only | 🛠️ Tasks, Pomodoro, Notes, Tabs, Extensions |
+| **Productivity** | ✅ Tasks, widgets (often paywalled) | ❌ Clock & wallpaper only | 🛠️ Tasks, Pomodoro, Notes, Site Blocker, Tabs, Extensions |
+| **Focus Analytics** | ⚠️ Basic (often paywalled) | ❌ None | 📊 Daily stats free · Reports & heatmaps in Pro |
 | **Privacy** | ❌ Accounts, trackers, cloud telemetry | ✅ No tracking | 🔒 100% local, zero telemetry |
-| **Cost** | ❌ ~$40/year subscriptions | ✅ Free | 💚 Free & open source forever |
+| **Cost** | ❌ ~$36–$48/year subscriptions | ✅ Free | 💚 Free core forever · Pro tier coming in v2.0.0 |
 
 ### Built Natively for Manifest V3
 
@@ -212,7 +285,7 @@ Never. Acrylic has zero telemetry, zero analytics scripts, and zero remote datab
 Most modern new tab extensions bundle heavy frameworks like React with Webpack, then spend hundreds of milliseconds hydrating state through background service workers. Acrylic is written entirely in native ES modules and clean CSS. The browser opens `newtab.html` and renders it immediately—no bundlers, no build steps, and no waiting on background roundtrips.
 
 ### Is Acrylic really free and open-source?
-Yes, 100%. Acrylic is released under the [GNU General Public License v3.0 (GPLv3)](./LICENSE). There are no paywalls, no 'Pro' subscriptions, no locked features, and no sponsored ads. What you see is what you get, and you can inspect or fork the source code anytime.
+Yes. Acrylic's core is released under the [GNU General Public License v3.0 (GPLv3)](./LICENSE) and will always be free and open-source. Starting with v2.0.0, an optional **Acrylic Pro** tier unlocks additive aesthetic and power-user enhancements (4K motion loops, soundscape mixer, deep theme sliders, focus reports, and more). Every existing feature — clock, search, tasks, notes, pomodoro, themes, wallpaper uploads, tabs manager — remains 100% free forever with no feature takebacks.
 
 ### What productivity tools and widgets are built in?
 Acrylic includes a full set of focused tools built directly into the new tab page:
@@ -225,7 +298,7 @@ Acrylic includes a full set of focused tools built directly into the new tab pag
 - **Quick Links:** Clean squircle dock and grid layouts with drag-and-drop reordering and a 50+ SVG preset icon library.
 
 ### Can I customize the Pomodoro timer duration or add more widgets?
-Yes! Customizable timer durations (setting your own work and break intervals) and additional modular widgets are currently in active development. We're prioritizing these directly from recent community feedback and Chrome Web Store reviews.
+Yes! In v2.0.0, Acrylic ships with **three built-in presets** (Classic 25/5, Lock-In 50/10, Rhythm 90/20) plus fully custom durations — all free. Additionally, a **Site Blocker** can auto-activate with your Pomodoro sessions, and Pro users get a multi-track ambient soundscape mixer to pair focus sounds with their timer.
 
 ### How does the search bar and AI assistant integration work?
 By default, typing a query searches the web using your browser's default search engine without needing any invasive permissions. With a single click or keyboard shortcut, you can switch destinations to send your query directly into **ChatGPT**, **Gemini**, **Claude**, **Perplexity**, **Grok**, or **DeepSeek**.

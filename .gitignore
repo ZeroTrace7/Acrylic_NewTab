@@ -53,6 +53,20 @@ glassy.md
 docs/research/
 archive/
 
+# Monetization & payment strategy documentation (internal dev only)
+monetization.md
+monetization*.md
+*monetization*.md
+docs/monetization*.md
+docs/*monetization*.md
+global_payments_guide.md
+docs/global_payments_guide.md
+*payment*.md
+docs/*payment*.md
+*audit*.md
+docs/*audit*.md
+
+
 # Build/fetch tooling (dev-only scripts)
 fetch-icons.js
 scripts/
