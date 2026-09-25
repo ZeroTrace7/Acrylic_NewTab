@@ -9,6 +9,12 @@
 
 /* Acrylic — background.js (service worker) */
 
+import {
+  completePomodoroDaySession,
+  resetPomodoroDayStats,
+  resolveInstalledPomodoroState,
+} from './modules/storage.js';
+
 const TODAY = () => new Date().toISOString().split('T')[0];
 
 const MODE_DURATION = {
@@ -155,11 +161,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       let nextMode, title, message;
 
       if (timerState.mode === 'pomodoro') {
-        const { dailyStats } = await chrome.storage.local.get('dailyStats');
-        const stats = (dailyStats && dailyStats.date === TODAY()) ? dailyStats : { date: TODAY(), count: 0 };
-        stats.count++;
-        await chrome.storage.local.set({ dailyStats: stats });
-        nextMode = stats.count % 4 === 0 ? 'longBreak' : 'shortBreak';
+        const { dailyStats, pomodoroHistory } = await chrome.storage.local.get(['dailyStats', 'pomodoroHistory']);
+        const updated = completePomodoroDaySession(dailyStats, pomodoroHistory, TODAY());
+        await chrome.storage.local.set(updated);
+        nextMode = updated.dailyStats.count % 4 === 0 ? 'longBreak' : 'shortBreak';
         title = 'Session Done!';
         message = 'Great focus. Time for a break!';
       } else {
@@ -183,7 +188,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     }
 
     if (alarm.name === 'dailyReset') {
-      await chrome.storage.local.set({ dailyStats: { date: TODAY(), count: 0 } });
+      const { dailyStats, pomodoroHistory } = await chrome.storage.local.get(['dailyStats', 'pomodoroHistory']);
+      const updated = resetPomodoroDayStats(dailyStats, pomodoroHistory, TODAY());
+      await chrome.storage.local.set(updated);
     }
   } catch (err) { console.error('Alarm handler error:', err); }
 });
@@ -231,10 +238,14 @@ chrome.notifications.onButtonClicked.addListener((notifId, btnIndex) => {
 chrome.runtime.onInstalled.addListener(async (details) => {
   try {
     await syncYouTubeEmbedRefererRule();
-    await chrome.storage.local.set({
-      timerState: { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 },
-      dailyStats: { date: TODAY(), count: 0 },
-    });
+    const { timerState, dailyStats, pomodoroHistory } = await chrome.storage.local.get([
+      'timerState',
+      'dailyStats',
+      'pomodoroHistory',
+    ]);
+    await chrome.storage.local.set(
+      resolveInstalledPomodoroState(timerState, dailyStats, pomodoroHistory, TODAY())
+    );
 
     // ── Update notification flag ────────────────────────────
     if (details.reason === 'update') {

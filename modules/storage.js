@@ -136,6 +136,109 @@ function normalizeSearchEngine(value) {
   return typeof value === 'string' && VALID_ENGINE_IDS.includes(value) ? value : 'default';
 }
 
+export const MAX_POMODORO_HISTORY = 30;
+
+function isValidDateString(value) {
+  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+/**
+ * Normalizes a pomodoroHistory array: filters valid { date, count } records,
+ * deduplicates by date (keeping the highest count), sorts newest-first,
+ * and caps at MAX_POMODORO_HISTORY (30) entries.
+ */
+export function normalizePomodoroHistory(history) {
+  if (!Array.isArray(history)) return [];
+  const byDate = new Map();
+  for (const item of history) {
+    if (!item || !isValidDateString(item.date)) continue;
+    const count = Number(item.count);
+    if (!Number.isFinite(count) || count <= 0) continue;
+    const normalizedCount = Math.floor(count);
+    if (normalizedCount <= 0) continue;
+    const existing = byDate.get(item.date) || 0;
+    if (normalizedCount > existing) {
+      byDate.set(item.date, normalizedCount);
+    }
+  }
+  return Array.from(byDate.entries())
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, MAX_POMODORO_HISTORY);
+}
+
+/**
+ * Archives a dailyStats record ({ date, count }) into a pomodoroHistory array
+ * without duplicating dates, keeping only the latest 30 days.
+ */
+export function archiveDailyStatsToHistory(history, dailyStats) {
+  const base = Array.isArray(history) ? [...history] : [];
+  if (dailyStats && isValidDateString(dailyStats.date) && Number(dailyStats.count) > 0) {
+    base.unshift({
+      date: dailyStats.date,
+      count: Math.floor(Number(dailyStats.count)),
+    });
+  }
+  return normalizePomodoroHistory(base);
+}
+
+/**
+ * Computes updated dailyStats and pomodoroHistory when a focus session finishes.
+ * Archives stale dailyStats if from a previous day before starting today's count at 1.
+ */
+export function completePomodoroDaySession(dailyStats, history, today = new Date().toISOString().split('T')[0]) {
+  let pomodoroHistory = normalizePomodoroHistory(history);
+  let nextStats;
+  if (dailyStats && dailyStats.date === today) {
+    const currentCount = Number.isFinite(Number(dailyStats.count)) ? Math.max(0, Math.floor(Number(dailyStats.count))) : 0;
+    nextStats = { date: today, count: currentCount + 1 };
+  } else {
+    if (dailyStats && isValidDateString(dailyStats.date) && Number(dailyStats.count) > 0) {
+      pomodoroHistory = archiveDailyStatsToHistory(pomodoroHistory, dailyStats);
+    }
+    nextStats = { date: today, count: 1 };
+  }
+  return { dailyStats: nextStats, pomodoroHistory };
+}
+
+/**
+ * Computes updated dailyStats and pomodoroHistory for the midnight dailyReset alarm.
+ */
+export function resetPomodoroDayStats(dailyStats, history, today = new Date().toISOString().split('T')[0]) {
+  const pomodoroHistory = archiveDailyStatsToHistory(history, dailyStats);
+  return {
+    dailyStats: { date: today, count: 0 },
+    pomodoroHistory,
+  };
+}
+
+/**
+ * Resolves timerState, dailyStats, and pomodoroHistory on extension install or update.
+ * Preserves today's count on update; archives stale dailyStats if from a previous day.
+ */
+export function resolveInstalledPomodoroState(timerState, dailyStats, history, today = new Date().toISOString().split('T')[0]) {
+  let pomodoroHistory = normalizePomodoroHistory(history);
+  let nextDailyStats;
+  if (dailyStats && typeof dailyStats === 'object' && dailyStats.date === today) {
+    const currentCount = Number.isFinite(Number(dailyStats.count)) ? Math.max(0, Math.floor(Number(dailyStats.count))) : 0;
+    nextDailyStats = { date: today, count: currentCount };
+  } else {
+    if (dailyStats && isValidDateString(dailyStats.date) && Number(dailyStats.count) > 0) {
+      pomodoroHistory = archiveDailyStatsToHistory(pomodoroHistory, dailyStats);
+    }
+    nextDailyStats = { date: today, count: 0 };
+  }
+  const nextTimerState =
+    timerState && typeof timerState === 'object' && typeof timerState.mode === 'string'
+      ? timerState
+      : { mode: 'pomodoro', isRunning: false, timeLeft: 1500, endTime: 0 };
+  return {
+    timerState: nextTimerState,
+    dailyStats: nextDailyStats,
+    pomodoroHistory,
+  };
+}
+
 // ─── PART 2 — Store (chrome.storage.local) ──────────────────
 
 export const Store = {
@@ -238,19 +341,38 @@ export const Store = {
     await chrome.storage.local.set({ timerState: state });
   },
 
-  /** Gets today's pomodoro stats, resetting if the stored date doesn't match today. */
+  /** Gets today's pomodoro stats, archiving and resetting if the stored date doesn't match today. */
   async getDailyStats() {
     const today = new Date().toISOString().split('T')[0];
-    const result = await chrome.storage.local.get('dailyStats');
-    if (!result.dailyStats || result.dailyStats.date !== today) {
-      return { date: today, count: 0 };
+    const result = await chrome.storage.local.get(['dailyStats', 'pomodoroHistory']);
+    const stored = result.dailyStats;
+    if (!stored || stored.date !== today) {
+      const nextStats = { date: today, count: 0 };
+      if (stored && isValidDateString(stored.date) && Number(stored.count) > 0) {
+        const pomodoroHistory = archiveDailyStatsToHistory(result.pomodoroHistory, stored);
+        await chrome.storage.local.set({ dailyStats: nextStats, pomodoroHistory });
+      }
+      return nextStats;
     }
-    return result.dailyStats;
+    return stored;
   },
 
   /** Saves the daily pomodoro stats object. */
   async setDailyStats(stats) {
     await chrome.storage.local.set({ dailyStats: stats });
+  },
+
+  /** Gets the archived pomodoro history array (latest 30 days max). */
+  async getPomodoroHistory() {
+    const result = await chrome.storage.local.get('pomodoroHistory');
+    return normalizePomodoroHistory(result.pomodoroHistory);
+  },
+
+  /** Saves the pomodoro history array, normalized and capped at 30 days. */
+  async setPomodoroHistory(history) {
+    await chrome.storage.local.set({
+      pomodoroHistory: normalizePomodoroHistory(history),
+    });
   },
 
   // ── Clipboard History ────────────────────────────────────
